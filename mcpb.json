@@ -1,0 +1,28 @@
+{
+    "name": "robotics-mcp",
+    "version": "0.1.0",
+    "description": "Unified robotics control via MCP - Physical and virtual robots (bot + vbot)",
+    "author": "Sandra",
+    "license": "MIT",
+    "outputDir": "dist",
+    "mcp": {
+        "version": "2.13.0",
+        "server": {
+            "command": "python",
+            "args": [
+                "-m",
+                "robotics_mcp.server"
+            ],
+            "transport": "stdio"
+        },
+        "capabilities": {
+            "tools": true,
+            "resources": false,
+            "prompts": true
+        }
+    },
+    "dependencies": {
+        "python": ">=3.10"
+    }
+}
+

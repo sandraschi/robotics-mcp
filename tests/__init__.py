@@ -1,0 +1,2 @@
+"""Tests for robotics-mcp."""
+
