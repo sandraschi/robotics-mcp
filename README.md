@@ -174,6 +174,9 @@ curl -X POST http://localhost:8080/api/v1/tools/robot_control \
 ## 📚 Documentation
 
 - [Implementation Plan](PLAN.md)
+- [Quick Start: VRChat](docs/QUICK_START_VRCHAT.md) ⚡ **Get Scout into VRChat!**
+- [VRChat Integration Guide](docs/VRChat_INTEGRATION.md)
+- [VRChat Scout Setup](docs/VRCHAT_SCOUT_SETUP.md) - Complete guide
 - [Architecture](docs/ARCHITECTURE.md)
 - [API Reference](docs/API_REFERENCE.md)
 - [MCP Integration](docs/MCP_INTEGRATION.md)
