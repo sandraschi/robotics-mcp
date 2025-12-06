@@ -94,10 +94,6 @@ class RoboticsMCP:
         self.config_data = self.config_loader.load()
         self.state_manager = RobotStateManager()
 
-        # Initialize tool handlers
-        self.robot_control = RobotControlTool(self.mcp, self.state_manager)
-        self.virtual_robotics = VirtualRoboticsTool(self.mcp, self.state_manager)
-
         # MCP server composition (will be mounted if available)
         self.mounted_servers: Dict[str, Any] = {}
 
@@ -108,10 +104,19 @@ class RoboticsMCP:
                 description="HTTP API for Robotics MCP Server",
                 version="0.1.0",
             )
-            self._setup_http_routes()
+        else:
+            self.http_app = None
+
+        # Initialize tool handlers (after MCP is created)
+        self.robot_control = RobotControlTool(self.mcp, self.state_manager)
+        self.virtual_robotics = VirtualRoboticsTool(self.mcp, self.state_manager)
 
         # Register all tools
         self._register_tools()
+
+        # Setup HTTP routes after tools are registered
+        if self.config.enable_http:
+            self._setup_http_routes()
 
         logger.info("Robotics MCP server initialized", http_enabled=self.config.enable_http)
 
@@ -139,11 +144,15 @@ class RoboticsMCP:
             return robot.to_dict()
 
         @router.post("/robots/{robot_id}/control")
-        async def control_robot(robot_id: str, action: str, params: Dict[str, Any] = None):
+        async def control_robot(robot_id: str, request: Dict[str, Any] = None):
             """Control a robot via HTTP."""
+            if request is None:
+                request = {}
             try:
+                action = request.get("action", "get_status")
+                params = {k: v for k, v in request.items() if k != "action"}
                 # Use the robot_control tool
-                result = await self.robot_control.handle_action(robot_id, action, params or {})
+                result = await self.robot_control.handle_action(robot_id, action, params)
                 return result
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
@@ -163,12 +172,57 @@ class RoboticsMCP:
             return {"tools": tools}
 
         @router.post("/tools/{tool_name}")
-        async def call_tool(tool_name: str, params: Dict[str, Any]):
+        async def call_tool(tool_name: str, params: Dict[str, Any] = None):
             """Call an MCP tool via HTTP."""
+            if params is None:
+                params = {}
             try:
                 # Execute tool using MCP instance
-                result = await self.mcp.call_tool(tool_name, params)
+                # Note: FastMCP 2.13 tool calling interface
+                result = await self.mcp.call_tool(tool_name, **params)
                 return {"result": result}
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @router.get("/status")
+        async def get_status():
+            """Get server status."""
+            robots = self.state_manager.list_robots()
+            return {
+                "version": "0.1.0",
+                "status": "healthy",
+                "robots": [r.to_dict() for r in robots],
+                "mounted_servers": list(self.mounted_servers.keys()),
+                "http_enabled": self.config.enable_http,
+            }
+
+        @router.post("/robots")
+        async def register_robot(request: Dict[str, Any]):
+            """Register a new robot."""
+            try:
+                robot_id = request.get("robot_id")
+                robot_type = request.get("robot_type")
+                platform = request.get("platform")
+                metadata = request.get("metadata", {})
+
+                if not robot_id or not robot_type:
+                    raise HTTPException(status_code=400, detail="robot_id and robot_type required")
+
+                robot = self.state_manager.register_robot(
+                    robot_id, robot_type, platform=platform, metadata=metadata
+                )
+                return robot.to_dict()
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+
+        @router.delete("/robots/{robot_id}")
+        async def unregister_robot(robot_id: str):
+            """Unregister a robot."""
+            try:
+                self.state_manager.unregister_robot(robot_id)
+                return {"status": "success", "message": f"Robot {robot_id} unregistered"}
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
 

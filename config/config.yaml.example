@@ -1,0 +1,126 @@
+# Robotics MCP Server Configuration Example
+# Copy this file to ~/.robotics-mcp/config.yaml and customize
+
+robotics:
+  # Moorebot Scout Configuration
+  moorebot_scout:
+    enabled: false
+    robot_id: "scout_01"
+    ip_address: "192.168.1.100"
+    port: 9090
+    mock_mode: true  # Set false when hardware available
+    
+    # YDLIDAR SuperLight (95g) Configuration
+    lidar:
+      enabled: false
+      type: "ydlidar_superlight"
+      weight: 95  # grams
+      ros_topic: "/scan"
+      scan_rate: 10  # Hz
+      range_min: 0.1  # meters
+      range_max: 12.0  # meters (indoor)
+      mounting:
+        position: "top"
+        height_offset: 0.08  # 8cm above Scout body
+        rotation_offset: 0  # degrees
+      power:
+        voltage: 5  # V
+        current: 0.48  # A (480mA)
+    
+    location:
+      home_base: {x: 0.0, y: 0.0}
+      rooms:
+        living_room: {x_min: 0, x_max: 5, y_min: 0, y_max: 4}
+        bedroom: {x_min: 5, x_max: 8, y_min: 0, y_max: 3}
+    
+    patrols:
+      default:
+        - {x: 2.0, y: 2.0, room: "living_room"}
+        - {x: 6.0, y: 1.5, room: "bedroom"}
+    
+    # Navigation and SLAM
+    navigation:
+      slam_enabled: true
+      obstacle_avoidance: true
+      safety_distance: 0.3  # meters (30cm minimum clearance)
+      map_resolution: 0.05  # 5cm per pixel
+      maps_directory: "maps/"
+  
+  # Unitree Go2
+  unitree_go2:
+    enabled: false
+    robot_id: "go2_01"
+    mock_mode: true
+  
+  # Unitree G1
+  unitree_g1:
+    enabled: false
+    robot_id: "g1_01"
+    mock_mode: true
+  
+  # Virtual Robotics (Vbot)
+  virtual:
+    enabled: true
+    platform: "unity"  # "unity" or "vrchat"
+    unity:
+      host: "localhost"
+      port: 8080
+      use_unity3d_mcp: true
+    vrchat:
+      enabled: false
+      use_vrchat_mcp: true
+      osc_port: 9000
+    environments:
+      stroheckgasse_apartment:
+        path: "environments/stroheckgasse.ply"
+        type: "marble_export"
+    # Virtual robot instances
+    robots:
+      vbot_scout_01:
+        type: "scout"
+        platform: "unity"
+        model_path: "assets/models/scout/scout_base.fbx"
+        scale: 1.0  # 1× = 11.5cm (actual Scout size)
+        position: {x: 0.0, y: 0.0, z: 0.0}
+      vbot_scout_go2_size:
+        type: "scout"
+        platform: "unity"
+        model_path: "assets/models/scout/scout_base.fbx"
+        scale: 6.1  # Scaled to Unitree Go2 size (70cm) for testing
+        position: {x: 0.0, y: 0.0, z: 0.0}
+  
+  # Multi-robot coordination (bot + vbot)
+  coordination:
+    enabled: false
+    strategy: "zone_based"  # or "time_based", "priority_based"
+    zones:
+      zone_1:
+        robots: ["scout_01", "vbot_scout_01"]  # Physical + virtual
+        area: {x_min: 0, x_max: 5, y_min: 0, y_max: 4}
+  
+  # MCP Server Integration
+  mcp_integration:
+    osc_mcp:
+      enabled: true
+      prefix: "osc"
+      use_proxy: true
+    unity3d_mcp:
+      enabled: true
+      prefix: "unity"
+      use_proxy: true
+    vrchat_mcp:
+      enabled: true
+      prefix: "vrchat"
+      use_proxy: true
+    avatar_mcp:
+      enabled: true
+      prefix: "avatar"
+      use_proxy: true
+
+# Server Configuration
+server:
+  enable_http: true
+  http_port: 8080
+  http_host: "0.0.0.0"
+  log_level: "INFO"
+
