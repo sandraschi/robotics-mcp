@@ -1,0 +1,48 @@
+# Docker Compose for ROS 1.4 (Melodic) Development Environment
+# For local Scout development and testing
+
+version: '3.8'
+
+services:
+  ros1-melodic:
+    build:
+      context: .
+      dockerfile: Dockerfile.ros1-melodic
+    container_name: robotics-ros1-dev
+    hostname: ros1-dev
+    privileged: true
+    network_mode: bridge
+    volumes:
+      # Mount Scout SDK
+      - ../external/moorebot-scout-sdk/roller_eye:/ros_ws/src/roller_eye:ro
+      # Mount robotics-mcp for development
+      - ../src/robotics_mcp:/ros_ws/src/robotics_mcp:rw
+      # Persistent ROS workspace
+      - ros1_workspace:/ros_ws
+      # X11 for GUI tools (RViz, etc.)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - ROS_MASTER_URI=http://localhost:11311
+      - ROS_HOSTNAME=ros1-dev
+      - ROS_IP=127.0.0.1
+      - QT_X11_NO_MITSHM=1
+    ports:
+      # rosbridge WebSocket
+      - "9090:9090"
+      # ROS master
+      - "11311:11311"
+      # ROS communication
+      - "11312-11320:11312-11320"
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+volumes:
+  ros1_workspace:
+    driver: local
+
+networks:
+  default:
+    name: robotics-ros1-network
+

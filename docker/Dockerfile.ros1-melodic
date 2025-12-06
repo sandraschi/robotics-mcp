@@ -1,0 +1,58 @@
+# ROS 1.4 (Melodic) Docker Container for Moorebot Scout Development
+# Based on official ROS Melodic image
+
+FROM osrf/ros:melodic-desktop-full
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ROS_DISTRO=melodic
+ENV ROS_VERSION=1
+
+# Install dependencies for Scout SDK
+RUN apt-get update && apt-get install -y \
+    python-rosdep \
+    python-rosinstall \
+    python-rosinstall-generator \
+    python-wstool \
+    build-essential \
+    cmake \
+    git \
+    vim \
+    nano \
+    wget \
+    curl \
+    python-pip \
+    python-catkin-tools \
+    ros-melodic-catkin \
+    ros-melodic-rosbridge-suite \
+    ros-melodic-rosbridge-server \
+    ros-melodic-tf2-web-republisher \
+    ros-melodic-web-video-server \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --upgrade pip && \
+    pip install roslibpy rospkg catkin_pkg
+
+# Initialize rosdep
+RUN rosdep init && rosdep update
+
+# Create ROS workspace
+WORKDIR /ros_ws
+RUN mkdir -p src
+
+# Source ROS setup
+RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc && \
+    echo "source /ros_ws/devel/setup.bash" >> ~/.bashrc
+
+# Expose ports for ROS communication
+# rosbridge WebSocket
+EXPOSE 9090
+# ROS master
+EXPOSE 11311
+# ROS communication ports
+EXPOSE 11312-11320
+
+# Default command
+CMD ["/bin/bash"]
+
