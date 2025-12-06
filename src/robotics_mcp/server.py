@@ -109,7 +109,7 @@ class RoboticsMCP:
 
         # Initialize tool handlers (after MCP is created)
         self.robot_control = RobotControlTool(self.mcp, self.state_manager)
-        self.virtual_robotics = VirtualRoboticsTool(self.mcp, self.state_manager)
+        self.virtual_robotics = VirtualRoboticsTool(self.mcp, self.state_manager, self.mounted_servers)
 
         # Register all tools
         self._register_tools()

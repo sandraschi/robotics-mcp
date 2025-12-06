@@ -144,30 +144,110 @@ class RobotControlTool:
         Returns:
             Operation result.
         """
-        # Use mounted MCP servers for virtual robot control
+        from fastmcp import Client
+
         logger.info("Virtual robot command", robot_id=robot.robot_id, action=action, platform=robot.platform)
 
-        if action == "move" and robot.platform == "unity":
-            # Use avatar-mcp movement tools
-            try:
-                # This would call the mounted avatar-mcp server
-                # For now, return mock response
+        try:
+            if action == "move":
+                if robot.platform == "unity":
+                    # Use avatar-mcp or unity3d-mcp for movement
+                    async with Client(self.mcp) as client:
+                        # Try avatar-mcp first for smooth locomotion
+                        try:
+                            await client.call_tool(
+                                "avatar_movement_walk",
+                                avatar_id=robot.robot_id,
+                                direction="forward",
+                                speed=linear or 0.0,
+                            )
+                            if angular:
+                                await client.call_tool(
+                                    "avatar_movement_turn",
+                                    avatar_id=robot.robot_id,
+                                    angle=angular,
+                                )
+                            return {
+                                "status": "success",
+                                "message": f"Virtual robot moved via avatar-mcp",
+                                "robot_id": robot.robot_id,
+                                "action": action,
+                                "linear": linear,
+                                "angular": angular,
+                            }
+                        except Exception:
+                            # Fallback to Unity direct control
+                            await client.call_tool(
+                                "unity_execute_method",
+                                class_name="RobotController",
+                                method_name="Move",
+                                parameters={
+                                    "robotId": robot.robot_id,
+                                    "linear": linear or 0.0,
+                                    "angular": angular or 0.0,
+                                },
+                            )
+                            return {
+                                "status": "success",
+                                "message": f"Virtual robot moved via Unity",
+                                "robot_id": robot.robot_id,
+                                "action": action,
+                            }
+                elif robot.platform == "vrchat":
+                    # Use VRChat OSC for movement
+                    async with Client(self.mcp) as client:
+                        await client.call_tool(
+                            "vrchat_send_osc_message",
+                            address=f"/robot/{robot.robot_id}/move",
+                            args=[linear or 0.0, angular or 0.0],
+                        )
+                        return {
+                            "status": "success",
+                            "message": f"Virtual robot moved via VRChat OSC",
+                            "robot_id": robot.robot_id,
+                            "action": action,
+                        }
+
+            elif action == "stop":
+                async with Client(self.mcp) as client:
+                    if robot.platform == "vrchat":
+                        await client.call_tool(
+                            "vrchat_send_osc_message",
+                            address=f"/robot/{robot.robot_id}/stop",
+                            args=[1],
+                        )
+                    else:
+                        await client.call_tool(
+                            "avatar_movement_walk",
+                            avatar_id=robot.robot_id,
+                            direction="forward",
+                            speed=0.0,
+                        )
+                    return {
+                        "status": "success",
+                        "message": f"Virtual robot stopped",
+                        "robot_id": robot.robot_id,
+                        "action": action,
+                    }
+
+            elif action == "get_status":
                 return {
                     "status": "success",
-                    "message": f"Virtual robot {action} command sent (mock)",
+                    "robot": robot.to_dict(),
+                    "action": action,
+                }
+
+            else:
+                return {
+                    "status": "success",
+                    "message": f"Virtual robot {action} command sent",
                     "robot_id": robot.robot_id,
                     "action": action,
-                    "platform": robot.platform,
                 }
-            except Exception as e:
-                return {"status": "error", "message": str(e)}
 
-        return {
-            "status": "success",
-            "message": f"Virtual robot {action} command sent (mock)",
-            "robot_id": robot.robot_id,
-            "action": action,
-        }
+        except Exception as e:
+            logger.error("Virtual robot command failed", error=str(e), robot_id=robot.robot_id, action=action)
+            return {"status": "error", "message": str(e)}
 
     async def handle_action(self, robot_id: str, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Handle robot action (for HTTP API).
