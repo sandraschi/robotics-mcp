@@ -62,3 +62,10 @@ config.yaml
 dist/
 *.dxt
 
+# Unity assets (user-specific)
+Assets/Scripts/*.meta
+*.meta
+
+# User-specific paths
+C:\Users\sandr\*
+

@@ -10,7 +10,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "🧪 Running robotics-mcp tests..." -ForegroundColor Cyan
+Write-Host "Running robotics-mcp tests..." -ForegroundColor Cyan
 
 # Activate virtual environment if it exists
 if (Test-Path "venv\Scripts\Activate.ps1") {
@@ -46,12 +46,12 @@ Write-Host "Running: pytest $($pytestArgs -join ' ')" -ForegroundColor Green
 pytest $pytestArgs
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Tests passed!" -ForegroundColor Green
+    Write-Host "Tests passed!" -ForegroundColor Green
     if ($Coverage) {
-        Write-Host "📊 Coverage report: htmlcov/index.html" -ForegroundColor Cyan
+        Write-Host "Coverage report: htmlcov/index.html" -ForegroundColor Cyan
     }
 } else {
-    Write-Host "❌ Tests failed!" -ForegroundColor Red
+    Write-Host "Tests failed!" -ForegroundColor Red
     exit $LASTEXITCODE
 }
 

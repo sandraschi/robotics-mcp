@@ -19,7 +19,12 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 - **Multi-Robot Coordination**: Physical and virtual robots together
 - **World Labs Marble/Chisel**: Environment generation and import
 - **Dual Transport**: stdio (MCP) + HTTP (FastAPI) endpoints
-- **MCP Server Composition**: Integrates with `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`
+- **MCP Server Composition**: Integrates with `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp`
+- **Robot Model Creation**: Automated 3D model creation using `blender-mcp` (geometry) + `gimp-mcp` (textures)
+
+## 📚 Documentation
+
+- **[Unity Vbot Instantiation Guide](docs/UNITY_VBOT_INSTANTIATION.md)** - Complete guide for instantiating virtual robots in Unity3D with proper terminology
 
 ## 🚀 Quick Start
 
@@ -68,6 +73,12 @@ robotics:
     avatar_mcp:
       enabled: true
       prefix: "avatar"
+    blender_mcp:
+      enabled: true
+      prefix: "blender"
+    gimp_mcp:
+      enabled: true
+      prefix: "gimp"
 server:
   enable_http: true
   http_port: 8080
@@ -135,6 +146,37 @@ await virtual_robotics(
 )
 ```
 
+#### Robot Model Tools
+
+```python
+# Create Scout model from scratch (uses blender-mcp + gimp-mcp)
+await robot_model_create(
+    robot_type="scout",
+    output_path="D:/Models/scout_model.fbx",
+    format="fbx",
+    dimensions={"length": 0.115, "width": 0.10, "height": 0.08},
+    create_textures=True,
+    texture_style="realistic"
+)
+
+# Import robot model into Unity
+await robot_model_import(
+    robot_type="scout",
+    model_path="D:/Models/scout_model.fbx",
+    format="fbx",
+    platform="unity",
+    project_path="D:/Projects/UnityRobots"
+)
+
+# Convert model between formats
+await robot_model_convert(
+    source_path="D:/Models/scout.fbx",
+    source_format="fbx",
+    target_format="glb",
+    target_path="D:/Models/scout.glb"
+)
+```
+
 ### HTTP API
 
 #### Health Check
@@ -174,6 +216,8 @@ curl -X POST http://localhost:8080/api/v1/tools/robot_control \
 ## 📚 Documentation
 
 - **[Comprehensive Project Notes](docs/COMPREHENSIVE_NOTES.md)** 📖 **Complete project documentation!**
+- **[VRM vs Robot Models](docs/VRM_VS_ROBOT_MODELS.md)** 🤖 **VRM format guide - when to use VRM vs FBX/GLB**
+- **[Unity Vbot Instantiation Guide](docs/UNITY_VBOT_INSTANTIATION.md)** 🎮 **Complete guide for instantiating virtual robots in Unity3D**
 - [Implementation Plan](PLAN.md)
 - [Quick Start: VRChat](docs/QUICK_START_VRCHAT.md) ⚡ **Get Scout into VRChat!**
 - [ROS 1.4 Local Setup](docs/ROS1_LOCAL_SETUP.md) 🐳 **Full local ROS environment for Scout!**

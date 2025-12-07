@@ -1,0 +1,272 @@
+{
+  "examples": [
+    {
+      "user_query": "What tools are available in robotics-mcp?",
+      "tool_calls": [
+        {
+          "tool": "help",
+          "parameters": {}
+        }
+      ],
+      "description": "Get comprehensive help about the server and all available tools"
+    },
+    {
+      "user_query": "What's the status of the robotics server?",
+      "tool_calls": [
+        {
+          "tool": "get_status",
+          "parameters": {}
+        }
+      ],
+      "description": "Check server health, registered robots, and mounted MCP servers"
+    },
+    {
+      "user_query": "Show me all registered robots",
+      "tool_calls": [
+        {
+          "tool": "list_robots",
+          "parameters": {}
+        }
+      ],
+      "description": "List all robots (both physical and virtual)"
+    },
+    {
+      "user_query": "Spawn a Scout robot in Unity at the origin",
+      "tool_calls": [
+        {
+          "tool": "virtual_robotics",
+          "parameters": {
+            "robot_type": "scout",
+            "action": "spawn_robot",
+            "platform": "unity",
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            }
+          }
+        }
+      ],
+      "description": "Spawn a virtual Scout robot in Unity at position (0, 0, 0)"
+    },
+    {
+      "user_query": "Load the apartment environment in Unity",
+      "tool_calls": [
+        {
+          "tool": "virtual_robotics",
+          "parameters": {
+            "robot_type": "scout",
+            "action": "load_environment",
+            "environment": "apartment",
+            "platform": "unity"
+          }
+        }
+      ],
+      "description": "Load a Marble/Chisel generated environment into Unity"
+    },
+    {
+      "user_query": "What's the status of scout_01?",
+      "tool_calls": [
+        {
+          "tool": "robot_control",
+          "parameters": {
+            "robot_id": "scout_01",
+            "action": "get_status"
+          }
+        }
+      ],
+      "description": "Get status of a specific robot"
+    },
+    {
+      "user_query": "Move scout_01 forward at 0.2 meters per second",
+      "tool_calls": [
+        {
+          "tool": "robot_control",
+          "parameters": {
+            "robot_id": "scout_01",
+            "action": "move",
+            "linear": 0.2,
+            "angular": 0.0
+          }
+        }
+      ],
+      "description": "Move robot forward with specified linear velocity"
+    },
+    {
+      "user_query": "Stop scout_01 immediately",
+      "tool_calls": [
+        {
+          "tool": "robot_control",
+          "parameters": {
+            "robot_id": "scout_01",
+            "action": "stop"
+          }
+        }
+      ],
+      "description": "Emergency stop for robot"
+    },
+    {
+      "user_query": "Show me only virtual robots",
+      "tool_calls": [
+        {
+          "tool": "list_robots",
+          "parameters": {
+            "is_virtual": true
+          }
+        }
+      ],
+      "description": "Filter robots to show only virtual robots"
+    },
+    {
+      "user_query": "Scale vbot_scout_01 to 1.5x size",
+      "tool_calls": [
+        {
+          "tool": "virtual_robotics",
+          "parameters": {
+            "robot_type": "scout",
+            "action": "set_scale",
+            "robot_id": "vbot_scout_01",
+            "scale": 1.5
+          }
+        }
+      ],
+      "description": "Change virtual robot scale for size testing"
+    },
+    {
+      "user_query": "Get LiDAR scan from vbot_scout_01",
+      "tool_calls": [
+        {
+          "tool": "virtual_robotics",
+          "parameters": {
+            "robot_type": "scout",
+            "action": "get_lidar",
+            "robot_id": "vbot_scout_01"
+          }
+        }
+      ],
+      "description": "Get virtual LiDAR scan data from Unity physics raycast"
+    },
+    {
+      "user_query": "Send scout_01 back to its charging dock",
+      "tool_calls": [
+        {
+          "tool": "robot_control",
+          "parameters": {
+            "robot_id": "scout_01",
+            "action": "return_to_dock"
+          }
+        }
+      ],
+      "description": "Command robot to return to charging dock (physical robots only)"
+    },
+    {
+      "user_query": "Make go2_01 stand up",
+      "tool_calls": [
+        {
+          "tool": "robot_control",
+          "parameters": {
+            "robot_id": "go2_01",
+            "action": "stand"
+          }
+        }
+      ],
+      "description": "Unitree-specific action to make robot stand (G1 only)"
+    },
+    {
+      "user_query": "Show me only Scout robots",
+      "tool_calls": [
+        {
+          "tool": "list_robots",
+          "parameters": {
+            "robot_type": "scout"
+          }
+        }
+      ],
+      "description": "Filter robots by type"
+    },
+    {
+      "user_query": "Create a Scout virtual robot in Unity",
+      "tool_calls": [
+        {
+          "tool": "vbot_crud",
+          "parameters": {
+            "operation": "create",
+            "robot_type": "scout",
+            "platform": "unity",
+            "position": {"x": 0.0, "y": 0.0, "z": 0.0}
+          }
+        }
+      ],
+      "description": "Create a new virtual Scout robot"
+    },
+    {
+      "user_query": "Create Robbie from Forbidden Planet in Unity",
+      "tool_calls": [
+        {
+          "tool": "vbot_crud",
+          "parameters": {
+            "operation": "create",
+            "robot_type": "robbie",
+            "platform": "unity",
+            "position": {"x": 1.0, "y": 0.0, "z": 1.0}
+          }
+        }
+      ],
+      "description": "Create a virtual Robbie robot (classic sci-fi)"
+    },
+    {
+      "user_query": "Get details of vbot_scout_01",
+      "tool_calls": [
+        {
+          "tool": "vbot_crud",
+          "parameters": {
+            "operation": "read",
+            "robot_id": "vbot_scout_01"
+          }
+        }
+      ],
+      "description": "Read virtual robot details"
+    },
+    {
+      "user_query": "Update vbot_scout_01 scale to 1.5x",
+      "tool_calls": [
+        {
+          "tool": "vbot_crud",
+          "parameters": {
+            "operation": "update",
+            "robot_id": "vbot_scout_01",
+            "scale": 1.5
+          }
+        }
+      ],
+      "description": "Update virtual robot scale"
+    },
+    {
+      "user_query": "Delete vbot_scout_01",
+      "tool_calls": [
+        {
+          "tool": "vbot_crud",
+          "parameters": {
+            "operation": "delete",
+            "robot_id": "vbot_scout_01"
+          }
+        }
+      ],
+      "description": "Delete a virtual robot"
+    },
+    {
+      "user_query": "List all Scout virtual robots",
+      "tool_calls": [
+        {
+          "tool": "vbot_crud",
+          "parameters": {
+            "operation": "list",
+            "robot_type": "scout"
+          }
+        }
+      ],
+      "description": "List virtual robots filtered by type"
+    }
+  ]
+}
+

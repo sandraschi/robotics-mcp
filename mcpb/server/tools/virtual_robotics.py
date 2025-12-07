@@ -45,7 +45,6 @@ class VirtualRoboticsTool:
             position: Optional[Dict[str, float]] = None,
             scale: Optional[float] = None,
             environment: Optional[str] = None,
-            environment_path: Optional[str] = None,
             platform: Literal["unity", "vrchat"] = "unity",
         ) -> Dict[str, Any]:
             """Virtual robot control (Unity/VRChat) using existing MCP servers.
@@ -102,7 +101,7 @@ class VirtualRoboticsTool:
             if action == "spawn_robot":
                 return await self._spawn_robot(robot_type, robot_id, position, scale, platform)
             elif action == "load_environment":
-                return await self._load_environment(environment or "", platform, environment_path=environment_path)
+                return await self._load_environment(environment, platform)
             elif action == "get_status":
                 return await self._get_status(robot_id)
             elif action == "get_lidar":
@@ -305,45 +304,26 @@ class VirtualRoboticsTool:
             logger.error("Unity spawn failed", error=str(e))
             return {"method": "mock", "error": str(e)}
 
-    async def _load_environment(self, environment: str, platform: str, environment_path: Optional[str] = None, **kwargs: Any) -> Dict[str, Any]:
+    async def _load_environment(self, environment: str, platform: str, **kwargs: Any) -> Dict[str, Any]:
         """Load Marble/Chisel environment.
 
         Args:
             environment: Environment name or path.
             platform: Target platform.
-            environment_path: Path to environment file (supports .fbx, .glb, .obj, .ply, .splat).
-                            NOTE: .spz files are NOT supported - re-export from Marble as .ply or mesh format.
             **kwargs: Additional parameters.
 
         Returns:
             Load result.
         """
-        logger.info("Loading environment", environment=environment, platform=platform, environment_path=environment_path)
+        logger.info("Loading environment", environment=environment, platform=platform)
 
         try:
             if platform == "unity" and "unity" in self.mounted_servers:
                 async with Client(self.mcp) as client:
-                    # Use environment_path if provided, otherwise use environment name
-                    source_path = environment_path or environment
-                    
-                    # Check for .spz format (not supported)
-                    if source_path and source_path.lower().endswith('.spz'):
-                        # Suggest using spz_converter tool
-                        return format_error_response(
-                            ".spz files are not supported by Unity. Use spz_converter tool to check conversion options, or re-export from Marble as .ply (for splats) or .fbx/.glb (for meshes).",
-                            error_type="unsupported_format",
-                            details={
-                                "file": source_path,
-                                "supported_formats": [".fbx", ".glb", ".obj", ".ply", ".splat"],
-                                "recommendation": "Re-export from Marble as .fbx or .glb for best robotics/navigation support",
-                                "alternative": "Use spz_converter tool: await spz_converter(operation='check_spz_support') or spz_converter(operation='convert_spz', spz_path='...')"
-                            }
-                        )
-                    
                     # Use unity3d-mcp import_marble_world tool
                     result = await client.call_tool(
                         "unity_import_marble_world",
-                        source_path=source_path,  # Supports .fbx, .glb, .obj, .ply, .splat
+                        source_path=environment,  # Can be path or environment name
                         project_path=kwargs.get("project_path", ""),
                         include_colliders=kwargs.get("include_colliders", True),
                     )

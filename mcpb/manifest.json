@@ -1,0 +1,98 @@
+{
+  "manifest_version": "0.2",
+  "name": "robotics-mcp",
+  "version": "0.1.0",
+  "description": "Unified robotics control via MCP - Physical and virtual robots (bot + vbot)",
+  "author": {
+    "name": "Sandra",
+    "email": "sandra@example.com"
+  },
+  "license": "MIT",
+  "server": {
+    "type": "python",
+    "entry_point": "src/robotics_mcp/server.py",
+    "mcp_config": {
+      "command": "python",
+      "args": [
+        "-m",
+        "robotics_mcp.server",
+        "--mode",
+        "stdio"
+      ],
+      "env": {
+        "PYTHONPATH": "${PWD}/src",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  },
+  "user_config": {
+    "config_path": {
+      "type": "string",
+      "title": "Configuration File Path",
+      "description": "Path to robotics-mcp config YAML file (optional, uses default if empty)",
+      "required": false,
+      "default": ""
+    },
+    "http_enabled": {
+      "type": "boolean",
+      "title": "Enable HTTP Server",
+      "description": "Enable HTTP API alongside stdio (default: false for Claude Desktop)",
+      "required": false,
+      "default": false
+    },
+    "http_port": {
+      "type": "string",
+      "title": "HTTP Server Port",
+      "description": "Port for HTTP API server (default: 8080)",
+      "required": false,
+      "default": "8080"
+    }
+  },
+  "tools": [
+    {
+      "name": "help",
+      "description": "Get help information about the Robotics MCP server and its tools"
+    },
+    {
+      "name": "get_status",
+      "description": "Get robotics MCP server status with connectivity tests"
+    },
+    {
+      "name": "list_robots",
+      "description": "List all registered robots with optional filtering by type or virtual/physical status"
+    },
+    {
+      "name": "robot_control",
+      "description": "Unified robot control (works for both physical bot and virtual bot) - get status, move, stop, return to dock, stand, sit, walk, sync vbot"
+    },
+    {
+      "name": "virtual_robotics",
+      "description": "Virtual robot control (Unity/VRChat) - spawn robot, move, get status, get LiDAR, set scale, load environment, test navigation, sync with physical"
+    },
+    {
+      "name": "vbot_crud",
+      "description": "CRUD operations for virtual robots - create, read, update, delete, list vbots with support for scout, scout_e, go2, g1, robbie, and custom robot types"
+    },
+    {
+      "name": "robot_model_import",
+      "description": "Import robot 3D models (FBX/GLB/OBJ/VRM) into Unity/VRChat/Resonite - VRM only for humanoid robots (Robbie, G1), use FBX/GLB for wheeled robots (Scout)"
+    },
+    {
+      "name": "robot_model_export",
+      "description": "Export robot models from Unity to FBX/GLB/OBJ formats"
+    },
+    {
+      "name": "robot_model_convert",
+      "description": "Convert robot models between formats (FBX/GLB/OBJ/VRM) - VRM conversion only for humanoid robots"
+    },
+    {
+      "name": "robot_model_create",
+      "description": "Create robot 3D models from scratch using blender-mcp (for geometry) and gimp-mcp (for textures) - automated model creation"
+    }
+  ],
+  "compatibility": {
+    "platforms": ["win32", "darwin", "linux"],
+    "python": ">=3.10"
+  }
+}
+

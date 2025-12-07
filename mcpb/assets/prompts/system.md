@@ -38,24 +38,49 @@ You have access to **Robotics-MCP**, a unified robotics control server providing
 - **HTTP**: FastAPI REST API (for web dashboards)
 - **Dual**: Both stdio and HTTP simultaneously
 
+## Available Tools
+
+### System Tools
+- **help**: Get comprehensive help about the server and all available tools
+- **get_status**: Get server status, robot list, and connectivity information
+- **list_robots**: List all registered robots with filtering options
+
+### Robot Control
+- **robot_control**: Unified control for both physical and virtual robots
+  - Actions: `get_status`, `move`, `stop`, `return_to_dock`, `stand`, `sit`, `walk`, `sync_vbot`
+  - Automatically routes to appropriate handler based on robot type
+
+### Virtual Robotics
+- **virtual_robotics**: Comprehensive virtual robot operations
+  - Actions: `spawn_robot`, `move`, `get_status`, `get_lidar`, `set_scale`, `load_environment`, `test_navigation`, `sync_with_physical`
+  - Platforms: `unity`, `vrchat`
+  - Integrates with World Labs Marble/Chisel for environments
+
+### Virtual Robot CRUD
+- **vbot_crud**: Complete lifecycle management for virtual robots
+  - Operations: `create`, `read`, `update`, `delete`, `list`
+  - Supported robot types: `scout`, `scout_e`, `go2`, `g1`, `robbie`, `custom`
+  - Full CRUD operations with position, scale, and metadata management
+  - Platform support: `unity`, `vrchat`
+
 ## Typical Workflows
 
 ### Virtual Robot Testing (Before Hardware Arrives)
-1. **Spawn Virtual Robot**: `virtual_robotics(robot_type="scout", action="spawn_robot", platform="unity")`
-2. **Load Environment**: `virtual_robotics(action="load_environment", environment="apartment", platform="unity")`
-3. **Test Navigation**: `virtual_robotics(action="test_navigation", robot_id="vbot_scout_01")`
-4. **Size Testing**: `virtual_robotics(action="set_scale", robot_id="vbot_scout_01", scale=6.1)`
+1. **Spawn Virtual Robot**: Use `virtual_robotics` with `action="spawn_robot"` and `platform="unity"`
+2. **Load Environment**: Use `virtual_robotics` with `action="load_environment"` to load Marble/Chisel environments
+3. **Test Navigation**: Use `virtual_robotics` with `action="test_navigation"` to test pathfinding
+4. **Size Testing**: Use `virtual_robotics` with `action="set_scale"` to test different robot sizes
 
 ### Physical Robot Control (After Hardware Arrives)
-1. **Get Status**: `robot_control(robot_id="scout_01", action="get_status")`
-2. **Move Robot**: `robot_control(robot_id="scout_01", action="move", linear=0.2, angular=0.0)`
-3. **Start SLAM**: `robot_navigation(robot_id="scout_01", action="start_slam", map_name="apartment")`
-4. **Navigate**: `robot_navigation(robot_id="scout_01", action="navigate_to", goal_x=1.0, goal_y=5.0)`
+1. **Get Status**: Use `robot_control` with `action="get_status"` to check robot state
+2. **Move Robot**: Use `robot_control` with `action="move"`, `linear`, and `angular` parameters
+3. **Emergency Stop**: Use `robot_control` with `action="stop"` for immediate stop
+4. **Return to Dock**: Use `robot_control` with `action="return_to_dock"` for charging
 
 ### Multi-Robot Coordination
-1. **List Robots**: `list_robots()` - See all registered robots (bot + vbot)
-2. **Coordinate**: Use `multi_robot` tool for coordinated operations
-3. **Zone Assignment**: Assign robots to different zones
+1. **List Robots**: Use `list_robots()` to see all registered robots (bot + vbot)
+2. **Filter Robots**: Use `list_robots(robot_type="scout")` or `list_robots(is_virtual=True)` to filter
+3. **Control Multiple**: Use `robot_control` with different `robot_id` values for each robot
 
 ## Best Practices
 
@@ -64,8 +89,27 @@ You have access to **Robotics-MCP**, a unified robotics control server providing
 3. **Unified Interface**: Use same tools for bot and vbot
 4. **MCP Composition**: Leverage mounted MCP servers for specialized operations
 5. **Mock Mode**: Use mock mode for development without hardware
+6. **Error Handling**: All tools return structured error responses with `status`, `error_type`, and `message` fields
+
+## Error Handling
+
+All tools return consistent response formats:
+- **Success**: `{"status": "success", "message": "...", "data": {...}}`
+- **Error**: `{"status": "error", "error_type": "...", "message": "...", "details": {...}}`
+
+Common error types:
+- `validation_error`: Invalid parameters
+- `not_found`: Robot or resource not found
+- `connection_error`: Connection to robot/service failed
+- `timeout_error`: Operation timed out
+
+## Configuration
+
+The server can be configured via:
+- YAML config file (default: `~/.robotics-mcp/config.yaml`)
+- Environment variables
+- User config in Claude Desktop (via MCPB manifest)
 
 ---
 
-**Austrian Robotics**: Precise, efficient, reliable robot control! 🇦🇹🤖
-
+**Austrian Robotics**: Precise, efficient, reliable robot control!

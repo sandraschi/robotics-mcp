@@ -7,32 +7,32 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "🔧 Setting up ROS 1.4 (Melodic) workspace for Scout..." -ForegroundColor Cyan
+Write-Host "Setting up ROS 1.4 (Melodic) workspace for Scout..." -ForegroundColor Cyan
 
 # Check if container is running
 $containerName = "robotics-ros1-dev"
 $containerRunning = docker ps --filter "name=$containerName" --format "{{.Names}}"
 
 if (-not $containerRunning) {
-    Write-Host "❌ Container $containerName is not running!" -ForegroundColor Red
+    Write-Host "ERROR: Container $containerName is not running!" -ForegroundColor Red
     Write-Host "Start it with: docker-compose -f docker/docker-compose.ros1.yml up -d" -ForegroundColor Yellow
     exit 1
 }
 
 if ($Clean) {
-    Write-Host "🧹 Cleaning workspace..." -ForegroundColor Yellow
+    Write-Host "Cleaning workspace..." -ForegroundColor Yellow
     docker exec $containerName bash -c "cd /ros_ws && rm -rf build devel"
 }
 
-Write-Host "📦 Setting up workspace..." -ForegroundColor Yellow
+Write-Host "Setting up workspace..." -ForegroundColor Yellow
 docker exec -it $containerName bash /ros_ws/setup-ros1-workspace.sh
 
 if ($Build) {
-    Write-Host "🔨 Building workspace..." -ForegroundColor Yellow
+    Write-Host "Building workspace..." -ForegroundColor Yellow
     docker exec $containerName bash -c "cd /ros_ws && source /opt/ros/melodic/setup.bash && catkin_make"
 }
 
-Write-Host "✅ Setup complete!" -ForegroundColor Green
+Write-Host "Setup complete!" -ForegroundColor Green
 Write-Host ""
 Write-Host "To enter container:" -ForegroundColor Cyan
 Write-Host "  docker exec -it $containerName bash" -ForegroundColor White

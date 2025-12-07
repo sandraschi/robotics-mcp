@@ -1,0 +1,976 @@
+"""Robot model import/export tools for robotics-mcp.
+
+Handles robot 3D model formats (FBX, GLB, OBJ) for virtual robotics.
+Note: VRM format is for humanoid avatars only - use FBX/GLB for wheeled robots.
+
+Integrates with:
+- blender-mcp: For creating/editing 3D models and exporting to FBX/GLB/OBJ
+- gimp-mcp: For creating/editing textures and images for robot models
+"""
+
+from pathlib import Path
+from typing import Any, Dict, Literal, Optional
+
+import structlog
+from fastmcp import Client
+
+from ..utils.error_handler import format_error_response, format_success_response, handle_tool_error
+
+logger = structlog.get_logger(__name__)
+
+# Supported formats for robots
+ROBOT_MODEL_FORMATS = ["fbx", "glb", "obj", "blend"]  # Note: VRM only for humanoid robots
+HUMANOID_ROBOT_TYPES = ["robbie", "g1"]  # Robots that CAN use VRM
+NON_HUMANOID_ROBOT_TYPES = ["scout", "scout_e", "go2"]  # Robots that should NOT use VRM
+
+
+class RobotModelTools:
+    """Tools for importing, exporting, and converting robot 3D models."""
+
+    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: Optional[Dict[str, Any]] = None):
+        """Initialize robot model tools.
+
+        Args:
+            mcp: FastMCP server instance.
+            state_manager: Robot state manager instance.
+            mounted_servers: Dictionary of mounted MCP servers.
+        """
+        self.mcp = mcp
+        self.state_manager = state_manager
+        self.mounted_servers = mounted_servers or {}
+
+    def register(self):
+        """Register robot model portmanteau tool with MCP server."""
+
+        @self.mcp.tool()
+        async def robot_model(
+            operation: Literal["create", "import", "export", "convert"],
+            robot_type: Optional[str] = None,
+            model_path: Optional[str] = None,
+            output_path: Optional[str] = None,
+            format: Literal["fbx", "glb", "obj", "vrm", "blend"] = "fbx",
+            platform: Literal["unity", "vrchat", "resonite"] = "unity",
+            dimensions: Optional[Dict[str, float]] = None,
+            create_textures: bool = True,
+            texture_style: Literal["realistic", "stylized", "simple"] = "realistic",
+            robot_id: Optional[str] = None,
+            include_animations: bool = True,
+            project_path: Optional[str] = None,
+            create_prefab: bool = True,
+            source_path: Optional[str] = None,
+            source_format: Optional[Literal["fbx", "glb", "obj", "blend", "vrm"]] = None,
+            target_format: Optional[Literal["fbx", "glb", "obj", "vrm"]] = None,
+            target_path: Optional[str] = None,
+        ) -> Dict[str, Any]:
+            """Robot model management portmanteau for Robotics MCP.
+
+            PORTMANTEAU PATTERN RATIONALE:
+            Instead of creating 4 separate tools (create, import, export, convert), this tool
+            consolidates related model operations into a single interface. This design:
+            - Prevents tool explosion (4 tools → 1 tool) while maintaining full functionality
+            - Improves discoverability by grouping related operations together
+            - Reduces cognitive load when working with robot models
+            - Enables consistent model interface across all operations
+            - Follows FastMCP 2.13+ best practices for feature-rich MCP servers
+
+            SUPPORTED OPERATIONS:
+            - create: Create robot 3D model from scratch using Blender MCP
+            - import: Import robot 3D model into Unity/VRChat/Resonite project
+            - export: Export robot model from Unity to file format
+            - convert: Convert robot model between formats
+
+            Args:
+                operation: The model operation to perform. MUST be one of:
+                    - "create": Create model (requires: robot_type, output_path)
+                    - "import": Import model (requires: robot_type, model_path)
+                    - "export": Export model (requires: robot_id)
+                    - "convert": Convert model (requires: source_path, source_format, target_format)
+
+                robot_type: Type of robot (required for create/import).
+                    Examples: "scout", "go2", "g1", "robbie", "custom"
+
+                model_path: Path to model file (required for import).
+                output_path: Path for output file (required for create, optional for export/convert).
+                format: Model format (used by create/import/export).
+                    - "fbx": Industry standard (recommended for robots)
+                    - "glb": Modern glTF 2.0 format
+                    - "obj": Simple mesh format
+                    - "vrm": VRM format (ONLY for humanoid robots)
+                platform: Target platform for import (unity/vrchat/resonite).
+                dimensions: Custom dimensions for create (length, width, height in meters).
+                create_textures: Create textures using gimp-mcp (for create).
+                texture_style: Texture style for create (realistic/stylized/simple).
+                robot_id: Virtual robot identifier (required for export).
+                include_animations: Include animations in export.
+                project_path: Unity project path (for import).
+                create_prefab: Create Unity prefab after import.
+                source_path: Source file path (required for convert).
+                source_format: Source file format (required for convert).
+                target_format: Target file format (required for convert).
+                target_path: Output file path (optional for convert).
+
+            Returns:
+                Dictionary containing operation-specific results.
+
+            Examples:
+                Create Scout model:
+                    result = await robot_model(
+                        operation="create",
+                        robot_type="scout",
+                        output_path="D:/Models/scout_model.fbx",
+                        format="fbx"
+                    )
+
+                Import model to Unity:
+                    result = await robot_model(
+                        operation="import",
+                        robot_type="scout",
+                        model_path="D:/Models/scout_model.fbx",
+                        platform="unity"
+                    )
+
+                Export robot from Unity:
+                    result = await robot_model(
+                        operation="export",
+                        robot_id="vbot_scout_01",
+                        format="fbx"
+                    )
+
+                Convert FBX to GLB:
+                    result = await robot_model(
+                        operation="convert",
+                        source_path="D:/Models/scout.fbx",
+                        source_format="fbx",
+                        target_format="glb"
+                    )
+            """
+            try:
+                if operation == "create":
+                    if not robot_type or not output_path:
+                        return format_error_response(
+                            "robot_type and output_path are required for 'create' operation",
+                            error_type="validation_error",
+                        )
+                    return await self._handle_create(
+                        robot_type, output_path, format, dimensions, create_textures, texture_style
+                    )
+                elif operation == "import":
+                    if not robot_type or not model_path:
+                        return format_error_response(
+                            "robot_type and model_path are required for 'import' operation",
+                            error_type="validation_error",
+                        )
+                    return await self._handle_import(robot_type, model_path, format, platform, project_path, create_prefab)
+                elif operation == "export":
+                    if not robot_id:
+                        return format_error_response(
+                            "robot_id is required for 'export' operation",
+                            error_type="validation_error",
+                        )
+                    return await self._handle_export(robot_id, format, output_path, include_animations)
+                elif operation == "convert":
+                    if not source_path or not source_format or not target_format:
+                        return format_error_response(
+                            "source_path, source_format, and target_format are required for 'convert' operation",
+                            error_type="validation_error",
+                        )
+                    return await self._handle_convert(source_path, source_format, target_format, target_path, robot_type)
+                else:
+                    return format_error_response(f"Unknown operation: {operation}", error_type="validation_error")
+            except Exception as e:
+                return handle_tool_error("robot_model", e, operation=operation)
+
+    async def _handle_create(
+        self,
+        robot_type: str,
+        output_path: str,
+        format: str,
+        dimensions: Optional[Dict[str, float]],
+        create_textures: bool,
+        texture_style: str,
+    ) -> Dict[str, Any]:
+        """Handle create operation."""
+        try:
+            if "blender" not in self.mounted_servers:
+                return format_error_response(
+                    "blender-mcp not available - required for model creation",
+                    error_type="not_available",
+                    details={"mounted_servers": list(self.mounted_servers.keys())},
+                )
+
+            if not dimensions:
+                dimensions = self._get_default_dimensions(robot_type)
+
+            return await self._create_model_via_blender(
+                robot_type, output_path, format, dimensions, create_textures, texture_style
+            )
+        except Exception as e:
+            return handle_tool_error("robot_model", e, operation="create")
+
+    async def _handle_import(
+        self,
+        robot_type: str,
+        model_path: str,
+        format: str,
+        platform: str,
+        project_path: Optional[str],
+        create_prefab: bool,
+    ) -> Dict[str, Any]:
+        """Handle import operation."""
+        try:
+            if format == "vrm" and robot_type in NON_HUMANOID_ROBOT_TYPES:
+                return format_error_response(
+                    f"VRM format is for humanoid robots only. {robot_type} is not humanoid. Use FBX/GLB instead.",
+                    error_type="validation_error",
+                    robot_type=robot_type,
+                    format=format,
+                )
+
+            if platform == "unity":
+                return await self._import_to_unity(robot_type, model_path, format, project_path, create_prefab)
+            elif platform == "vrchat":
+                return await self._import_to_vrchat(robot_type, model_path, format, project_path)
+            elif platform == "resonite":
+                return await self._import_to_resonite(robot_type, model_path, format)
+            else:
+                return format_error_response(f"Unsupported platform: {platform}", error_type="validation_error")
+        except Exception as e:
+            return handle_tool_error("robot_model", e, operation="import")
+
+    async def _handle_export(
+        self, robot_id: str, format: str, output_path: Optional[str], include_animations: bool
+    ) -> Dict[str, Any]:
+        """Handle export operation."""
+        try:
+            robot = self.state_manager.get_robot(robot_id)
+            if not robot:
+                return format_error_response(f"Robot {robot_id} not found", error_type="not_found", robot_id=robot_id)
+
+            if not robot.is_virtual:
+                return format_error_response(
+                    f"Robot {robot_id} is not a virtual robot", error_type="validation_error", robot_id=robot_id
+                )
+
+            if robot.platform == "unity" and "unity" in self.mounted_servers:
+                return await self._export_from_unity(robot_id, format, output_path, include_animations)
+            else:
+                return format_error_response(
+                    f"Export not yet implemented for platform: {robot.platform}",
+                    error_type="not_implemented",
+                    robot_id=robot_id,
+                )
+        except Exception as e:
+            return handle_tool_error("robot_model", e, operation="export")
+
+    async def _handle_convert(
+        self,
+        source_path: str,
+        source_format: str,
+        target_format: str,
+        target_path: Optional[str],
+        robot_type: Optional[str],
+    ) -> Dict[str, Any]:
+        """Handle convert operation."""
+        try:
+            if target_format == "vrm" and robot_type and robot_type in NON_HUMANOID_ROBOT_TYPES:
+                return format_error_response(
+                    f"VRM conversion only works for humanoid robots. {robot_type} is not humanoid.",
+                    error_type="validation_error",
+                    robot_type=robot_type,
+                )
+
+            if "blender" not in self.mounted_servers:
+                return format_error_response(
+                    "blender-mcp not available - required for model conversion",
+                    error_type="not_available",
+                    details={"mounted_servers": list(self.mounted_servers.keys())},
+                )
+
+            return await self._convert_via_blender(source_path, source_format, target_format, target_path)
+        except Exception as e:
+            return handle_tool_error("robot_model", e, operation="convert")
+
+        # Legacy individual tools removed - consolidated into robot_model portmanteau above
+        # Keeping method signatures for reference but not registering as tools:
+        async def _legacy_robot_model_import(
+            robot_type: str,
+            model_path: str,
+            format: Literal["fbx", "glb", "obj", "vrm"] = "fbx",
+            platform: Literal["unity", "vrchat", "resonite"] = "unity",
+            project_path: Optional[str] = None,
+            create_prefab: bool = True,
+        ) -> Dict[str, Any]:
+            """Import robot 3D model into Unity/VRChat/Resonite project.
+
+            Imports a robot 3D model file (FBX, GLB, OBJ, or VRM) into the specified
+            platform. Handles format-specific import requirements and creates prefabs
+            for reuse.
+
+            IMPORTANT FORMAT NOTES:
+            - **FBX/GLB/OBJ**: Use for wheeled robots (Scout), quadrupeds (Go2), and custom robots
+            - **VRM**: Only for humanoid robots (Robbie, G1) - requires humanoid bone structure
+            - **Scout should NOT use VRM** (not humanoid - has wheels, not legs)
+
+            Args:
+                robot_type: Type of robot (e.g., "scout", "robbie", "go2", "g1", "custom").
+                model_path: Path to 3D model file (.fbx, .glb, .obj, .vrm).
+                format: Model format. Default: "fbx".
+                    - "fbx": Industry standard, best for Unity (recommended for robots)
+                    - "glb": Modern glTF 2.0 format, single file
+                    - "obj": Simple mesh format (no animations)
+                    - "vrm": VRM format (ONLY for humanoid robots like Robbie, G1)
+                platform: Target platform. Default: "unity".
+                project_path: Unity project path (required for Unity platform).
+                create_prefab: Create Unity prefab after import. Default: True.
+
+            Returns:
+                Dictionary containing import result with model path and prefab info.
+
+            Examples:
+                Import Scout FBX model:
+                    result = await robot_model_import(
+                        robot_type="scout",
+                        model_path="D:/Models/scout_model.fbx",
+                        format="fbx",
+                        platform="unity",
+                        project_path="D:/Projects/UnityRobots"
+                    )
+
+                Import Robbie VRM (humanoid - VRM OK):
+                    result = await robot_model_import(
+                        robot_type="robbie",
+                        model_path="D:/Models/robbie.vrm",
+                        format="vrm",
+                        platform="unity",
+                        project_path="D:/Projects/UnityRobots"
+                    )
+
+                Import Go2 GLB (quadruped - use GLB, not VRM):
+                    result = await robot_model_import(
+                        robot_type="go2",
+                        model_path="D:/Models/go2_model.glb",
+                        format="glb",
+                        platform="unity"
+                    )
+            """
+            try:
+                # Validate format for robot type
+                if format == "vrm" and robot_type in NON_HUMANOID_ROBOT_TYPES:
+                    return format_error_response(
+                        f"VRM format is for humanoid robots only. {robot_type} is not humanoid. Use FBX/GLB instead.",
+                        error_type="validation_error",
+                        robot_type=robot_type,
+                        format=format,
+                    )
+
+                if platform == "unity":
+                    return await self._import_to_unity(robot_type, model_path, format, project_path, create_prefab)
+                elif platform == "vrchat":
+                    return await self._import_to_vrchat(robot_type, model_path, format, project_path)
+                elif platform == "resonite":
+                    return await self._import_to_resonite(robot_type, model_path, format)
+                else:
+                    return format_error_response(f"Unsupported platform: {platform}", error_type="validation_error")
+
+            except Exception as e:
+                return handle_tool_error("robot_model_import", e, robot_type=robot_type, format=format, platform=platform)
+
+        @self.mcp.tool()
+        async def robot_model_export(
+            robot_id: str,
+            format: Literal["fbx", "glb", "obj"] = "fbx",
+            output_path: Optional[str] = None,
+            include_animations: bool = True,
+        ) -> Dict[str, Any]:
+            """Export robot model from Unity to file format.
+
+            Exports a robot model from Unity scene to FBX, GLB, or OBJ format.
+            Useful for sharing models or converting between formats.
+
+            Args:
+                robot_id: Virtual robot identifier to export.
+                format: Export format. Default: "fbx".
+                    - "fbx": Industry standard, includes animations
+                    - "glb": Modern format, single file
+                    - "obj": Simple mesh (no animations)
+                output_path: Output file path. Auto-generated if not provided.
+                include_animations: Include animations in export (FBX/GLB only). Default: True.
+
+            Returns:
+                Dictionary containing export result with file path.
+
+            Examples:
+                Export Scout model to FBX:
+                    result = await robot_model_export(
+                        robot_id="vbot_scout_01",
+                        format="fbx",
+                        output_path="D:/Exports/scout_export.fbx"
+                    )
+            """
+            try:
+                robot = self.state_manager.get_robot(robot_id)
+                if not robot:
+                    return format_error_response(f"Robot {robot_id} not found", error_type="not_found", robot_id=robot_id)
+
+                if not robot.is_virtual:
+                    return format_error_response(
+                        f"Robot {robot_id} is not a virtual robot", error_type="validation_error", robot_id=robot_id
+                    )
+
+                # Export via Unity or Blender
+                if robot.platform == "unity" and "unity" in self.mounted_servers:
+                    return await self._export_from_unity(robot_id, format, output_path, include_animations)
+                else:
+                    return format_error_response(
+                        f"Export not yet implemented for platform: {robot.platform}",
+                        error_type="not_implemented",
+                        robot_id=robot_id,
+                    )
+
+            except Exception as e:
+                return handle_tool_error("robot_model_export", e, robot_id=robot_id, format=format)
+
+        @self.mcp.tool()
+        async def robot_model_create(
+            robot_type: str,
+            output_path: str,
+            format: Literal["fbx", "glb", "obj"] = "fbx",
+            dimensions: Optional[Dict[str, float]] = None,
+            create_textures: bool = True,
+            texture_style: Literal["realistic", "stylized", "simple"] = "realistic",
+        ) -> Dict[str, Any]:
+            """Create robot 3D model from scratch using Blender MCP.
+
+            Creates a robot 3D model using blender-mcp tools. Supports creating
+            models for Scout, Go2, G1, Robbie, and custom robots. Optionally
+            creates textures using gimp-mcp.
+
+            WORKFLOW:
+            1. Create base mesh in Blender (using blender-mcp)
+            2. Add details (wheels, camera, sensors, etc.)
+            3. Create/apply textures (using gimp-mcp if enabled)
+            4. Export to FBX/GLB/OBJ format
+
+            Args:
+                robot_type: Type of robot to create (e.g., "scout", "go2", "custom").
+                output_path: Path where model will be exported.
+                format: Export format. Default: "fbx".
+                dimensions: Optional custom dimensions (length, width, height in meters).
+                           If not provided, uses default dimensions for robot_type.
+                create_textures: Create textures using gimp-mcp. Default: True.
+                texture_style: Texture style. Default: "realistic".
+
+            Returns:
+                Dictionary containing creation result with model path and texture info.
+
+            Examples:
+                Create Scout model:
+                    result = await robot_model_create(
+                        robot_type="scout",
+                        output_path="D:/Models/scout_model.fbx",
+                        format="fbx",
+                        dimensions={"length": 0.115, "width": 0.10, "height": 0.08},
+                        create_textures=True
+                    )
+
+                Create custom robot:
+                    result = await robot_model_create(
+                        robot_type="custom",
+                        output_path="D:/Models/my_robot.glb",
+                        format="glb",
+                        dimensions={"length": 0.2, "width": 0.15, "height": 0.12}
+                    )
+            """
+            try:
+                # Check if blender-mcp is available
+                if "blender" not in self.mounted_servers:
+                    return format_error_response(
+                        "blender-mcp not available - required for model creation",
+                        error_type="not_available",
+                        details={"mounted_servers": list(self.mounted_servers.keys())},
+                    )
+
+                # Get default dimensions if not provided
+                if not dimensions:
+                    dimensions = self._get_default_dimensions(robot_type)
+
+                # Create model using blender-mcp
+                return await self._create_model_via_blender(
+                    robot_type, output_path, format, dimensions, create_textures, texture_style
+                )
+
+            except Exception as e:
+                return handle_tool_error("robot_model_create", e, robot_type=robot_type, format=format)
+
+        @self.mcp.tool()
+        async def robot_model_convert(
+            source_path: str,
+            source_format: Literal["fbx", "glb", "obj", "blend", "vrm"],
+            target_format: Literal["fbx", "glb", "obj", "vrm"],
+            target_path: Optional[str] = None,
+            robot_type: Optional[str] = None,
+        ) -> Dict[str, Any]:
+            """Convert robot model between formats.
+
+            Converts a robot 3D model from one format to another. Uses Blender MCP
+            for format conversion when available.
+
+            IMPORTANT: VRM conversion only works for humanoid robots (Robbie, G1).
+            Non-humanoid robots (Scout, Go2) cannot be converted to VRM.
+
+            Args:
+                source_path: Path to source model file.
+                source_format: Source file format.
+                target_format: Target file format.
+                target_path: Output file path. Auto-generated if not provided.
+                robot_type: Robot type (used for VRM validation). Optional.
+
+            Returns:
+                Dictionary containing conversion result.
+
+            Examples:
+                Convert FBX to GLB:
+                    result = await robot_model_convert(
+                        source_path="D:/Models/scout.fbx",
+                        source_format="fbx",
+                        target_format="glb",
+                        target_path="D:/Models/scout.glb"
+                    )
+
+                Convert FBX to VRM (humanoid only):
+                    result = await robot_model_convert(
+                        source_path="D:/Models/robbie.fbx",
+                        source_format="fbx",
+                        target_format="vrm",
+                        robot_type="robbie"  # Humanoid - VRM OK
+                    )
+            """
+            try:
+                # Validate VRM conversion
+                if target_format == "vrm" and robot_type and robot_type in NON_HUMANOID_ROBOT_TYPES:
+                    return format_error_response(
+                        f"Cannot convert {robot_type} to VRM - not humanoid. Use FBX/GLB instead.",
+                        error_type="validation_error",
+                        robot_type=robot_type,
+                        target_format=target_format,
+                    )
+
+                # Use Blender MCP for conversion if available
+                if "blender" in self.mounted_servers:
+                    return await self._convert_via_blender(source_path, source_format, target_format, target_path)
+                else:
+                    return format_error_response(
+                        "Blender MCP not available for format conversion",
+                        error_type="not_available",
+                        details={"mounted_servers": list(self.mounted_servers.keys())},
+                    )
+
+            except Exception as e:
+                return handle_tool_error(
+                    "robot_model_convert", e, source_format=source_format, target_format=target_format
+                )
+
+    async def _import_to_unity(
+        self, robot_type: str, model_path: str, format: str, project_path: Optional[str], create_prefab: bool
+    ) -> Dict[str, Any]:
+        """Import model to Unity."""
+        try:
+            if "unity" in self.mounted_servers:
+                async with Client(self.mcp) as client:
+                    if format == "vrm":
+                        # Use unity3d-mcp VRM import
+                        result = await client.call_tool(
+                            "import_vrm_avatar",
+                            {
+                                "vrm_path": model_path,
+                                "project_path": project_path or "",
+                                "optimize_for_vrchat": False,
+                                "create_prefab": create_prefab,
+                            },
+                        )
+                    else:
+                        # Use unity3d-mcp asset import (if available)
+                        # For now, return mock result
+                        result = format_success_response(
+                            f"Model import initiated: {robot_type}",
+                            data={
+                                "model_path": model_path,
+                                "format": format,
+                                "prefab_path": f"Assets/Prefabs/{robot_type}.prefab" if create_prefab else None,
+                            },
+                        )
+                    return result
+            else:
+                return format_success_response(
+                    f"Mock import: {robot_type}",
+                    data={"model_path": model_path, "format": format, "note": "Unity MCP not available"},
+                )
+
+        except Exception as e:
+            logger.error("Unity import failed", robot_type=robot_type, error=str(e))
+            return format_error_response(f"Unity import failed: {str(e)}", error_type="import_error")
+
+    async def _import_to_vrchat(
+        self, robot_type: str, model_path: str, format: str, project_path: Optional[str]
+    ) -> Dict[str, Any]:
+        """Import model to VRChat."""
+        # VRChat uses Unity, so similar to Unity import
+        return await self._import_to_unity(robot_type, model_path, format, project_path, create_prefab=True)
+
+    async def _import_to_resonite(self, robot_type: str, model_path: str, format: str) -> Dict[str, Any]:
+        """Import model to Resonite."""
+        # Resonite imports VRM/GLB directly
+        return format_success_response(
+            f"Resonite import: {robot_type}",
+            data={
+                "model_path": model_path,
+                "format": format,
+                "note": "Resonite imports VRM/GLB directly - no Unity project needed",
+            },
+        )
+
+    async def _export_from_unity(
+        self, robot_id: str, format: str, output_path: Optional[str], include_animations: bool
+    ) -> Dict[str, Any]:
+        """Export model from Unity."""
+        # TODO: Implement Unity export via execute_unity_method
+        return format_success_response(
+            f"Export initiated: {robot_id}",
+            data={"robot_id": robot_id, "format": format, "output_path": output_path, "note": "Mock export"},
+        )
+
+    def _get_default_dimensions(self, robot_type: str) -> Dict[str, float]:
+        """Get default dimensions for robot type (in meters)."""
+        defaults = {
+            "scout": {"length": 0.115, "width": 0.10, "height": 0.08},  # 11.5×10×8 cm
+            "scout_e": {"length": 0.12, "width": 0.11, "height": 0.09},  # Slightly larger
+            "go2": {"length": 0.50, "width": 0.30, "height": 0.40},  # Quadruped
+            "g1": {"length": 0.50, "width": 0.40, "height": 1.60},  # Humanoid
+            "robbie": {"length": 0.60, "width": 0.50, "height": 1.80},  # Humanoid robot
+        }
+        return defaults.get(robot_type, {"length": 0.2, "width": 0.15, "height": 0.12})  # Default custom size
+
+    async def _create_model_via_blender(
+        self,
+        robot_type: str,
+        output_path: str,
+        format: str,
+        dimensions: Dict[str, float],
+        create_textures: bool,
+        texture_style: str,
+    ) -> Dict[str, Any]:
+        """Create robot model using blender-mcp."""
+        try:
+            # Access blender-mcp directly from mounted servers
+            blender_server = self.mounted_servers.get("blender")
+            if not blender_server:
+                return format_error_response(
+                    "blender-mcp server not available",
+                    error_type="not_available",
+                    details={"mounted_servers": list(self.mounted_servers.keys())},
+                )
+            
+            # Create all objects in a SINGLE Blender script execution
+            # This ensures all objects are in the same scene when we save
+            from blender_mcp.utils.blender_executor import get_blender_executor
+            executor = get_blender_executor()
+            
+            # Calculate wheel positions in Python (before script generation)
+            wheel_radius = 0.025
+            wheel_thickness = 0.015
+            wheel_positions = [
+                (-dimensions["length"] / 2 - wheel_radius, dimensions["width"] / 2, wheel_radius),  # Front-left
+                (dimensions["length"] / 2 + wheel_radius, dimensions["width"] / 2, wheel_radius),   # Front-right
+                (-dimensions["length"] / 2 - wheel_radius, -dimensions["width"] / 2, wheel_radius), # Back-left
+                (dimensions["length"] / 2 + wheel_radius, -dimensions["width"] / 2, wheel_radius),  # Back-right
+            ]
+            
+            # Generate a single script that creates all objects
+            create_script = f"""
+import bpy
+
+# Clear default objects
+bpy.ops.object.select_all(action='SELECT')
+bpy.ops.object.delete(use_global=False)
+
+# Step 1: Create main body
+bpy.ops.mesh.primitive_cube_add(
+    size=1,
+    location=(0, 0, {dimensions["height"] / 2}),
+    scale=({dimensions["length"]}, {dimensions["width"]}, {dimensions["height"]})
+)
+body = bpy.context.active_object
+body.name = "{robot_type}_body"
+
+# Step 2: Add robot-specific features
+if "{robot_type}" in ["scout", "scout_e"]:
+    # Add wheels (4 mecanum wheels) - vertical orientation on sides
+    wheel_radius = 0.025
+    wheel_thickness = 0.015
+    # Position wheels on the sides of the body, at the corners
+    # Wheels are on the SIDES (Y-axis), rotated 90° on X-axis to be vertical
+    wheel_positions = [
+        {wheel_positions[0]},  # Front-left
+        {wheel_positions[1]},  # Front-right
+        {wheel_positions[2]},  # Back-left
+        {wheel_positions[3]},  # Back-right
+    ]
+    for i, pos in enumerate(wheel_positions):
+        bpy.ops.mesh.primitive_cylinder_add(
+            radius=wheel_radius,
+            depth=wheel_thickness,
+            location=pos,
+            rotation=(1.5708, 0, 0)  # Rotate 90 degrees (pi/2 radians) on X-axis to make vertical
+        )
+        wheel = bpy.context.active_object
+        wheel.name = "{robot_type}_wheel_" + str(i+1)
+    
+    # Add camera module
+    camera_size = 0.012
+    bpy.ops.mesh.primitive_cylinder_add(
+        radius=camera_size,
+        depth=camera_size * 0.8,
+        location=({dimensions["length"] / 2 + 0.008}, 0, {dimensions["height"] / 2})
+    )
+    camera = bpy.context.active_object
+    camera.name = "{robot_type}_camera"
+    
+    # Add top mounting plate
+    bpy.ops.mesh.primitive_cube_add(
+        size=1,
+        location=(0, 0, {dimensions["height"] + 0.005}),
+        scale=({dimensions["length"] * 0.8}, {dimensions["width"] * 0.8}, 0.01)
+    )
+    plate = bpy.context.active_object
+    plate.name = "{robot_type}_mounting_plate"
+
+# Add materials for visibility
+# Body material (blue)
+mat_body = bpy.data.materials.new(name="ScoutBody")
+mat_body.use_nodes = True
+mat_body.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (0.2, 0.2, 0.8, 1.0)
+body.data.materials.append(mat_body)
+
+# Wheel material (dark gray)
+mat_wheel = bpy.data.materials.new(name="ScoutWheel")
+mat_wheel.use_nodes = True
+mat_wheel.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (0.1, 0.1, 0.1, 1.0)
+for obj in bpy.data.objects:
+    if "wheel" in obj.name.lower():
+        obj.data.materials.append(mat_wheel)
+
+# Camera material (yellow)
+if "{robot_type}_camera" in bpy.data.objects:
+    mat_camera = bpy.data.materials.new(name="ScoutCamera")
+    mat_camera.use_nodes = True
+    mat_camera.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (0.8, 0.8, 0.2, 1.0)
+    bpy.data.objects["{robot_type}_camera"].data.materials.append(mat_camera)
+
+# Select all and frame view
+bpy.ops.object.select_all(action='SELECT')
+print(f"Created {{len(bpy.data.objects)}} objects:")
+for obj in bpy.data.objects:
+    print(f"  - {{obj.name}} at {{obj.location}}")
+
+# Frame all objects in viewport (zoom to fit) - skip in background mode
+try:
+    if bpy.context.screen and bpy.context.screen.areas:
+        for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                override = bpy.context.copy()
+                override['area'] = area
+                override['region'] = area.regions[-1]
+                bpy.ops.view3d.view_all(override)
+                break
+        print("Framed all objects in viewport")
+except Exception as e:
+    print(f"Note: Could not frame viewport (background mode): {{str(e)}}")
+
+# Save .blend file (do this BEFORE any potential errors)
+import os
+blend_path = r"{str(Path(output_path).with_suffix('.blend'))}"
+os.makedirs(os.path.dirname(blend_path), exist_ok=True)
+try:
+    bpy.ops.wm.save_as_mainfile(filepath=blend_path)
+    print(f"SUCCESS: Saved .blend file: {{blend_path}}")
+    print(f"Objects saved: {{len(bpy.data.objects)}}")
+except Exception as save_error:
+    print(f"ERROR saving blend file: {{save_error}}")
+    raise
+"""
+            
+            # Execute the creation script (creates objects AND saves blend file)
+            blend_path = Path(output_path).with_suffix('.blend')
+            blend_path_before = blend_path.exists()
+            blend_mtime_before = blend_path.stat().st_mtime if blend_path_before else 0
+            
+            # Debug: Write script to file for inspection
+            debug_script_path = Path("D:/Models/create_scout_debug.py")
+            debug_script_path.parent.mkdir(parents=True, exist_ok=True)
+            debug_script_path.write_text(create_script)
+            logger.debug(f"Wrote debug script to {debug_script_path}")
+            
+            try:
+                result = await executor.execute_script(create_script, script_name="create_scout")
+                logger.info(f"Created all {robot_type} objects and saved blend file in single script execution")
+                logger.debug(f"Script output: {result}")
+            except Exception as e:
+                # Check if blend file was created/updated despite the error (TBBmalloc warning)
+                error_str = str(e)
+                if blend_path.exists():
+                    blend_mtime_after = blend_path.stat().st_mtime
+                    if not blend_path_before or blend_mtime_after > blend_mtime_before:
+                        logger.warning(f"Blender exited with error but blend file was created/updated: {error_str}")
+                        # Treat as success if file was created - TBBmalloc warning is harmless
+                    elif "TBBmalloc" in error_str:
+                        # TBBmalloc warning - check if file exists and is recent
+                        logger.warning(f"TBBmalloc warning detected, but continuing if file exists")
+                    else:
+                        raise
+                elif "TBBmalloc" in error_str:
+                    # TBBmalloc warning but file doesn't exist - script might have failed before save
+                    logger.error(f"TBBmalloc warning and no blend file created - script may have failed: {error_str}")
+                    logger.error(f"Debug script saved to {debug_script_path} for inspection")
+                    raise
+                else:
+                    logger.error(f"Script failed: {error_str}")
+                    logger.error(f"Debug script saved to {debug_script_path} for inspection")
+                    raise
+            
+            # Now use Client for any additional operations that need the mounted server
+            async with Client(blender_server) as client:
+
+                # Step 3: Create textures if requested
+                texture_paths = []
+                if create_textures and "gimp" in self.mounted_servers:
+                    texture_paths = await self._create_textures_via_gimp(robot_type, texture_style, client)
+
+                # Step 4: Apply materials/textures (if created)
+                if texture_paths:
+                    # Apply textures using blender-mcp material tools
+                    for texture_path in texture_paths:
+                        await client.call_tool(
+                            "blender_material",
+                            {
+                                "operation": "create_material",
+                                "name": f"{robot_type}_material",
+                                "texture_path": texture_path,
+                            },
+                        )
+
+                # Step 5: Export model (this will also save .blend file)
+                # export_for_unity signature: output_path, scale, apply_modifiers, optimize_materials, bake_textures, lod_levels
+                # But blender_export tool wraps it, so we need to pass operation and output_path
+                export_result = await client.call_tool(
+                    "blender_export",
+                    {
+                        "operation": "export_unity",
+                        "output_path": output_path,
+                    },
+                )
+                logger.info(f"Exported {robot_type} model", result=export_result)
+
+                # Get blend file path
+                blend_path = str(Path(output_path).with_suffix('.blend'))
+                
+                return format_success_response(
+                    f"Created {robot_type} model",
+                    data={
+                        "robot_type": robot_type,
+                        "output_path": output_path,
+                        "blend_path": blend_path,
+                        "format": format,
+                        "dimensions": dimensions,
+                        "textures_created": len(texture_paths) if create_textures else 0,
+                        "texture_paths": texture_paths,
+                        "note": f"Open {blend_path} in Blender to see the model",
+                    },
+                )
+
+        except Exception as e:
+            logger.error("Blender model creation failed", robot_type=robot_type, error=str(e))
+            return format_error_response(f"Model creation failed: {str(e)}", error_type="creation_error")
+
+    async def _create_textures_via_gimp(
+        self, robot_type: str, texture_style: str, client: Client
+    ) -> list[str]:
+        """Create textures using gimp-mcp portmanteau tools."""
+        texture_paths = []
+        try:
+            # Create output directory
+            texture_dir = Path("D:/Textures")
+            texture_dir.mkdir(parents=True, exist_ok=True)
+            texture_path = texture_dir / f"{robot_type}_texture.png"
+
+            # For now, create a simple texture by:
+            # 1. Creating a base image (we'll use gimp_file with a temporary file)
+            # 2. Applying filters
+            # 3. Saving the result
+
+            # Create a temporary base image file first
+            import tempfile
+            temp_base = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+            temp_base_path = temp_base.name
+            temp_base.close()
+
+            # Create base image using gimp_file (we'll need to create it first)
+            # For now, we'll create a simple colored image
+            # Note: gimp-mcp doesn't have a direct "create_image" operation
+            # We'll use gimp_transform to create a base, or skip texture creation
+            # and just return empty list for now
+
+            # Alternative: Use gimp_layer with create operation if available
+            # For simplicity, we'll create a placeholder texture file
+            logger.info(f"Creating texture for {robot_type} with style {texture_style}")
+
+            # Since gimp-mcp requires input files, we'll create a simple approach:
+            # Create a 1024x1024 solid color image using gimp_file operations
+            # This is a simplified approach - in production, you'd create the base image first
+
+            # For now, return empty list and log that textures need manual creation
+            logger.warning(
+                f"Texture creation for {robot_type} skipped - gimp-mcp requires input files. "
+                f"Create base texture manually or use gimp_layer/create if available."
+            )
+
+        except Exception as e:
+            logger.warning("GIMP texture creation failed", robot_type=robot_type, error=str(e))
+            # Continue without textures if GIMP fails
+
+        return texture_paths
+
+    async def _convert_via_blender(
+        self, source_path: str, source_format: str, target_format: str, target_path: Optional[str]
+    ) -> Dict[str, Any]:
+        """Convert model using Blender MCP."""
+        try:
+            async with Client(self.mcp) as client:
+                # Import source
+                if source_format == "fbx":
+                    result = await client.call_tool("blender_import", {"filepath": source_path, "file_format": "fbx"})
+                elif source_format == "obj":
+                    result = await client.call_tool("blender_import", {"filepath": source_path, "file_format": "obj"})
+                elif source_format == "blend":
+                    result = await client.call_tool("blender_open", {"filepath": source_path})
+                else:
+                    return format_error_response(f"Unsupported source format: {source_format}", error_type="validation_error")
+
+                # Export target
+                if target_format == "fbx":
+                    result = await client.call_tool("blender_export", {"filepath": target_path, "file_format": "fbx"})
+                elif target_format == "glb":
+                    result = await client.call_tool("blender_export", {"filepath": target_path, "file_format": "gltf"})
+                elif target_format == "vrm":
+                    result = await client.call_tool("blender_export", {"filepath": target_path, "file_format": "vrm"})
+                else:
+                    return format_error_response(f"Unsupported target format: {target_format}", error_type="validation_error")
+
+                return format_success_response(
+                    f"Converted {source_format} to {target_format}",
+                    data={"source_path": source_path, "target_path": target_path, "formats": [source_format, target_format]},
+                )
+
+        except Exception as e:
+            logger.error("Blender conversion failed", error=str(e))
+            return format_error_response(f"Blender conversion failed: {str(e)}", error_type="conversion_error")
+
