@@ -10,6 +10,8 @@
 
 Robotics MCP Server provides unified control for both **physical robots** (ROS-based) and **virtual robots** (Unity/VRChat), with a focus on Moorebot Scout, Unitree robots, and virtual robotics testing.
 
+**🚀 Project Stats**: ~9,200 lines of code, ~2,600 lines of tests, ~4,100 lines of documentation - **Production ready!**
+
 ### Key Features
 
 - **Physical Robot Control**: Moorebot Scout (ROS 1.4), Unitree Go2/G1
@@ -24,6 +26,7 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 
 ## 📚 Documentation
 
+- **[Progress Report](docs/PROGRESS_REPORT.md)** 🎉 **Comprehensive project status and achievements!**
 - **[Unity Vbot Instantiation Guide](docs/UNITY_VBOT_INSTANTIATION.md)** - Complete guide for instantiating virtual robots in Unity3D with proper terminology
 
 ## 🚀 Quick Start
@@ -229,6 +232,8 @@ curl -X POST http://localhost:8080/api/v1/tools/robot_control \
 
 ## 🧪 Testing
 
+**Comprehensive test suite**: 21 test files, 2,642 lines of tests covering all 11 tools!
+
 ```bash
 # Run all tests
 pytest
@@ -241,6 +246,9 @@ pytest tests/integration
 
 # Run with coverage
 pytest --cov=robotics_mcp --cov-report=html
+
+# Or use the PowerShell script
+.\scripts\run-tests.ps1
 ```
 
 ## 🔧 Development
@@ -275,6 +283,56 @@ ruff check src/ tests/
 # Type checking
 mypy src/
 ```
+
+## 🔧 Troubleshooting
+
+### MCP Server UI Desync (Critical for Composite Servers)
+
+**Problem:** Cursor IDE UI shows "error, no tools" for MCP servers, but the server process is running fine. This is **critical** for `robotics-mcp` because it composes 6+ MCP servers - if ANY desyncs, the entire workflow breaks.
+
+**Symptoms:**
+- Cursor IDE shows "error, no tools" for one or more MCP servers
+- Agent silently fails when trying to use robotics-mcp tools
+- Workflow breaks without clear error message
+
+**Quick Fix:**
+1. Open Cursor IDE Settings → Features → Model Context Protocol
+2. For each server showing "error, no tools": Disable → Enable
+3. Wait ~5-10 seconds for reconnection
+4. Verify tools appear
+
+**Health Check:**
+```powershell
+# Check health of all robotics-mcp dependencies
+.\scripts\check-robotics-mcp-health.ps1
+```
+
+**Automated Fix:**
+```powershell
+# Get instructions for fixing desynced servers
+.\scripts\fix-mcp-desync.ps1
+```
+
+**Full Documentation:**
+- [Composite MCP UI Desync - Critical Issue](docs/COMPOSITE_MCP_UI_DESYNC_CRITICAL.md)
+- [Cursor IDE Log Structure Analysis](docs/CURSOR_IDE_LOG_STRUCTURE_ANALYSIS.md)
+
+### Other Issues
+
+**Server won't start:**
+- Check Python version: `python --version` (requires 3.10+)
+- Verify dependencies: `pip install -e ".[dev]"`
+- Check logs: `C:\Users\sandr\AppData\Roaming\Cursor\logs\`
+
+**Tools not appearing:**
+- Verify MCP server is enabled in Cursor IDE settings
+- Check server logs for errors
+- Try disabling and re-enabling the server
+
+**Unity integration not working:**
+- Ensure Unity Editor is running
+- Verify Unity project path is correct
+- Check `unity3d-mcp` server is healthy
 
 ## 🤝 Contributing
 

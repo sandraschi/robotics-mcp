@@ -21,13 +21,7 @@ from .utils.config_loader import ConfigLoader
 from .utils.error_handler import format_error_response, format_success_response, handle_tool_error
 from .utils.state_manager import RobotStateManager
 from .tools.robot_control import RobotControlTool
-from .tools.virtual_robotics import VirtualRoboticsTool
-from .tools.vbot_crud import VbotCrudTool
 from .tools.robot_model_tools import RobotModelTools
-from .tools.robot_animation import RobotAnimationTool
-from .tools.robot_camera import RobotCameraTool
-from .tools.robot_navigation import RobotNavigationTool
-from .tools.spz_converter import SPZConverterTool
 
 # Configure structured logging
 structlog.configure(
@@ -118,22 +112,29 @@ class RoboticsMCP:
             self.http_app = None
 
         # Initialize tool handlers (after MCP is created and servers are mounted)
-        from robotics_mcp.tools.robotics_system import RoboticsSystemTool
+        try:
+            from robotics_mcp.tools.robotics_system import RoboticsSystemTool
+            from robotics_mcp.tools.robot_behavior import RobotBehaviorTool
+            from robotics_mcp.tools.robot_virtual import RobotVirtualTool
 
-        self.robotics_system = RoboticsSystemTool(
-            self.mcp, self.state_manager, self.config, self.config_loader, self.mounted_servers
-        )
-        self.robot_control = RobotControlTool(self.mcp, self.state_manager)
-        self.virtual_robotics = VirtualRoboticsTool(self.mcp, self.state_manager, self.mounted_servers)
-        self.vbot_crud = VbotCrudTool(self.mcp, self.state_manager, self.mounted_servers)
-        self.robot_model_tools = RobotModelTools(self.mcp, self.state_manager, self.mounted_servers)
-        self.robot_animation = RobotAnimationTool(self.mcp, self.state_manager, self.mounted_servers)
-        self.robot_camera = RobotCameraTool(self.mcp, self.state_manager, self.mounted_servers)
-        self.robot_navigation = RobotNavigationTool(self.mcp, self.state_manager, self.mounted_servers)
-        self.spz_converter = SPZConverterTool(self.mcp)
+            # Consolidated portmanteau tools (SOTA: max 15 tools)
+            # Note: RobotControlTool and RobotModelTools are imported at module level
+            self.robotics_system = RoboticsSystemTool(
+                self.mcp, self.state_manager, self.config, self.config_loader, self.mounted_servers
+            )
+            self.robot_control = RobotControlTool(self.mcp, self.state_manager, self.mounted_servers)
+            self.robot_behavior = RobotBehaviorTool(self.mcp, self.state_manager, self.mounted_servers)
+            self.robot_virtual = RobotVirtualTool(self.mcp, self.state_manager, self.mounted_servers)
+            self.robot_model_tools = RobotModelTools(self.mcp, self.state_manager, self.mounted_servers)
 
-        # Register all tools
-        self._register_tools()
+            # Register all tools
+            self._register_tools()
+        except Exception as e:
+            import traceback
+            error_msg = f"Failed to initialize tools: {e}\n{traceback.format_exc()}"
+            logger.error("Failed to initialize tools", error=str(e), exc_info=True)
+            print(f"ERROR: {error_msg}", file=sys.stderr)
+            raise
 
         # Setup HTTP routes after tools are registered
         if self.config.enable_http:
@@ -182,12 +183,16 @@ class RoboticsMCP:
         async def list_tools():
             """List all available MCP tools."""
             tools = []
-            for tool_name, tool_info in self.mcp.list_tools().items():
+            # FastMCP stores tools in _tools dict - get info from function
+            for tool_name, tool_func in getattr(self.mcp, '_tools', {}).items():
+                description = ""
+                if hasattr(tool_func, '__doc__') and tool_func.__doc__:
+                    description = tool_func.__doc__.split('\n')[0].strip()
                 tools.append(
                     {
                         "name": tool_name,
-                        "description": tool_info.get("description", ""),
-                        "inputSchema": tool_info.get("inputSchema", {}),
+                        "description": description,
+                        "inputSchema": {},  # Schema not easily accessible from function
                     }
                 )
             return {"tools": tools}
@@ -250,124 +255,116 @@ class RoboticsMCP:
         self.http_app.include_router(router)
 
     def _mount_mcp_servers(self):
-        """Mount external MCP servers for composition."""
+        """Load external MCP servers for internal use (NOT exposed as tools).
+        
+        These servers are kept in self.mounted_servers for internal use via Client.call_tool(),
+        but their tools are NOT exposed to avoid tool explosion. Only robotics-mcp's own
+        portmanteau tools are exposed.
+        """
         try:
-            # Try to mount osc-mcp
+            # Load osc-mcp (for internal use only)
             try:
                 from oscmcp.mcp_server import server as osc_mcp_server
-
-                self.mcp.mount(osc_mcp_server, prefix="osc", as_proxy=True)
                 self.mounted_servers["osc"] = osc_mcp_server
-                logger.info("Mounted osc-mcp server")
+                logger.info("Loaded osc-mcp server (internal use only)")
             except ImportError:
-                logger.warning("osc-mcp not available, skipping mount")
+                logger.warning("osc-mcp not available, skipping")
 
-            # Try to mount unity3d-mcp
+            # Load unity3d-mcp (for internal use only)
             try:
                 from unity3d_mcp.server import Unity3DMCP
-
                 unity_server = Unity3DMCP()
-                self.mcp.mount(unity_server.app, prefix="unity", as_proxy=True)
                 self.mounted_servers["unity"] = unity_server
-                logger.info("Mounted unity3d-mcp server")
+                logger.info("Loaded unity3d-mcp server (internal use only)")
             except ImportError:
-                logger.warning("unity3d-mcp not available, skipping mount")
+                logger.warning("unity3d-mcp not available, skipping")
 
-            # Try to mount vrchat-mcp
+            # Load vrchat-mcp (for internal use only)
             try:
                 from vrchat_mcp import VRChatMCP
-
                 vrchat_server = VRChatMCP()
-                self.mcp.mount(vrchat_server.mcp, prefix="vrchat", as_proxy=True)
                 self.mounted_servers["vrchat"] = vrchat_server
-                logger.info("Mounted vrchat-mcp server")
+                logger.info("Loaded vrchat-mcp server (internal use only)")
             except ImportError:
-                logger.warning("vrchat-mcp not available, skipping mount")
+                logger.warning("vrchat-mcp not available, skipping")
 
-            # Try to mount avatar-mcp
+            # Load avatar-mcp (for internal use only)
             try:
                 from avatarmcp.server import AvatarMCPServer
-
                 avatar_server = AvatarMCPServer()
-                self.mcp.mount(avatar_server.mcp, prefix="avatar", as_proxy=True)
                 self.mounted_servers["avatar"] = avatar_server
-                logger.info("Mounted avatar-mcp server")
+                logger.info("Loaded avatar-mcp server (internal use only)")
             except ImportError:
-                logger.warning("avatar-mcp not available, skipping mount")
+                logger.warning("avatar-mcp not available, skipping")
 
-            # Try to mount blender-mcp
+            # Load blender-mcp (for internal use only)
             try:
                 import sys
                 from pathlib import Path
 
-                # Add blender-mcp to path if not already there
                 blender_mcp_path = Path(__file__).parent.parent.parent.parent / "blender-mcp" / "src"
                 if str(blender_mcp_path) not in sys.path:
                     sys.path.insert(0, str(blender_mcp_path))
 
                 from blender_mcp.app import get_app
-
                 blender_app = get_app()
-                self.mcp.mount(blender_app, prefix="blender", as_proxy=True)
                 self.mounted_servers["blender"] = blender_app
-                logger.info("Mounted blender-mcp server")
+                logger.info("Loaded blender-mcp server (internal use only)")
             except ImportError as e:
-                logger.warning(f"blender-mcp not available, skipping mount: {e}")
+                logger.warning(f"blender-mcp not available, skipping: {e}")
             except Exception as e:
-                logger.warning(f"Failed to mount blender-mcp: {e}")
+                logger.warning(f"Failed to load blender-mcp: {e}")
 
-            # Try to mount gimp-mcp
+            # Load gimp-mcp (for internal use only)
             try:
                 import sys
                 from pathlib import Path
 
-                # Add gimp-mcp to path if not already there
                 gimp_mcp_path = Path(__file__).parent.parent.parent.parent / "gimp-mcp" / "src"
                 if str(gimp_mcp_path) not in sys.path:
                     sys.path.insert(0, str(gimp_mcp_path))
 
                 from gimp_mcp.main import GimpMCPServer
-
                 gimp_server = GimpMCPServer()
-                # GimpMCPServer has a .mcp attribute that's the FastMCP instance
-                if hasattr(gimp_server, "mcp"):
-                    self.mcp.mount(gimp_server.mcp, prefix="gimp", as_proxy=True)
-                    self.mounted_servers["gimp"] = gimp_server
-                    logger.info("Mounted gimp-mcp server")
-                else:
-                    # Fallback: create FastMCP app and register tools
-                    from fastmcp import FastMCP
-
-                    gimp_app = FastMCP("gimp-mcp")
-                    if hasattr(gimp_server, "register_tools"):
-                        gimp_server.register_tools(gimp_app)
-                    self.mcp.mount(gimp_app, prefix="gimp", as_proxy=True)
-                    self.mounted_servers["gimp"] = gimp_server
-                    logger.info("Mounted gimp-mcp server (fallback method)")
+                self.mounted_servers["gimp"] = gimp_server
+                logger.info("Loaded gimp-mcp server (internal use only)")
             except ImportError as e:
-                logger.warning(f"gimp-mcp not available, skipping mount: {e}")
+                logger.warning(f"gimp-mcp not available, skipping: {e}")
             except Exception as e:
-                logger.warning(f"Failed to mount gimp-mcp: {e}")
+                logger.warning(f"Failed to load gimp-mcp: {e}")
 
         except Exception as e:
-            logger.error("Error mounting MCP servers", error=str(e))
+            logger.error("Error loading MCP servers", error=str(e))
 
     def _register_tools(self):
         """Register all MCP tools."""
         # Note: MCP servers are already mounted in __init__
 
-        # Register portmanteau tools (SOTA: max 15 tools)
-        self.robotics_system.register()  # Portmanteau: help, status, list_robots
-        self.robot_control.register()  # Portmanteau: movement, status, control
-        self.virtual_robotics.register()  # Portmanteau: virtual robot operations
-        self.vbot_crud.register()  # Portmanteau: CRUD for virtual robots
-        self.robot_model_tools.register()  # Portmanteau: create, import, export, convert
-        self.robot_animation.register()  # Portmanteau: animation and behavior control
-        self.robot_camera.register()  # Portmanteau: camera and visual feed control
-        self.robot_navigation.register()  # Portmanteau: path planning and navigation
-        self.spz_converter.register()  # Portmanteau: .spz file conversion and Unity plugin management
+        try:
+            # Register consolidated portmanteau tools (SOTA: 5 tools total)
+            self.robotics_system.register()  # System: help, status, list_robots
+            logger.debug("Registered robotics_system tool")
+            
+            self.robot_control.register()  # Control: movement, status, control
+            logger.debug("Registered robot_control tool")
+            
+            self.robot_behavior.register()  # Behavior: animation, camera, navigation, manipulation
+            logger.debug("Registered robot_behavior tool")
+            
+            self.robot_virtual.register()  # Virtual: CRUD + virtual robot operations
+            logger.debug("Registered robot_virtual tool")
+            
+            self.robot_model_tools.register()  # Model: create, import, export, convert, spz operations
+            logger.debug("Registered robot_model_tools tool")
 
-        logger.info("All tools registered")
+            tools = getattr(self.mcp, '_tools', {})
+            logger.info("All tools registered", tool_count=len(tools), tool_names=list(tools.keys()))
+        except Exception as e:
+            import traceback
+            error_msg = f"Failed to register tools: {e}\n{traceback.format_exc()}"
+            logger.error("Failed to register tools", error=str(e), exc_info=True)
+            print(f"ERROR: {error_msg}", file=sys.stderr)
+            raise
 
     # System tools moved to robotics_system portmanteau
     # Keeping this method for backwards compatibility but it's now empty
@@ -658,13 +655,14 @@ class RoboticsMCP:
 def main():
     """Entry point for robotics-mcp server."""
     import argparse
+    import sys
 
     parser = argparse.ArgumentParser(description="Robotics MCP Server")
     parser.add_argument(
         "--mode",
         choices=["stdio", "http", "dual"],
-        default="dual",
-        help="Server mode (default: dual)",
+        default="stdio",  # Default to stdio for MCP protocol
+        help="Server mode (default: stdio)",
     )
     parser.add_argument("--host", default="0.0.0.0", help="HTTP server host")
     parser.add_argument("--port", type=int, default=8080, help="HTTP server port")
@@ -678,8 +676,14 @@ def main():
         config_path=args.config,
     )
 
-    server = RoboticsMCP(config)
-    server.run(mode=args.mode, host=args.host, port=args.port)
+    try:
+        server = RoboticsMCP(config)
+        server.run(mode=args.mode, host=args.host, port=args.port)
+    except Exception as e:
+        import traceback
+        print(f"ERROR: Failed to start server: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

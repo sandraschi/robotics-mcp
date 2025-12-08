@@ -30,7 +30,6 @@ class VirtualRoboticsTool:
 
         @self.mcp.tool()
         async def virtual_robotics(
-            robot_type: str,
             action: Literal[
                 "spawn_robot",
                 "move",
@@ -41,12 +40,15 @@ class VirtualRoboticsTool:
                 "test_navigation",
                 "sync_with_physical",
             ],
+            robot_type: Optional[str] = None,
             robot_id: Optional[str] = None,
             position: Optional[Dict[str, float]] = None,
             scale: Optional[float] = None,
             environment: Optional[str] = None,
             environment_path: Optional[str] = None,
             platform: Literal["unity", "vrchat"] = "unity",
+            project_path: Optional[str] = None,
+            include_colliders: bool = True,
         ) -> Dict[str, Any]:
             """Virtual robot control (Unity/VRChat) using existing MCP servers.
 
@@ -100,9 +102,11 @@ class VirtualRoboticsTool:
                     )
             """
             if action == "spawn_robot":
+                if not robot_type:
+                    return format_error_response("robot_type is required for spawn_robot action", error_type="validation_error")
                 return await self._spawn_robot(robot_type, robot_id, position, scale, platform)
             elif action == "load_environment":
-                return await self._load_environment(environment or "", platform, environment_path=environment_path)
+                return await self._load_environment(environment or "", platform, environment_path=environment_path, project_path=project_path, include_colliders=include_colliders)
             elif action == "get_status":
                 return await self._get_status(robot_id)
             elif action == "get_lidar":
@@ -305,7 +309,7 @@ class VirtualRoboticsTool:
             logger.error("Unity spawn failed", error=str(e))
             return {"method": "mock", "error": str(e)}
 
-    async def _load_environment(self, environment: str, platform: str, environment_path: Optional[str] = None, **kwargs: Any) -> Dict[str, Any]:
+    async def _load_environment(self, environment: str, platform: str, environment_path: Optional[str] = None, project_path: Optional[str] = None, include_colliders: bool = True, **kwargs: Any) -> Dict[str, Any]:
         """Load Marble/Chisel environment.
 
         Args:
@@ -313,6 +317,8 @@ class VirtualRoboticsTool:
             platform: Target platform.
             environment_path: Path to environment file (supports .fbx, .glb, .obj, .ply, .splat).
                             NOTE: .spz files are NOT supported - re-export from Marble as .ply or mesh format.
+            project_path: Unity project path (optional, auto-detected if not provided).
+            include_colliders: Whether to import collider meshes (default: True).
             **kwargs: Additional parameters.
 
         Returns:
@@ -343,18 +349,37 @@ class VirtualRoboticsTool:
                     # Use unity3d-mcp import_marble_world tool
                     result = await client.call_tool(
                         "unity_import_marble_world",
-                        source_path=source_path,  # Supports .fbx, .glb, .obj, .ply, .splat
-                        project_path=kwargs.get("project_path", ""),
-                        include_colliders=kwargs.get("include_colliders", True),
+                        {
+                            "source_path": source_path,  # Supports .fbx, .glb, .obj, .ply, .splat
+                            "project_path": project_path or "",
+                            "include_colliders": include_colliders,
+                        }
                     )
                     logger.info("Environment loaded via Unity MCP", environment=environment, result=result)
+                    # Extract result content (CallToolResult has .data attribute with the actual dict)
+                    if hasattr(result, 'data'):
+                        unity_result = result.data
+                    elif hasattr(result, 'content') and result.content:
+                        # Try to parse from content
+                        first_content = result.content[0] if isinstance(result.content, list) else result.content
+                        if hasattr(first_content, 'text'):
+                            import json
+                            try:
+                                unity_result = json.loads(first_content.text)
+                            except:
+                                unity_result = {"status": "success", "message": first_content.text}
+                        else:
+                            unity_result = {"status": "success", "data": first_content}
+                    else:
+                        unity_result = {"status": "success", "message": str(result)}
+                    
                     return format_success_response(
                         f"Environment {environment} loaded via Unity",
                         action="load_environment",
                         data={
                             "environment": environment,
                             "platform": platform,
-                            "unity_result": result,
+                            "unity_result": unity_result,
                         },
                     )
             else:

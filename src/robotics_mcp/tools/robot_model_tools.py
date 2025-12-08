@@ -15,6 +15,7 @@ import structlog
 from fastmcp import Client
 
 from ..utils.error_handler import format_error_response, format_success_response, handle_tool_error
+from ..utils.mcp_client_helper import call_mounted_server_tool
 
 logger = structlog.get_logger(__name__)
 
@@ -44,7 +45,7 @@ class RobotModelTools:
 
         @self.mcp.tool()
         async def robot_model(
-            operation: Literal["create", "import", "export", "convert"],
+            operation: Literal["create", "import", "export", "convert", "spz_check", "spz_convert", "spz_extract", "spz_install"],
             robot_type: Optional[str] = None,
             model_path: Optional[str] = None,
             output_path: Optional[str] = None,
@@ -61,6 +62,9 @@ class RobotModelTools:
             source_format: Optional[Literal["fbx", "glb", "obj", "blend", "vrm"]] = None,
             target_format: Optional[Literal["fbx", "glb", "obj", "vrm"]] = None,
             target_path: Optional[str] = None,
+            spz_path: Optional[str] = None,
+            output_format: Optional[str] = None,
+            unity_project_path: Optional[str] = None,
         ) -> Dict[str, Any]:
             """Robot model management portmanteau for Robotics MCP.
 
@@ -78,6 +82,10 @@ class RobotModelTools:
             - import: Import robot 3D model into Unity/VRChat/Resonite project
             - export: Export robot model from Unity to file format
             - convert: Convert robot model between formats
+            - spz_check: Check .spz conversion tool availability
+            - spz_convert: Convert .spz file to .ply or other format
+            - spz_extract: Extract metadata from .spz file
+            - spz_install: Install Unity Gaussian Splatting plugin (alternative to .spz)
 
             Args:
                 operation: The model operation to perform. MUST be one of:
@@ -175,6 +183,20 @@ class RobotModelTools:
                             error_type="validation_error",
                         )
                     return await self._handle_convert(source_path, source_format, target_format, target_path, robot_type)
+                elif operation == "spz_check":
+                    return await self._handle_spz_check()
+                elif operation == "spz_convert":
+                    if not spz_path:
+                        return format_error_response("spz_path required for spz_convert", error_type="validation_error")
+                    return await self._handle_spz_convert(spz_path, target_path, output_format)
+                elif operation == "spz_extract":
+                    if not spz_path:
+                        return format_error_response("spz_path required for spz_extract", error_type="validation_error")
+                    return await self._handle_spz_extract(spz_path)
+                elif operation == "spz_install":
+                    if not unity_project_path:
+                        return format_error_response("unity_project_path required for spz_install", error_type="validation_error")
+                    return await self._handle_spz_install(unity_project_path)
                 else:
                     return format_error_response(f"Unknown operation: {operation}", error_type="validation_error")
             except Exception as e:
@@ -576,30 +598,31 @@ class RobotModelTools:
         """Import model to Unity."""
         try:
             if "unity" in self.mounted_servers:
-                async with Client(self.mcp) as client:
-                    if format == "vrm":
-                        # Use unity3d-mcp VRM import
-                        result = await client.call_tool(
-                            "import_vrm_avatar",
-                            {
-                                "vrm_path": model_path,
-                                "project_path": project_path or "",
-                                "optimize_for_vrchat": False,
-                                "create_prefab": create_prefab,
-                            },
-                        )
-                    else:
-                        # Use unity3d-mcp asset import (if available)
-                        # For now, return mock result
-                        result = format_success_response(
-                            f"Model import initiated: {robot_type}",
-                            data={
-                                "model_path": model_path,
-                                "format": format,
-                                "prefab_path": f"Assets/Prefabs/{robot_type}.prefab" if create_prefab else None,
-                            },
-                        )
-                    return result
+                if format == "vrm":
+                    # Use unity3d-mcp VRM import
+                    result = await call_mounted_server_tool(
+                        self.mounted_servers,
+                        "unity",
+                        "import_vrm_avatar",
+                        {
+                            "vrm_path": model_path,
+                            "project_path": project_path or "",
+                            "optimize_for_vrchat": False,
+                            "create_prefab": create_prefab,
+                        },
+                    )
+                else:
+                    # Use unity3d-mcp asset import (if available)
+                    # For now, return mock result
+                    result = format_success_response(
+                        f"Model import initiated: {robot_type}",
+                        data={
+                            "model_path": model_path,
+                            "format": format,
+                            "prefab_path": f"Assets/Prefabs/{robot_type}.prefab" if create_prefab else None,
+                        },
+                    )
+                return result
             else:
                 return format_success_response(
                     f"Mock import: {robot_type}",
@@ -633,11 +656,107 @@ class RobotModelTools:
         self, robot_id: str, format: str, output_path: Optional[str], include_animations: bool
     ) -> Dict[str, Any]:
         """Export model from Unity."""
-        # TODO: Implement Unity export via execute_unity_method
-        return format_success_response(
-            f"Export initiated: {robot_id}",
-            data={"robot_id": robot_id, "format": format, "output_path": output_path, "note": "Mock export"},
-        )
+        try:
+            if "unity" not in self.mounted_servers:
+                return format_error_response(
+                    "unity3d-mcp not available - required for Unity export",
+                    error_type="not_available",
+                    details={"mounted_servers": list(self.mounted_servers.keys())},
+                )
+
+            # Generate output path if not provided
+            if not output_path:
+                from pathlib import Path
+                robot = self.state_manager.get_robot(robot_id)
+                robot_type = robot.robot_type if robot else "robot"
+                output_dir = Path("D:/Exports")
+                output_dir.mkdir(parents=True, exist_ok=True)
+                output_path = str(output_dir / f"{robot_id}_{robot_type}.{format.lower()}")
+
+            # Normalize format
+            format_lower = format.lower()
+            if format_lower not in ["obj", "fbx", "glb", "gltf"]:
+                return format_error_response(
+                    f"Unsupported export format: {format}. Supported: obj, fbx, glb",
+                    error_type="validation_error",
+                    format=format,
+                )
+
+            # Call Unity export script via execute_unity_method
+            result = await call_mounted_server_tool(
+                self.mounted_servers,
+                "unity",
+                "execute_unity_method",
+                {
+                    "class_name": "RobotExporter",
+                    "method_name": "ExportRobot",
+                    "parameters": {
+                        "robotId": robot_id,
+                        "outputPath": output_path,
+                        "format": format_lower,
+                        "includeAnimations": include_animations,
+                    },
+                },
+            )
+
+            # Parse result from Unity script
+            if isinstance(result, dict):
+                result_str = result.get("output", "") or result.get("result", "")
+                if "ERROR" in result_str:
+                    return format_error_response(
+                        f"Unity export failed: {result_str}",
+                        error_type="export_error",
+                        robot_id=robot_id,
+                        format=format,
+                    )
+                elif "SUCCESS" in result_str:
+                    return format_success_response(
+                        f"Exported {robot_id} to {format}",
+                        data={
+                            "robot_id": robot_id,
+                            "format": format,
+                            "output_path": output_path,
+                            "include_animations": include_animations,
+                            "unity_result": result_str,
+                        },
+                    )
+                else:
+                    # Unknown result format
+                    return format_success_response(
+                        f"Export initiated: {robot_id}",
+                        data={
+                            "robot_id": robot_id,
+                            "format": format,
+                            "output_path": output_path,
+                            "unity_result": result_str,
+                        },
+                    )
+            else:
+                # Result is not a dict - might be a string
+                result_str = str(result)
+                if "ERROR" in result_str:
+                    return format_error_response(
+                        f"Unity export failed: {result_str}",
+                        error_type="export_error",
+                        robot_id=robot_id,
+                        format=format,
+                    )
+                else:
+                    return format_success_response(
+                        f"Exported {robot_id} to {format}",
+                        data={
+                            "robot_id": robot_id,
+                            "format": format,
+                            "output_path": output_path,
+                            "unity_result": result_str,
+                        },
+                    )
+
+        except Exception as e:
+            logger.error("Unity export failed", robot_id=robot_id, format=format, error=str(e))
+            return format_error_response(
+                f"Unity export failed: {str(e)}", error_type="export_error", robot_id=robot_id, format=format
+            )
 
     def _get_default_dimensions(self, robot_type: str) -> Dict[str, float]:
         """Get default dimensions for robot type (in meters)."""
@@ -837,34 +956,36 @@ except Exception as save_error:
                     logger.error(f"Debug script saved to {debug_script_path} for inspection")
                     raise
             
-            # Now use Client for any additional operations that need the mounted server
-            async with Client(blender_server) as client:
+            # Now use helper for any additional operations that need the mounted server
+            # Step 3: Create textures if requested
+            texture_paths = []
+            if create_textures and "gimp" in self.mounted_servers:
+                texture_paths = await self._create_textures_via_gimp(robot_type, texture_style)
+                logger.info(f"Created {len(texture_paths)} textures via GIMP")
 
-                # Step 3: Create textures if requested
-                texture_paths = []
-                if create_textures and "gimp" in self.mounted_servers:
-                    texture_paths = await self._create_textures_via_gimp(robot_type, texture_style, client)
+            # Step 4: Apply materials/textures (if created)
+            if texture_paths and "blender" in self.mounted_servers:
+                # Apply textures using blender-mcp material tools
+                for texture_path in texture_paths:
+                    await call_mounted_server_tool(
+                        self.mounted_servers,
+                        "blender",
+                        "blender_materials",
+                        {
+                            "operation": "create_fabric",
+                            "name": f"{robot_type}_material",
+                            "base_color": [0.8, 0.8, 0.8],
+                        },
+                    )
 
-                # Step 4: Apply materials/textures (if created)
-                if texture_paths:
-                    # Apply textures using blender-mcp material tools
-                    for texture_path in texture_paths:
-                        await client.call_tool(
-                            "blender_material",
-                            {
-                                "operation": "create_material",
-                                "name": f"{robot_type}_material",
-                                "texture_path": texture_path,
-                            },
-                        )
-
-                # Step 5: Export model (this will also save .blend file)
-                # export_for_unity signature: output_path, scale, apply_modifiers, optimize_materials, bake_textures, lod_levels
-                # But blender_export tool wraps it, so we need to pass operation and output_path
-                export_result = await client.call_tool(
+            # Step 5: Export model (this will also save .blend file)
+            if "blender" in self.mounted_servers:
+                export_result = await call_mounted_server_tool(
+                    self.mounted_servers,
+                    "blender",
                     "blender_export",
                     {
-                        "operation": "export_unity",
+                        "operation": "export_fbx",
                         "output_path": output_path,
                     },
                 )
@@ -892,7 +1013,7 @@ except Exception as save_error:
             return format_error_response(f"Model creation failed: {str(e)}", error_type="creation_error")
 
     async def _create_textures_via_gimp(
-        self, robot_type: str, texture_style: str, client: Client
+        self, robot_type: str, texture_style: str
     ) -> list[str]:
         """Create textures using gimp-mcp portmanteau tools."""
         texture_paths = []
@@ -944,26 +1065,37 @@ except Exception as save_error:
     ) -> Dict[str, Any]:
         """Convert model using Blender MCP."""
         try:
-            async with Client(self.mcp) as client:
-                # Import source
-                if source_format == "fbx":
-                    result = await client.call_tool("blender_import", {"filepath": source_path, "file_format": "fbx"})
-                elif source_format == "obj":
-                    result = await client.call_tool("blender_import", {"filepath": source_path, "file_format": "obj"})
-                elif source_format == "blend":
-                    result = await client.call_tool("blender_open", {"filepath": source_path})
-                else:
-                    return format_error_response(f"Unsupported source format: {source_format}", error_type="validation_error")
+            # Import source
+            if source_format == "fbx":
+                result = await call_mounted_server_tool(
+                    self.mounted_servers, "blender", "blender_import", {"filepath": source_path, "file_format": "fbx"}
+                )
+            elif source_format == "obj":
+                result = await call_mounted_server_tool(
+                    self.mounted_servers, "blender", "blender_import", {"filepath": source_path, "file_format": "obj"}
+                )
+            elif source_format == "blend":
+                result = await call_mounted_server_tool(
+                    self.mounted_servers, "blender", "blender_open", {"filepath": source_path}
+                )
+            else:
+                return format_error_response(f"Unsupported source format: {source_format}", error_type="validation_error")
 
-                # Export target
-                if target_format == "fbx":
-                    result = await client.call_tool("blender_export", {"filepath": target_path, "file_format": "fbx"})
-                elif target_format == "glb":
-                    result = await client.call_tool("blender_export", {"filepath": target_path, "file_format": "gltf"})
-                elif target_format == "vrm":
-                    result = await client.call_tool("blender_export", {"filepath": target_path, "file_format": "vrm"})
-                else:
-                    return format_error_response(f"Unsupported target format: {target_format}", error_type="validation_error")
+            # Export target
+            if target_format == "fbx":
+                result = await call_mounted_server_tool(
+                    self.mounted_servers, "blender", "blender_export", {"filepath": target_path, "file_format": "fbx"}
+                )
+            elif target_format == "glb":
+                result = await call_mounted_server_tool(
+                    self.mounted_servers, "blender", "blender_export", {"filepath": target_path, "file_format": "gltf"}
+                )
+            elif target_format == "vrm":
+                result = await call_mounted_server_tool(
+                    self.mounted_servers, "blender", "blender_export", {"filepath": target_path, "file_format": "vrm"}
+                )
+            else:
+                return format_error_response(f"Unsupported target format: {target_format}", error_type="validation_error")
 
                 return format_success_response(
                     f"Converted {source_format} to {target_format}",
@@ -973,4 +1105,148 @@ except Exception as save_error:
         except Exception as e:
             logger.error("Blender conversion failed", error=str(e))
             return format_error_response(f"Blender conversion failed: {str(e)}", error_type="conversion_error")
+
+    async def _handle_spz_check(self) -> Dict[str, Any]:
+        """Check available .spz conversion tools (from spz_converter.py)."""
+        import subprocess
+        tools_available = {
+            "adobe_spz_tools": False,
+            "python_spz_lib": False,
+            "manual_conversion": True,
+        }
+        try:
+            result = subprocess.run(["spz-decompress", "--version"], capture_output=True, timeout=5)
+            tools_available["adobe_spz_tools"] = result.returncode == 0
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+        try:
+            import spz  # type: ignore
+            tools_available["python_spz_lib"] = True
+        except ImportError:
+            pass
+        recommendations = []
+        if not tools_available["adobe_spz_tools"] and not tools_available["python_spz_lib"]:
+            recommendations.append("No .spz conversion tools found. Recommended: Re-export from Marble as .ply or .fbx/.glb")
+        return format_success_response(
+            "SPZ support check completed",
+            data={
+                "tools_available": tools_available,
+                "recommendations": recommendations,
+                "note": "There is NO official Unity plugin for .spz files. Conversion or re-export is required.",
+            },
+        )
+
+    async def _handle_spz_convert(self, spz_path: str, output_path: Optional[str], output_format: str) -> Dict[str, Any]:
+        """Convert .spz file to .ply or other format (from spz_converter.py)."""
+        from pathlib import Path
+        import subprocess
+        spz_file = Path(spz_path)
+        if not spz_file.exists():
+            return format_error_response(f".spz file not found: {spz_path}", error_type="file_not_found")
+        if not output_path:
+            output_path = str(spz_file.with_suffix(f".{output_format}"))
+        output_file = Path(output_path)
+        try:
+            result = subprocess.run(
+                ["spz-decompress", str(spz_file), str(output_file)],
+                capture_output=True,
+                timeout=60,
+                text=True,
+            )
+            if result.returncode == 0:
+                return format_success_response(
+                    f"Converted .spz to .{output_format}",
+                    data={
+                        "input_file": str(spz_file),
+                        "output_file": str(output_file),
+                        "format": output_format,
+                        "method": "adobe_spz_tools",
+                        "file_size": output_file.stat().st_size if output_file.exists() else 0,
+                    },
+                )
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+        return format_error_response(
+            "No .spz conversion tools available",
+            error_type="conversion_unavailable",
+            details={
+                "input_file": str(spz_file),
+                "recommendations": [
+                    "Re-export from Marble as .ply (for splats) or .fbx/.glb (for meshes)",
+                    "Install Adobe spz-tools: https://github.com/adobe/spz",
+                ],
+            },
+        )
+
+    async def _handle_spz_extract(self, spz_path: str) -> Dict[str, Any]:
+        """Extract metadata from .spz file (from spz_converter.py)."""
+        from pathlib import Path
+        spz_file = Path(spz_path)
+        if not spz_file.exists():
+            return format_error_response(f".spz file not found: {spz_path}", error_type="file_not_found")
+        file_size = spz_file.stat().st_size
+        try:
+            with open(spz_file, "rb") as f:
+                header = f.read(16)
+                header_hex = header.hex()
+                header_ascii = "".join(chr(b) if 32 <= b < 127 else "." for b in header[:8])
+        except Exception as e:
+            return format_error_response(f"Failed to read .spz file: {e}", error_type="read_error")
+        return format_success_response(
+            "SPZ file info extracted",
+            data={
+                "file_path": str(spz_file),
+                "file_size": file_size,
+                "file_size_mb": round(file_size / (1024 * 1024), 2),
+                "header_hex": header_hex,
+                "header_ascii": header_ascii,
+                "format": "Adobe compressed Gaussian splat (.spz)",
+                "note": "Unity does not support .spz natively. Re-export from Marble as .ply or .fbx/.glb.",
+            },
+        )
+
+    async def _handle_spz_install(self, unity_project_path: str) -> Dict[str, Any]:
+        """Install Unity Gaussian Splatting plugin (from spz_converter.py)."""
+        from pathlib import Path
+        import json
+        project_path = Path(unity_project_path)
+        manifest_path = project_path / "Packages" / "manifest.json"
+        if not manifest_path.exists():
+            return format_error_response(
+                f"Not a valid Unity project: {manifest_path} not found", error_type="invalid_project"
+            )
+        try:
+            with open(manifest_path, "r") as f:
+                manifest = json.load(f)
+            dependencies = manifest.get("dependencies", {})
+            gs_package = "com.aras-p.gaussian-splatting"
+            if gs_package in dependencies:
+                return format_success_response(
+                    "Gaussian Splatting plugin already installed",
+                    data={
+                        "unity_project": str(project_path),
+                        "package": gs_package,
+                        "version": dependencies[gs_package],
+                        "note": "This plugin supports .ply files. Re-export from Marble as .ply to use it.",
+                    },
+                )
+            dependencies[gs_package] = "https://github.com/aras-p/UnityGaussianSplatting.git"
+            manifest["dependencies"] = dependencies
+            with open(manifest_path, "w") as f:
+                json.dump(manifest, f, indent=2)
+            return format_success_response(
+                "Gaussian Splatting plugin installed (alternative to .spz)",
+                data={
+                    "unity_project": str(project_path),
+                    "package": gs_package,
+                    "source": "https://github.com/aras-p/UnityGaussianSplatting.git",
+                    "next_steps": [
+                        "Open Unity Editor - package will auto-download",
+                        "Re-export from Marble as .ply (not .spz) to use this plugin",
+                    ],
+                },
+            )
+        except Exception as e:
+            logger.error(f"Failed to install Gaussian Splatting: {e}")
+            return format_error_response(f"Failed to install plugin: {e}", error_type="installation_error")
 

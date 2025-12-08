@@ -5,6 +5,7 @@ from typing import Any, Dict, Literal, Optional
 import structlog
 
 from ..utils.error_handler import format_error_response, format_success_response, handle_tool_error
+from ..utils.mcp_client_helper import call_mounted_server_tool
 
 logger = structlog.get_logger(__name__)
 
@@ -12,13 +13,15 @@ logger = structlog.get_logger(__name__)
 class RobotControlTool:
     """Portmanteau tool for unified robot control (bot + vbot)."""
 
-    def __init__(self, mcp: Any, state_manager: Any):
+    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: Optional[Dict[str, Any]] = None):
         """Initialize robot control tool.
 
         Args:
             mcp: FastMCP server instance.
             state_manager: Robot state manager instance.
+            mounted_servers: Dictionary of loaded MCP servers for internal use.
         """
+        self.mounted_servers = mounted_servers or {}
         self.mcp = mcp
         self.state_manager = state_manager
 
@@ -165,20 +168,21 @@ class RobotControlTool:
             if action == "move":
                 if robot.platform == "unity":
                     # Use avatar-mcp or unity3d-mcp for movement
-                    async with Client(self.mcp) as client:
-                        # Try avatar-mcp first for smooth locomotion
-                        try:
-                            await client.call_tool(
+                    # Try avatar-mcp first for smooth locomotion
+                    try:
+                        if "avatar" in self.mounted_servers:
+                            await call_mounted_server_tool(
+                                self.mounted_servers,
+                                "avatar",
                                 "avatar_movement_walk",
-                                avatar_id=robot.robot_id,
-                                direction="forward",
-                                speed=linear or 0.0,
+                                {"avatar_id": robot.robot_id, "direction": "forward", "speed": linear or 0.0},
                             )
                             if angular:
-                                await client.call_tool(
+                                await call_mounted_server_tool(
+                                    self.mounted_servers,
+                                    "avatar",
                                     "avatar_movement_turn",
-                                    avatar_id=robot.robot_id,
-                                    angle=angular,
+                                    {"avatar_id": robot.robot_id, "angle": angular},
                                 )
                             return {
                                 "status": "success",
@@ -188,16 +192,21 @@ class RobotControlTool:
                                 "linear": linear,
                                 "angular": angular,
                             }
-                        except Exception:
-                            # Fallback to Unity direct control
-                            await client.call_tool(
-                                "unity_execute_method",
-                                class_name="RobotController",
-                                method_name="Move",
-                                parameters={
-                                    "robotId": robot.robot_id,
-                                    "linear": linear or 0.0,
-                                    "angular": angular or 0.0,
+                    except Exception:
+                        # Fallback to Unity direct control
+                        if "unity" in self.mounted_servers:
+                            await call_mounted_server_tool(
+                                self.mounted_servers,
+                                "unity",
+                                "execute_unity_method",
+                                {
+                                    "class_name": "RobotController",
+                                    "method_name": "Move",
+                                    "parameters": {
+                                        "robotId": robot.robot_id,
+                                        "linear": linear or 0.0,
+                                        "angular": angular or 0.0,
+                                    },
                                 },
                             )
                             return {
@@ -208,11 +217,12 @@ class RobotControlTool:
                             }
                 elif robot.platform == "vrchat":
                     # Use VRChat OSC for movement
-                    async with Client(self.mcp) as client:
-                        await client.call_tool(
+                    if "vrchat" in self.mounted_servers:
+                        await call_mounted_server_tool(
+                            self.mounted_servers,
+                            "vrchat",
                             "vrchat_send_osc_message",
-                            address=f"/robot/{robot.robot_id}/move",
-                            args=[linear or 0.0, angular or 0.0],
+                            {"address": f"/robot/{robot.robot_id}/move", "args": [linear or 0.0, angular or 0.0]},
                         )
                         return {
                             "status": "success",
@@ -222,20 +232,20 @@ class RobotControlTool:
                         }
 
             elif action == "stop":
-                async with Client(self.mcp) as client:
-                    if robot.platform == "vrchat":
-                        await client.call_tool(
-                            "vrchat_send_osc_message",
-                            address=f"/robot/{robot.robot_id}/stop",
-                            args=[1],
-                        )
-                    else:
-                        await client.call_tool(
-                            "avatar_movement_walk",
-                            avatar_id=robot.robot_id,
-                            direction="forward",
-                            speed=0.0,
-                        )
+                if robot.platform == "vrchat" and "vrchat" in self.mounted_servers:
+                    await call_mounted_server_tool(
+                        self.mounted_servers,
+                        "vrchat",
+                        "vrchat_send_osc_message",
+                        {"address": f"/robot/{robot.robot_id}/stop", "args": [1]},
+                    )
+                elif "avatar" in self.mounted_servers:
+                    await call_mounted_server_tool(
+                        self.mounted_servers,
+                        "avatar",
+                        "avatar_movement_walk",
+                        {"avatar_id": robot.robot_id, "direction": "forward", "speed": 0.0},
+                    )
                     return {
                         "status": "success",
                         "message": f"Virtual robot stopped",

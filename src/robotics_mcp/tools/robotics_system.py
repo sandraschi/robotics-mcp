@@ -114,11 +114,16 @@ class RoboticsSystemTool:
         try:
             # Get all registered tools
             tools_info = []
-            for tool_name, tool_info in self.mcp.list_tools().items():
+            # FastMCP stores tools in _tools dict - get description from docstring
+            for tool_name, tool_func in getattr(self.mcp, '_tools', {}).items():
+                description = ""
+                if hasattr(tool_func, '__doc__') and tool_func.__doc__:
+                    # Get first line of docstring as description
+                    description = tool_func.__doc__.split('\n')[0].strip()
                 tools_info.append(
                     {
                         "name": tool_name,
-                        "description": tool_info.get("description", ""),
+                        "description": description,
                     }
                 )
 
