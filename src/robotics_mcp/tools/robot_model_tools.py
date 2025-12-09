@@ -1230,7 +1230,7 @@ except Exception as save_error:
                         "note": "This plugin supports .ply files. Re-export from Marble as .ply to use it.",
                     },
                 )
-            dependencies[gs_package] = "https://github.com/aras-p/UnityGaussianSplatting.git"
+            dependencies[gs_package] = "https://github.com/aras-p/UnityGaussianSplatting.git?path=/package"
             manifest["dependencies"] = dependencies
             with open(manifest_path, "w") as f:
                 json.dump(manifest, f, indent=2)

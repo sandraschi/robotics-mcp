@@ -5,12 +5,26 @@
 [![FastMCP](https://img.shields.io/badge/FastMCP-2.13+-blue)](https://gofastmcp.com)
 [![Python](https://img.shields.io/badge/Python-3.10+-green)](https://www.python.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-ALPHA-orange)](README.md#-important-alpha-status--dependencies)
+
+## ⚠️ Important: Alpha Status & Dependencies
+
+**This server is in ALPHA and requires multiple composited MCP servers to function:**
+
+- **Required MCP Servers**: `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp`
+- **Status**: Active development - features may change, break, or be incomplete
+- **Virtual Robotics**: Prioritized (vbot) - physical robot support coming after hardware arrives (XMas 2025)
+- **MCP Server Composition**: This server composes 6+ MCP servers - all must be properly configured and running
+
+See [MCP Server Dependencies](#-mcp-server-dependencies) section for setup details.
 
 ## 🎯 Overview
 
 Robotics MCP Server provides unified control for both **physical robots** (ROS-based) and **virtual robots** (Unity/VRChat), with a focus on Moorebot Scout, Unitree robots, and virtual robotics testing.
 
-**🚀 Project Stats**: ~9,200 lines of code, ~2,600 lines of tests, ~4,100 lines of documentation - **Production ready!**
+**🚀 Project Stats**: ~9,200 lines of code, ~2,600 lines of tests, ~4,100 lines of documentation
+
+⚠️ **ALPHA STATUS - ONGOING DEVELOPMENT**: This server is in active development and requires multiple composited MCP servers to function properly. See [MCP Server Dependencies](#-mcp-server-dependencies) below.
 
 ### Key Features
 
@@ -44,6 +58,29 @@ pip install -e ".[dev]"
 # Or install from PyPI (when published)
 pip install robotics-mcp
 ```
+
+### MCP Server Dependencies
+
+⚠️ **CRITICAL**: This server requires multiple composited MCP servers to function. You must install and configure all of the following:
+
+**Required MCP Servers:**
+- **`osc-mcp`**: OSC communication for real-time robot control
+- **`unity3d-mcp`**: Unity3D integration for virtual robotics
+- **`vrchat-mcp`**: VRChat integration for social VR testing
+- **`avatar-mcp`**: Avatar management and animation
+- **`blender-mcp`**: 3D model creation (geometry)
+- **`gimp-mcp`**: Texture creation and image processing
+
+**Setup Steps:**
+1. Install each MCP server in your Claude Desktop/Cursor IDE configuration
+2. Ensure all servers are enabled and running
+3. Configure `robotics-mcp` to use the correct prefixes (see Configuration below)
+4. Verify connectivity using `robotics_system(operation="status")` tool
+
+**Troubleshooting:**
+- If tools fail, check that all required MCP servers are enabled
+- Use `robotics_system(operation="status")` to verify mounted server connectivity
+- See [MCP Integration](docs/MCP_INTEGRATION.md) for detailed setup
 
 ### Configuration
 
@@ -351,5 +388,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Status**: Beta - Virtual robotics (vbot) prioritized, physical robot support coming after hardware arrives (XMas 2025)
+**Status**: ⚠️ **ALPHA - Ongoing Development** - Virtual robotics (vbot) prioritized, physical robot support coming after hardware arrives (XMas 2025)
+
+**⚠️ Requires Multiple MCP Servers**: This server composes 6+ MCP servers (`osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp`) - all must be properly configured and running for full functionality.
 

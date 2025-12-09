@@ -43,7 +43,8 @@ if (-not $installed) {
         $dependencies = @{}
     }
     
-    $dependencies["com.aras-p.gaussian-splatting"] = "https://github.com/aras-p/UnityGaussianSplatting.git"
+    # Note: package.json is in /package subdirectory, not at repo root
+    $dependencies["com.aras-p.gaussian-splatting"] = "https://github.com/aras-p/UnityGaussianSplatting.git?path=/package"
     
     $manifest.dependencies = $dependencies
     

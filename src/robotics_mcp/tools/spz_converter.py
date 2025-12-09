@@ -246,8 +246,8 @@ class SPZConverterTool:
                     },
                 )
 
-            # Add Gaussian Splatting package
-            dependencies[gs_package] = "https://github.com/aras-p/UnityGaussianSplatting.git"
+            # Add Gaussian Splatting package (package.json is in /package subdirectory)
+            dependencies[gs_package] = "https://github.com/aras-p/UnityGaussianSplatting.git?path=/package"
             manifest["dependencies"] = dependencies
 
             with open(manifest_path, "w") as f:
