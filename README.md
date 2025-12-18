@@ -263,6 +263,7 @@ curl -X POST http://localhost:8080/api/v1/tools/robot_control \
 - **[Tiny Controllers Guide](docs/TINY_CONTROLLERS_GUIDE.md)** 🎮 **Smallest microcontroller boards for robotics - Raspberry Pi Pico, ESP32, Arduino Nano, Teensy**
 - **[Pyroelectric Sensors Guide](docs/PYROELECTRIC_SENSORS_GUIDE.md)** 🔍 **Ultra-small motion detection - AM312 (6x4.5mm), HC-SR501, PIR sensors ($1-5)**
 - **[Component Reuse Hacks](docs/COMPONENT_REUSE_HACKS.md)** 🔧 **Creative electronics salvage - Philips Hue bulbs, HDD motors, smartphone cameras**
+- **[World Labs Unity Integration Fix](docs/WORLDLABS_UNITY_INTEGRATION_FIX.md)** 🏠 **Resolve Marble .spz to Unity splat format incompatibilities + Scout vbot improvements**
 - **[Comprehensive Project Notes](docs/COMPREHENSIVE_NOTES.md)** 📖 **Complete project documentation!**
 - **[VRM vs Robot Models](docs/VRM_VS_ROBOT_MODELS.md)** 🤖 **VRM format guide - when to use VRM vs FBX/GLB**
 - **[Unity Vbot Instantiation Guide](docs/UNITY_VBOT_INSTANTIATION.md)** 🎮 **Complete guide for instantiating virtual robots in Unity3D**
