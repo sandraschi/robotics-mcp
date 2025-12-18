@@ -25,25 +25,24 @@
 
 **For dogbots, caterpillars, articulated arms, or ANY non-humanoid VRM - you need alternatives!**
 
-### **📝 Note: BrightData Search Tool Status**
+### **📝 Note: Tool Research Status**
 
-**BrightData MCP search tools are currently non-functional.** Multiple test queries ("test", "hello world") and website scrapes (https://example.com) all returned empty results or failed completely. This indicates the API token may be stale/expired or there's a service configuration issue.
+**BrightData MCP search tools are non-functional** (stale API token), but the **fetch MCP tool works perfectly** and provided current information about VRM tools.
 
-#### **Recommended Actions:**
-1. **Check BrightData API token** - Verify it's current and has credits
-2. **Refresh/replace API token** if expired
-3. **Test with simple queries** to confirm functionality
-4. **Check MCP server configuration** if token appears valid
+#### **Successfully Researched with Fetch Tool:**
+- **VRM Specification:** https://github.com/vrm-c/vrm-specification
+- **UniVRM (Unity):** https://github.com/vrm-c/UniVRM
+- **VRM Consortium:** https://vrm.dev/en/
+- **Blender VRM Add-on:** https://github.com/saturday06/VRM-Addon-for-Blender
+- **Daz Studio:** https://www.daz3d.com/
 
-#### **Alternative Research Methods:**
-Since BrightData tools aren't working, the information in this guide is based on known VRM ecosystem tools and community knowledge. For additional research, try:
+#### **Confirmed Working VRM Tools:**
+- **Blender VRM Add-on** (saturday06/VRM-Addon-for-Blender) - 1.6k stars
+- **UniVRM** (vrm-c/UniVRM) - 3.1k stars, official Unity implementation
+- **VRM Specification** (vrm-c/vrm-specification) - 288 stars, official spec
+- **Daz Studio** - Free 3D software with extensive content library
 
-- Direct web browsing to VRM-related sites
-- GitHub search for VRM repositories
-- Community forums (VRChat, Resonite)
-- Official VRM consortium resources
-
-**The major tools listed below are well-established in the VRM community and should work for creating non-humanoid VRM models.**
+**These are actively maintained, well-documented VRM tools that support non-humanoid creation.**
 
 ---
 
@@ -51,7 +50,10 @@ Since BrightData tools aren't working, the information in this guide is based on
 
 ### **🥇 Blender + VRM Add-on** ⭐ **MOST POWERFUL & FLEXIBLE**
 
-**The ultimate VRM creation tool - can create ANYTHING as VRM!**
+**The ultimate VRM creation tool - can create ANYTHING as VRM!** ⭐ **1.6k stars on GitHub**
+
+#### **Repository:** https://github.com/saturday06/VRM-Addon-for-Blender
+#### **Official Site:** https://vrm-addon-for-blender.info/
 
 #### **What Makes Blender Special:**
 - ✅ **Unlimited model types** - robots, animals, machines, abstract art
@@ -60,15 +62,19 @@ Since BrightData tools aren't working, the information in this guide is based on
 - ✅ **Free and open source** - no licensing restrictions
 - ✅ **Massive community** - tutorials for everything
 - ✅ **Cross-platform** - Windows, Mac, Linux
+- ✅ **Blender 2.93 to 5.0 support** - actively maintained
+- ✅ **Full VRM import/export** - both directions
 
 #### **VRM Workflow in Blender:**
 ```
-1. Install VRM add-on from: https://vrm-addon-for-blender.info/
-2. Model your robot/animal/machine (any shape, any complexity)
-3. Create armature (can be humanoid or completely custom)
-4. Add VRM-required bones (Hips, Head, etc.) - even if mapped to robot parts
-5. Set up materials and textures
-6. Export as .vrm using VRM add-on
+1. Download from: https://github.com/saturday06/VRM-Addon-for-Blender/releases
+2. Install as Blender add-on (.zip file)
+3. Enable "VRM format" in Blender preferences
+4. Model your robot/animal/machine (any shape, any complexity)
+5. Create armature (can be humanoid or completely custom)
+6. Add VRM-required bones (Hips, Head, etc.) - even if mapped to robot parts
+7. Set up materials and textures (PBR workflow)
+8. File → Export → VRM (.vrm)
 ```
 
 #### **Blender VRM Add-on Features:**
@@ -134,7 +140,10 @@ Daz Studio → Unity Bridge → VRM Export
 
 ### **🥉 Unity + UniVRM** ⭐ **PROGRAMMATIC VRM CREATION**
 
-**Create VRM models entirely in code or Unity editor**
+**Create VRM models entirely in code or Unity editor** ⭐ **3.1k stars on GitHub**
+
+#### **Repository:** https://github.com/vrm-c/UniVRM
+#### **Documentation:** https://vrm.dev/en/
 
 #### **Unity VRM Creation Methods:**
 
