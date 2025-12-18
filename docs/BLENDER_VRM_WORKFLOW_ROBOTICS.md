@@ -66,6 +66,96 @@ Want a VRM dogbot? → Blender (DIY required)
 
 ---
 
+## 🧠 **AI-Powered Research Phase (Architect First)**
+
+**Before touching any 3D software, let AI be your research assistant.** Build comprehensive knowledge of the "VRM scene" through systematic information gathering. Implementation becomes dramatically easier with a solid research foundation.
+
+### **Why Research First?**
+- **Avoid dead ends** - Know which tools actually work for non-humanoids
+- **Understand constraints** - VRM's humanoid limitations become clear
+- **Find communities** - Connect with experienced developers
+- **Discover alternatives** - FBX/GLB options when VRM doesn't fit
+- **Save time** - Don't reinvent solutions that already exist
+
+### **AI Research Workflow:**
+
+#### **Phase 1: Domain Mapping**
+```
+Prompt AI: "Map the VRM ecosystem for robotics applications"
+- Standards organizations (VRM Consortium)
+- Official repositories and documentation
+- Current limitations and workarounds
+- Success stories with non-humanoid VRM
+```
+
+#### **Phase 2: Tool Discovery**
+```
+Prompt AI: "Find all VRM creation tools beyond VRoid Studio"
+- Blender add-ons and plugins
+- Unity packages and scripts
+- Alternative 3D software with VRM export
+- Web-based VRM editors
+- Command-line tools and APIs
+```
+
+#### **Phase 3: Community Intelligence**
+```
+Prompt AI: "Research VRM communities and resources"
+- GitHub repositories with examples
+- Subreddits (r/VRchat, r/VRM, r/3Dmodeling)
+- Discord servers and forums
+- YouTube tutorials and channels
+- Academic papers and research
+```
+
+#### **Phase 4: Web Scraping Integration**
+```
+Prompt AI: "Use web scraping to collect comprehensive VRM information"
+- Scrape official VRM documentation
+- Collect community forum discussions
+- Gather tutorial links and resources
+- Extract code examples and snippets
+- Build knowledge base of best practices
+```
+
+### **Web Scraping as Research Tool**
+
+**BrightData MCP tools are perfect for this research phase:**
+- **Bypass restrictions** - Access locked documentation sites
+- **Comprehensive coverage** - Scrape entire communities and forums
+- **Structured collection** - Organize information systematically
+- **Real-time updates** - Get latest developments and tools
+
+**Fetch MCP tool works for accessible sites:**
+- GitHub repositories and documentation
+- Official websites and blogs
+- Open forums and communities
+- Public code examples
+
+### **Research Output Goals:**
+
+#### **Knowledge Base Structure:**
+```
+VRM_Research/
+├── standards_and_specs.md     # Official VRM specifications
+├── tools_and_software.md      # Creation and conversion tools
+├── communities_and_forums.md  # Where to get help
+├── tutorials_and_guides.md    # Learning resources
+├── code_examples.md          # Implementation snippets
+├── success_stories.md        # Real-world applications
+├── limitations_and_workarounds.md  # Known issues and fixes
+└── future_developments.md    # What's coming next
+```
+
+#### **Tool Evaluation Matrix:**
+- **Compatibility** with non-humanoid models
+- **Community support** and documentation quality
+- **Learning curve** and ease of use
+- **Cost and licensing** considerations
+- **Integration** with existing workflows
+
+---
+
 ## 🔧 **Blender VRM Creation Workflow**
 
 ### **Phase 1: Model Preparation**
