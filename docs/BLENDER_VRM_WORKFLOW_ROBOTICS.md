@@ -17,6 +17,40 @@
 
 **For robots and machines, VRM is NOT ideal, but here's how to make it work anyway.**
 
+### **⚠️ VRoid Studio vs. Blender: Know Your Tools**
+
+#### **VRoid Studio = Pretty Anime Humanoids Only** 🎨
+**VRoid Studio is fantastic for:**
+- ✅ **Beautiful anime-style humanoids** (perfect proportions, cute faces)
+- ✅ **Pretty clothes, hairstyles, decorations** (thousands of options)
+- ✅ **Facial expressions and accessories** (glasses, hats, jewelry)
+- ✅ **Easy VRM export** (one-click for humanoids)
+- ❌ **Does NOT do anything else**
+- ❌ **No robots, animals, or machines**
+- ❌ **No custom non-humanoid shapes**
+- ❌ **No mechanical parts or technical models**
+
+**VRoid Studio = Human beauty salon for VRM avatars**
+
+#### **Blender = Everything Else (Including Robots!)** 🔧
+**For VRM dogbots, caterpillars, articulated arms, or ANY non-humanoid:**
+- ✅ **Custom robot modeling** (from scratch or modifications)
+- ✅ **Animal creation** (dogs, cats, insects, dinosaurs)
+- ✅ **Machine design** (excavators, arms, vehicles)
+- ✅ **Mechanical animations** (joints, hydraulics, servos)
+- ✅ **Complex rigging** (beyond humanoid constraints)
+- ✅ **VRM export** (with workarounds for non-humanoids)
+
+**Blender = Full workshop for any 3D model imaginable**
+
+#### **The Reality Check:**
+```
+Want a cute anime girl with twintails? → VRoid Studio
+Want a VRM caterpillar robot? → Blender (DIY required)
+Want a humanoid avatar? → VRoid Studio
+Want a VRM dogbot? → Blender (DIY required)
+```
+
 ### **Why Use VRM Despite Limitations?**
 - ✅ **Unity compatibility** (direct import)
 - ✅ **VR platform support** (VRChat, Resonite, Cluster)
