@@ -387,6 +387,10 @@ Phase 4: Web Scraping Integration
 Result: Comprehensive birthday reminder system with multiple notification channels,
 social media integration, and automated contact importing. Not just "good enough" -
 actually solves the core problem with redundancy and reliability.
+
+Implementation: Morning alarm with "whooop-whooop-whooop" audio signal, followed by
+spoken message "Georgina's birthday today! Don't forget to congratulate", ending with
+"whooop-whooop-whooop". Multiple notification layers ensure the reminder gets through.
 ```
 
 ### **Case Study: Robotics Middleware Selection**
