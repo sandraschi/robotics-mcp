@@ -66,7 +66,9 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 
 ## 💰 Affordable LiDAR Options
 
-### 🎯 Entry-Level ($50-150)
+**Perfect for small robots with 3D-printed mounts!** Many of these sensors are tiny enough to mount on palm-sized robots. Forward-looking only is often sufficient - you don't need 360° coverage for simple navigation. Range matters less for indoor bots than autonomous cars.
+
+### 🎯 Entry-Level ($50-150) - Tiny & Perfect for Small Bots
 
 #### **YDLidar X4**
 - **Price:** $89
@@ -79,7 +81,7 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 - **ROS Support:** ✅ Native
 - **Use Case:** Budget indoor robots, education
 
-#### **RPLIDAR A1M8**
+#### **RPLIDAR A1M8** ⭐ **Compact & Popular for DIY**
 - **Price:** $99
 - **Range:** 0.15-12m
 - **FOV:** 360° horizontal
@@ -89,9 +91,10 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 - **Power:** 5V, 2A max
 - **Interface:** UART
 - **ROS Support:** ✅ Slamtec SDK
-- **Use Case:** Entry-level SLAM, navigation
+- **Size:** Small enough for 3D-printed brackets on tiny robots
+- **Use Case:** **Entry-level SLAM, navigation - great for small platforms**
 
-#### **LD06**
+#### **LD06** ⭐ **TINY! Perfect for palm-sized bots**
 - **Price:** $65
 - **Range:** 0.02-12m
 - **FOV:** 360° horizontal
@@ -101,11 +104,12 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 - **Power:** 4.8-5.2V, 0.4A
 - **Interface:** UART
 - **ROS Support:** ✅ Compatible
-- **Use Case:** Small robots, drones
+- **Size:** Super compact, easily 3D-printed mount
+- **Use Case:** **Small robots, drones, DIY bots - fits anywhere!**
 
 ### 🚀 Mid-Range ($200-400)
 
-#### **Livox Mid-360** ⭐ **RECOMMENDED**
+#### **Livox Mid-360** ⭐ **RECOMMENDED - Small but Professional!**
 - **Price:** $399 (used in DEEP Robotics X30)
 - **Range:** 40m (reflector), 20m (no reflector)
 - **FOV:** 360° horizontal × 59° vertical
@@ -114,8 +118,9 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 - **Power:** 5V, 0.5A
 - **Interface:** Ethernet + WiFi
 - **ROS Support:** ✅ Official SDK
-- **Weight:** 95g (ultra-light!)
-- **Use Case:** **Professional mobile robots, drones, autonomous vehicles**
+- **Weight:** 95g (ultra-light!) - **fits on small robots with 3D-printed mounts**
+- **Size:** Compact despite professional performance - not bulky like automotive LiDAR
+- **Use Case:** **Professional mobile robots, drones, autonomous vehicles - but small enough for DIY projects!**
 
 #### **RPLIDAR S1**
 - **Price:** $299
@@ -166,6 +171,83 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 - **ROS Support:** ✅ Official
 - **Weight:** 415g
 - **Use Case:** High-end robotics, surveying
+
+---
+
+## 🏗️ **Small Form Factor & DIY Mounting**
+
+**LiDAR sensors are incredibly small now - perfect for tiny robots!** You can mount them on palm-sized bots with simple 3D-printed brackets. Forward-looking only is often sufficient for basic navigation - you don't need 360° coverage for simple obstacle avoidance.
+
+### **Tiny LiDAR Examples:**
+- **LD06:** Coin-sized, fits in a Tic Tac box
+- **RPLIDAR A1M8:** Hockey puck sized
+- **Livox Mid-360:** Smartphone sized (but with professional performance!)
+- **Even 360° sensors:** Many are smaller than a soda can
+
+### **Forward-Looking Only is Often Enough:**
+```python
+# Simple forward-only obstacle detection
+def check_ahead(lidar_data, forward_angle=30):  # ±30° forward
+    front_distances = []
+    for angle, distance in lidar_data:
+        if -forward_angle <= angle <= forward_angle:
+            if 0.1 < distance < 2.0:  # 10cm to 2m range
+                front_distances.append(distance)
+
+    if front_distances:
+        return min(front_distances)  # Closest obstacle ahead
+    return float('inf')  # Clear path
+```
+
+**Benefits of forward-only:**
+- ✅ Simpler processing (less data)
+- ✅ Lower power consumption
+- ✅ Cheaper sensors available
+- ✅ Sufficient for many robot tasks
+- ✅ Easier mounting (no rotation needed)
+
+### **DIY Mounting Solutions:**
+
+**3D-Printed Brackets:**
+```openscad
+// Simple LiDAR mount bracket
+module lidar_mount() {
+    difference() {
+        // Base plate
+        cube([50, 50, 3]);
+
+        // LiDAR cutout (LD06 dimensions)
+        translate([25, 25, 0])
+        cylinder(d=40, h=10);
+
+        // Mounting holes
+        for(x=[10,40], y=[10,40]) {
+            translate([x, y, 0])
+            cylinder(d=3, h=3);
+        }
+    }
+}
+```
+
+**Mounting Tips:**
+- **Height:** 5-15cm above ground for optimal coverage
+- **Angle:** Slightly tilted down (10-20°) for better ground detection
+- **Protection:** Add bumpers or guards for outdoor use
+- **Cable Management:** Use zip ties and cable clips
+- **Vibration:** Add rubber grommets to reduce vibration noise
+
+### **Range vs Use Case:**
+
+**For Small Robots (not Robotaxi):**
+- **5-10m range:** Perfect for indoor navigation, obstacle avoidance
+- **20m range:** Excellent for small outdoor bots, campus delivery
+- **40m range:** Overkill for most DIY projects, but nice to have
+
+**Realistic Expectations:**
+- Indoor bots: 3-8m reliable range
+- Outdoor bots: 10-20m with good weather
+- Range drops 50% in rain/fog
+- Reflective surfaces can extend effective range
 
 ---
 
@@ -376,15 +458,32 @@ move_base:
 
 ### 1. Choose Your LiDAR
 
+**Match sensor size to robot size:**
+
+**For Tiny Robots (palm-sized, <1kg):**
+- **LD06 ($65)** - Super compact, fits anywhere
+- **RPLIDAR A1M8 ($99)** - Small but capable
+- Use 3D-printed mounts, forward-only detection often sufficient
+
+**For Small Robots (1-5kg, desk-sized):**
+- **YDLidar X4 ($89)** - Good balance of size and performance
+- **RPLIDAR A1M8 ($99)** - Popular for education projects
+- Easy mounting with standard brackets
+
+**For Medium Robots (5-20kg, person-sized):**
+- **Livox Mid-360 ($399)** ⭐ - Professional performance, still compact
+- **RPLIDAR S1 ($299)** - Good outdoor performance
+- Can handle more complex navigation tasks
+
 **For Beginners ($50-100):**
-- YDLidar X4 or RPLIDAR A1M8
+- Start with LD06 or RPLIDAR A1M8
 - Great for learning ROS, basic SLAM
-- Perfect for indoor robots
+- Perfect for indoor robots and DIY projects
 
 **For Serious Projects ($200-400):**
 - **Livox Mid-360** (recommended for your project)
 - Professional performance at hobbyist price
-- Excellent ROS support
+- Excellent ROS support, compact enough for most robots
 
 ### 2. Hardware Setup
 
