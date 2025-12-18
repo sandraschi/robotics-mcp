@@ -25,14 +25,23 @@
 
 **For dogbots, caterpillars, articulated arms, or ANY non-humanoid VRM - you need alternatives!**
 
-### **📝 Note: BrightData Search Tool Limitations**
+### **📝 Note: BrightData Search Tool Status**
 
-**BrightData MCP search tools returned empty results during research.** The information in this guide is based on known VRM ecosystem tools and community knowledge. If you have access to working web search tools, you may find additional or updated VRM tools by searching for:
+**BrightData MCP search tools are currently non-functional.** Multiple test queries ("test", "hello world") and website scrapes (https://example.com) all returned empty results or failed completely. This indicates the API token may be stale/expired or there's a service configuration issue.
 
-- "VRM creation tools alternatives to VRoid Studio"
-- "Blender VRM add-on robotics"
-- "Unity UniVRM non-humanoid models"
-- "Daz Studio VRM export"
+#### **Recommended Actions:**
+1. **Check BrightData API token** - Verify it's current and has credits
+2. **Refresh/replace API token** if expired
+3. **Test with simple queries** to confirm functionality
+4. **Check MCP server configuration** if token appears valid
+
+#### **Alternative Research Methods:**
+Since BrightData tools aren't working, the information in this guide is based on known VRM ecosystem tools and community knowledge. For additional research, try:
+
+- Direct web browsing to VRM-related sites
+- GitHub search for VRM repositories
+- Community forums (VRChat, Resonite)
+- Official VRM consortium resources
 
 **The major tools listed below are well-established in the VRM community and should work for creating non-humanoid VRM models.**
 
