@@ -27,10 +27,14 @@
 
 ### **📝 Note: Web Scraping Tool Status**
 
-#### **BrightData MCP Tools (Subscription Service):**
-**BrightData is a commercial subscription service** for professional web scraping - not free. It provides premium infrastructure for bypassing entry barriers like CAPTCHAs, EU consent popups, anti-bot measures, and geo-restrictions.
+#### **BrightData MCP Tools (Freemium Model):**
+**BrightData uses a freemium model** - they offer free trials and credits, but premium features require payment. They provide infrastructure for bypassing entry barriers like CAPTCHAs, EU consent popups, anti-bot measures, and geo-restrictions.
 
-**Pricing:** Subscription-based with usage tiers (starts ~$300/month for basic plans)
+**Pricing Model:**
+- **Free Trial:** $5 credits, no credit card required
+- **Deposit Matching:** Match first account deposit up to $500
+- **Pay-as-you-go:** Usage-based pricing for premium features
+- **Enterprise:** Custom plans for large-scale scraping
 
 **Capabilities (When Working):**
 - ✅ **Residential proxies** (bypass geo-blocks)
@@ -38,11 +42,11 @@
 - ✅ **EU popup handling** (GDPR/consent bypass)
 - ✅ **JavaScript rendering** (dynamic content)
 - ✅ **Anti-detection** (looks like real users)
-- ✅ **Global proxy network** (millions of IPs)
+- ✅ **Global proxy network** (150M+ IPs)
 
-**Current Issue:** API token appears stale/expired. This is expected for subscription services that require active billing.
+**Current Issue:** API token appears stale/expired. Since they offer free trials, the token may need refreshing or the free credits may have been exhausted.
 
-**Recommendation:** Refresh BrightData API token when subscription is active - it's very valuable for research on sites with "are you human?" tests and EU popups, but requires paid subscription.
+**Recommendation:** Check BrightData account status - they offer generous free trials ($5 credits + deposit matching up to $500), so the token might just need refreshing rather than paid subscription.
 
 #### **Current Working Alternative:**
 **Fetch MCP tool works well** for accessible sites without entry barriers. Successfully retrieved:
