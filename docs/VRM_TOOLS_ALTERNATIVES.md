@@ -27,17 +27,22 @@
 
 ### **📝 Note: Web Scraping Tool Status**
 
-#### **BrightData MCP Tools (Currently Broken):**
-**BrightData is excellent for bypassing entry barriers** - CAPTCHAs, EU consent popups, anti-bot measures, geo-restrictions. It's designed specifically for scraping restrictive websites that block regular access.
+#### **BrightData MCP Tools (Subscription Service):**
+**BrightData is a commercial subscription service** for professional web scraping - not free. It provides premium infrastructure for bypassing entry barriers like CAPTCHAs, EU consent popups, anti-bot measures, and geo-restrictions.
 
-**Current Issue:** API token appears stale/expired. When working, BrightData provides:
+**Pricing:** Subscription-based with usage tiers (starts ~$300/month for basic plans)
+
+**Capabilities (When Working):**
 - ✅ **Residential proxies** (bypass geo-blocks)
 - ✅ **CAPTCHA solving** (automatic)
 - ✅ **EU popup handling** (GDPR/consent bypass)
 - ✅ **JavaScript rendering** (dynamic content)
 - ✅ **Anti-detection** (looks like real users)
+- ✅ **Global proxy network** (millions of IPs)
 
-**Recommendation:** Refresh BrightData API token when possible - it's very valuable for research on sites with "are you human?" tests and EU popups.
+**Current Issue:** API token appears stale/expired. This is expected for subscription services that require active billing.
+
+**Recommendation:** Refresh BrightData API token when subscription is active - it's very valuable for research on sites with "are you human?" tests and EU popups, but requires paid subscription.
 
 #### **Current Working Alternative:**
 **Fetch MCP tool works well** for accessible sites without entry barriers. Successfully retrieved:
