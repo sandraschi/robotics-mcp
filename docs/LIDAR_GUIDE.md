@@ -64,13 +64,32 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 
 ---
 
+## 🌟 **YDLidar: Affordable Excellence**
+
+**YDLidar** is a Chinese manufacturer specializing in affordable, high-quality LiDAR sensors. They're particularly popular in robotics communities for their:
+
+- **Excellent value:** Professional performance at hobbyist prices
+- **Compact designs:** Many models are small enough for tiny robots
+- **ROS ecosystem:** Native ROS drivers for all models
+- **Reliability:** Good build quality with consistent performance
+- **Documentation:** Well-documented with community support
+
+**Why YDLidar for small robots:**
+- Models range from $79 (TG15) to $249 (X2)
+- Mix of 360° and forward-only options
+- Excellent ROS integration
+- Small form factors perfect for DIY mounting
+- Good balance of range, accuracy, and power consumption
+
+---
+
 ## 💰 Affordable LiDAR Options
 
 **Perfect for small robots with 3D-printed mounts!** Many of these sensors are tiny enough to mount on palm-sized robots. Forward-looking only is often sufficient - you don't need 360° coverage for simple navigation. Range matters less for indoor bots than autonomous cars.
 
 ### 🎯 Entry-Level ($50-150) - Tiny & Perfect for Small Bots
 
-#### **YDLidar X4**
+#### **YDLidar X4** ⭐ **Best Budget 360° Option**
 - **Price:** $89
 - **Range:** 0.12-10m (indoor), 0.12-5m (outdoor)
 - **FOV:** 360° horizontal
@@ -78,8 +97,35 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 - **Points/sec:** 5,000
 - **Power:** 4.8-5.2V, 0.5A
 - **Interface:** UART/Serial
+- **ROS Support:** ✅ Native (ydlidar_ros driver)
+- **Size:** Very compact, perfect for small robot mounting
+- **Use Case:** **Budget indoor robots, education, DIY projects - excellent value!**
+
+#### **YDLidar G4** ⭐ **NEW! Advanced Budget Option**
+- **Price:** $149
+- **Range:** 0.28-16m
+- **FOV:** 360° horizontal
+- **Accuracy:** ±2cm
+- **Points/sec:** 9,000
+- **Power:** 4.8-5.2V, 0.6A
+- **Interface:** UART
 - **ROS Support:** ✅ Native
-- **Use Case:** Budget indoor robots, education
+- **Size:** Compact, great for small to medium robots
+- **Features:** Better range and accuracy than X4, still affordable
+- **Use Case:** **Small robots needing better performance, indoor navigation**
+
+#### **YDLidar TG15** ⭐ **Tiny Forward-Only Option**
+- **Price:** $79
+- **Range:** 0.1-6m
+- **FOV:** 120° horizontal (forward-facing)
+- **Accuracy:** ±2cm
+- **Points/sec:** 5,000
+- **Power:** 4.8-5.2V, 0.3A
+- **Interface:** UART
+- **ROS Support:** ✅ Compatible
+- **Size:** **Extremely small**, perfect for tiny robots
+- **Features:** Forward-only (no rotation), very low power
+- **Use Case:** **Micro robots, drones, forward obstacle detection only**
 
 #### **RPLIDAR A1M8** ⭐ **Compact & Popular for DIY**
 - **Price:** $99
@@ -144,7 +190,22 @@ Laser Pulse → Object → Reflected Light → Detector → Distance Calculation
 - **Power:** 4.8-5.2V, 0.5A
 - **Interface:** UART
 - **ROS Support:** ✅ Native
-- **Use Case:** Cost-effective 2D navigation
+- **Size:** Compact, good for medium-sized robots
+- **Use Case:** **Cost-effective 2D navigation, good balance of price and performance**
+
+#### **YDLidar TG30** ⭐ **Popular Mid-Range Option**
+- **Price:** $199
+- **Range:** 0.1-12m
+- **FOV:** 360° horizontal
+- **Accuracy:** ±2cm
+- **Points/sec:** 10,000
+- **RPM:** 6,000
+- **Power:** 4.8-5.2V, 0.8A
+- **Interface:** UART
+- **ROS Support:** ✅ Native
+- **Size:** Medium size, suitable for most robot platforms
+- **Features:** Good balance of range, accuracy, and price
+- **Use Case:** **General purpose robotics, SLAM applications, medium robots**
 
 ### 🏆 Professional ($500-2000)
 
@@ -461,12 +522,14 @@ move_base:
 **Match sensor size to robot size:**
 
 **For Tiny Robots (palm-sized, <1kg):**
+- **YDLidar TG15 ($79)** ⭐ - Extremely small, forward-only, perfect for micro bots
 - **LD06 ($65)** - Super compact, fits anywhere
 - **RPLIDAR A1M8 ($99)** - Small but capable
 - Use 3D-printed mounts, forward-only detection often sufficient
 
 **For Small Robots (1-5kg, desk-sized):**
-- **YDLidar X4 ($89)** - Good balance of size and performance
+- **YDLidar X4 ($89)** - Best budget 360° option
+- **YDLidar G4 ($149)** - Better range and accuracy
 - **RPLIDAR A1M8 ($99)** - Popular for education projects
 - Easy mounting with standard brackets
 
