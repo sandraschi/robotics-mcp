@@ -20,17 +20,39 @@
 - **Save time** - Don't reinvent solutions that already exist
 - **Reduce risk** - Make informed technical decisions
 
+### **Vibegineering Philosophy (Simon Willison)**
+
+**"Vibegineering" is the professional, responsible use of AI coding assistants** - the grown-up version of "vibe coding". Instead of accepting whatever AI spits out, vibegineering means:
+
+- **Engineer first, code second** - Set up architecture, testing, constraints
+- **AI handles typing, humans handle thinking** - AI writes code, experts make decisions
+- **Quality through process** - Professional engineering practices with AI acceleration
+- **Research + scaffolding = success** - This workflow embodies vibegineering principles
+
+*Reference: [JustHTML is a fascinating example of vibe engineering in action](https://simonwillison.net/2025/Dec/14/justhtml/)*
+
 ### **Traditional vs. AI-Research Workflow:**
 
-#### **Vibegineering Approach (Simon Willison's Term):**
+#### **Vibecoding (Naive AI Usage):**
 ```
 1. Have idea based on vibes/intuition
-2. Start coding immediately (feels right!)
-3. Hit roadblocks and technical debt
-4. Research frantically when stuck
-5. Multiple rewrites and dead ends
+2. Ask AI to "just write the code"
+3. Accept whatever AI spits out (no review)
+4. Hit bugs and technical debt
+5. Debug frantically without understanding
 6. Eventually stumble into working solution
-7. High stress, wasted time, technical debt
+7. High stress, wasted time, fragile code
+```
+
+#### **Vibegineering (Simon Willison's Positive Approach):**
+```
+1. Have idea with professional intent
+2. Engineer/research/scaffold first (comprehensive)
+3. Set up proper testing, architecture, constraints
+4. Use AI as coding assistant (not replacement)
+5. Expert review and quality assurance
+6. Systematic development with solid foundations
+7. Reliable, maintainable, high-quality results
 ```
 
 #### **AI-Research Approach (Antidote to Vibegineering):**
