@@ -264,6 +264,7 @@ curl -X POST http://localhost:8080/api/v1/tools/robot_control \
 - **[Pyroelectric Sensors Guide](docs/PYROELECTRIC_SENSORS_GUIDE.md)** 🔍 **Ultra-small motion detection - AM312 (6x4.5mm), HC-SR501, PIR sensors ($1-5)**
 - **[Component Reuse Hacks](docs/COMPONENT_REUSE_HACKS.md)** 🔧 **Creative electronics salvage - Philips Hue bulbs, HDD motors, smartphone cameras**
 - **[World Labs Unity Integration Fix](docs/WORLDLABS_UNITY_INTEGRATION_FIX.md)** 🏠 **Resolve Marble .spz to Unity splat format incompatibilities + Scout vbot improvements**
+- **[Import Nekomimi-chan VRM Guide](docs/IMPORT_NEKOMIMI_VRM_GUIDE.md)** 🐱 **High-priority VRM avatar import for VRoid Studio model in avatar-mcp**
 - **[Comprehensive Project Notes](docs/COMPREHENSIVE_NOTES.md)** 📖 **Complete project documentation!**
 - **[VRM vs Robot Models](docs/VRM_VS_ROBOT_MODELS.md)** 🤖 **VRM format guide - when to use VRM vs FBX/GLB**
 - **[Unity Vbot Instantiation Guide](docs/UNITY_VBOT_INSTANTIATION.md)** 🎮 **Complete guide for instantiating virtual robots in Unity3D**
