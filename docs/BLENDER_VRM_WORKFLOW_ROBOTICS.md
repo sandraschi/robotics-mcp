@@ -70,6 +70,8 @@ Want a VRM dogbot? → Blender (DIY required)
 
 **Before touching any 3D software, let AI be your research assistant.** Build comprehensive knowledge of the "VRM scene" through systematic information gathering. Implementation becomes dramatically easier with a solid research foundation.
 
+**📚 [General AI Research Workflow](AI_RESEARCH_WORKFLOW.md)** - This VRM-specific research phase follows our comprehensive AI-powered research methodology for all development projects. The general workflow covers domain mapping, tool discovery, community intelligence, and web scraping integration across all technology domains.
+
 ### **Why Research First?**
 - **Avoid dead ends** - Know which tools actually work for non-humanoids
 - **Understand constraints** - VRM's humanoid limitations become clear
