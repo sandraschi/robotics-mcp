@@ -25,11 +25,22 @@
 
 **For dogbots, caterpillars, articulated arms, or ANY non-humanoid VRM - you need alternatives!**
 
-### **📝 Note: Tool Research Status**
+### **📝 Note: Web Scraping Tool Status**
 
-**BrightData MCP search tools are non-functional** (stale API token), but the **fetch MCP tool works perfectly** and provided current information about VRM tools.
+#### **BrightData MCP Tools (Currently Broken):**
+**BrightData is excellent for bypassing entry barriers** - CAPTCHAs, EU consent popups, anti-bot measures, geo-restrictions. It's designed specifically for scraping restrictive websites that block regular access.
 
-#### **Successfully Researched with Fetch Tool:**
+**Current Issue:** API token appears stale/expired. When working, BrightData provides:
+- ✅ **Residential proxies** (bypass geo-blocks)
+- ✅ **CAPTCHA solving** (automatic)
+- ✅ **EU popup handling** (GDPR/consent bypass)
+- ✅ **JavaScript rendering** (dynamic content)
+- ✅ **Anti-detection** (looks like real users)
+
+**Recommendation:** Refresh BrightData API token when possible - it's very valuable for research on sites with "are you human?" tests and EU popups.
+
+#### **Current Working Alternative:**
+**Fetch MCP tool works well** for accessible sites without entry barriers. Successfully retrieved:
 - **VRM Specification:** https://github.com/vrm-c/vrm-specification
 - **UniVRM (Unity):** https://github.com/vrm-c/UniVRM
 - **VRM Consortium:** https://vrm.dev/en/
