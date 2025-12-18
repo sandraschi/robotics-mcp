@@ -22,24 +22,25 @@
 
 ### **Traditional vs. AI-Research Workflow:**
 
-#### **Traditional Approach:**
+#### **Vibegineering Approach (Simon Willison's Term):**
 ```
-1. Have idea
-2. Start coding immediately
-3. Hit roadblocks
-4. Research frantically
-5. Rewrite code multiple times
-6. Eventually find good solution
+1. Have idea based on vibes/intuition
+2. Start coding immediately (feels right!)
+3. Hit roadblocks and technical debt
+4. Research frantically when stuck
+5. Multiple rewrites and dead ends
+6. Eventually stumble into working solution
+7. High stress, wasted time, technical debt
 ```
 
-#### **AI-Research Approach:**
+#### **AI-Research Approach (Antidote to Vibegineering):**
 ```
 1. Have idea
-2. AI research phase (comprehensive)
-3. Clear technical path identified
-4. Implementation follows known best practices
-5. Smooth development with fewer roadblocks
-6. Higher success rate
+2. AI research phase (comprehensive, systematic)
+3. Clear technical path identified upfront
+4. Implementation follows proven best practices
+5. Smooth development with predictable outcomes
+6. Higher success rate, lower stress, future-proof
 ```
 
 ---
