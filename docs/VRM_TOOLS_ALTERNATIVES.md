@@ -25,6 +25,17 @@
 
 **For dogbots, caterpillars, articulated arms, or ANY non-humanoid VRM - you need alternatives!**
 
+### **📝 Note: BrightData Search Tool Limitations**
+
+**BrightData MCP search tools returned empty results during research.** The information in this guide is based on known VRM ecosystem tools and community knowledge. If you have access to working web search tools, you may find additional or updated VRM tools by searching for:
+
+- "VRM creation tools alternatives to VRoid Studio"
+- "Blender VRM add-on robotics"
+- "Unity UniVRM non-humanoid models"
+- "Daz Studio VRM export"
+
+**The major tools listed below are well-established in the VRM community and should work for creating non-humanoid VRM models.**
+
 ---
 
 ## 🔧 **Top VRM Creation Alternatives**
