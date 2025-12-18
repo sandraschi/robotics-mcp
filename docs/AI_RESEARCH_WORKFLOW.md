@@ -357,6 +357,38 @@ Phase 4: Scrape engine documentation, asset marketplaces
 
 ## 📚 **Examples and Case Studies**
 
+### **Case Study: Birthday Reminder Tool (Vibe to Vibegineering)**
+```
+Vibe: "I always forget friends and family birthdays, I need a tool to remind me, calendar in Windows ain't good enough"
+
+Phase 1: Domain Mapping
+- Research existing birthday reminder solutions (apps, services, integrations)
+- Study calendar APIs (Google Calendar, Outlook, Apple Calendar)
+- Analyze notification systems (Windows notifications, email, SMS, smart home)
+
+Phase 2: Tool & Technology Discovery
+- Calendar APIs: Google Calendar API, Microsoft Graph, Apple Calendar
+- Notification options: Windows Toast, email services, Twilio SMS, IFTTT
+- Data sources: social media APIs, contact imports, CSV uploads
+- Storage: local SQLite, cloud database, or simple JSON files
+
+Phase 3: Community Intelligence
+- Birthday reminder subreddits and forums
+- Stack Overflow questions about calendar integrations
+- GitHub repositories for birthday reminder apps
+- Reviews of existing birthday reminder services
+
+Phase 4: Web Scraping Integration
+- Scrape documentation for calendar APIs
+- Collect examples of notification implementations
+- Gather user feedback on existing solutions
+- Extract code snippets for calendar integrations
+
+Result: Comprehensive birthday reminder system with multiple notification channels,
+social media integration, and automated contact importing. Not just "good enough" -
+actually solves the core problem with redundancy and reliability.
+```
+
 ### **Case Study: Robotics Middleware Selection**
 ```
 Problem: Choosing between ROS, ROS2, and alternatives for Unity robotics
