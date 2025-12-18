@@ -34,6 +34,7 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 - **ROS Bridge Integration**: [Robot Operating System](docs/ROS_FUNDAMENTALS.md) 1.4 (Melodic) via rosbridge_suite
 - **LiDAR Sensing**: [Affordable 3D LiDAR Guide](docs/LIDAR_GUIDE.md) - Livox Mid-360 ($399), RPLIDAR ($99), and more
 - **Tiny Controllers**: [Pico & Micro Boards](docs/TINY_CONTROLLERS_GUIDE.md) - Raspberry Pi Pico, ESP32, Arduino Nano for small robots
+- **Motion Detection**: [Pyroelectric Sensors Guide](docs/PYROELECTRIC_SENSORS_GUIDE.md) - AM312, HC-SR501 ultra-small PIR sensors ($1-5)
 - **Multi-Robot Coordination**: Physical and virtual robots together
 - **World Labs Marble/Chisel**: Environment generation and import
 - **Dual Transport**: stdio (MCP) + HTTP (FastAPI) endpoints
@@ -260,6 +261,7 @@ curl -X POST http://localhost:8080/api/v1/tools/robot_control \
 - **[ROS Fundamentals](docs/ROS_FUNDAMENTALS.md)** 🤖 **Complete guide to the Robot Operating System - what ROS is, why it matters, core concepts, and ROS 1 vs ROS 2**
 - **[LiDAR Guide](docs/LIDAR_GUIDE.md)** 📡 **Affordable 3D sensing - Livox Mid-360 ($399), RPLIDAR ($99), integration, and robotics applications**
 - **[Tiny Controllers Guide](docs/TINY_CONTROLLERS_GUIDE.md)** 🎮 **Smallest microcontroller boards for robotics - Raspberry Pi Pico, ESP32, Arduino Nano, Teensy**
+- **[Pyroelectric Sensors Guide](docs/PYROELECTRIC_SENSORS_GUIDE.md)** 🔍 **Ultra-small motion detection - AM312 (6x4.5mm), HC-SR501, PIR sensors ($1-5)**
 - **[Comprehensive Project Notes](docs/COMPREHENSIVE_NOTES.md)** 📖 **Complete project documentation!**
 - **[VRM vs Robot Models](docs/VRM_VS_ROBOT_MODELS.md)** 🤖 **VRM format guide - when to use VRM vs FBX/GLB**
 - **[Unity Vbot Instantiation Guide](docs/UNITY_VBOT_INSTANTIATION.md)** 🎮 **Complete guide for instantiating virtual robots in Unity3D**
