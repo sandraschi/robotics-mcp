@@ -10,7 +10,7 @@
 
 ## 💡 **Philips Hue Lightbulb Robot Lighting Hack**
 
-**Your idea is brilliant!** Disassembling Philips Hue bulbs for robot lighting is a perfect example of creative component reuse.
+**Your idea is useful!** Disassembling Philips Hue bulbs for robot lighting is a good example of creative component reuse.
 
 ### **The Hue Bulb Hack - Step by Step**
 
