@@ -44,6 +44,7 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 ## 📚 Documentation
 
 - **[AI Research Workflow](docs/AI_RESEARCH_WORKFLOW.md)** 🧠 **Architect first: AI-powered research methodology for all development**
+- **[Vienna Technical Museum Makerspace](docs/VIENNA_TECHNICAL_MUSEUM_MAKERSPACE.md)** 🛠️ **Fantastic makerspace - free equipment, pay only consumables!**
 - **[Progress Report](docs/PROGRESS_REPORT.md)** 🎉 **Comprehensive project status and achievements!**
 - **[Unity Vbot Instantiation Guide](docs/UNITY_VBOT_INSTANTIATION.md)** - Complete guide for instantiating virtual robots in Unity3D with proper terminology
 
