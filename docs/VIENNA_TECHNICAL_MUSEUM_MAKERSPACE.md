@@ -19,6 +19,12 @@ The **Vienna Technical Museum** (Technisches Museum Wien - TMW) houses Austria's
 - **Age**: 16+ (some restrictions for minors)
 - **Website**: [technischesmuseum.at/en](https://www.technischesmuseum.at/en)
 
+### **Insider Tips:**
+- **Hard to Find**: Located on the 3rd floor in the very back of the museum
+- **Busy Despite Location**: Well worth seeking out - gets good traffic
+- **Navigation**: Take the stairs/elevator to level 3, head to the rear section
+- **Worth the Hunt**: Fantastic facility with professional equipment
+
 ---
 
 ## 🛠️ **Equipment & Facilities**
@@ -227,4 +233,25 @@ Mariahilfer Straße 212
 
 ---
 
-**This makerspace represents the gold standard for community fabrication facilities - professional equipment, free access, and incredible value for robotics development!** 🛠️🤖
+## ⚡ **Museum Experience Highlights**
+
+### **High Voltage Demonstration**
+- **Interactive Physics**: Experience real electrical phenomena safely
+- **Faraday Cage**: Reach into active electrical field wearing chain mail glove
+- **Lightning Effect**: Feel the "lightning strike" on your hand (connected to cage)
+- **Educational & Fun**: Perfect demonstration of electromagnetic principles
+- **Photo Opportunity**: Great shots of the electrical discharge effect
+
+### **techLAB Atmosphere**
+- **Professional Environment**: Well-equipped workspace with expert supervision
+- **Active Community**: Makers actively using equipment despite hidden location
+- **Safety First**: Proper training and PPE requirements maintained
+- **Museum Integration**: Unique blend of historical exhibits and modern making
+
+### **Visitor Tips**
+- **Plan Extra Time**: Factor in time to find the makerspace on 3rd floor
+- **Explore Museum**: Don't miss the broader technical exhibits while there
+- **Photography**: Many photo opportunities, especially in high voltage demo
+- **Group Visits**: Great place to bring interested friends/family
+
+**This makerspace represents the gold standard for community fabrication facilities - professional equipment, free access, and incredible value for robotics development!** 🛠️🤖⚡
