@@ -1,0 +1,33 @@
+{
+  "scripts": {
+    "postinstall": "node src/check-python.js",
+    "test": "node bin/robotics-mcp.js --help"
+  },
+  "bin": {
+    "robotics-mcp": "./bin/robotics-mcp.js"
+  },
+  "main": "bin/robotics-mcp.js",
+  "license": "MIT",
+  "version": "0.1.0",
+  "homepage": "https://github.com/sandraschi/robotics-mcp#readme",
+  "author": "Sandra Schi",
+  "description": "Unified robotics control via MCP - Physical and virtual robots (bot + vbot)",
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "fastmcp",
+    "robotics"
+  ],
+  "bugs": {
+    "url": "https://github.com/sandraschi/robotics-mcp/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sandraschi/robotics-mcp.git"
+  },
+  "name": "@sandraschi/robotics-mcp"
+}

@@ -4,9 +4,78 @@ Robotics MCP Server - Unified control for physical and virtual robots.
 FastMCP 2.13+ compliant server with dual transport (stdio/HTTP) and MCP server composition.
 """
 
-import asyncio
-import logging
+# CRITICAL: Set stdio to binary mode on Windows for Antigravity IDE compatibility
+# Antigravity IDE is strict about JSON-RPC protocol and interprets trailing \r as "invalid trailing data"
+# This must happen BEFORE any imports that might write to stdout
+import os
 import sys
+
+if os.name == 'nt':  # Windows only
+    try:
+        # Force binary mode for stdin/stdout to prevent CRLF conversion
+        import msvcrt
+        msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+        msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+    except (OSError, AttributeError):
+        # Fallback: just ensure no CRLF conversion
+        pass
+
+# DevNullStdout class for stdio mode to prevent any console output during initialization
+class DevNullStdout:
+    """Suppress all stdout writes during stdio mode to prevent JSON-RPC protocol corruption."""
+    def __init__(self, original_stdout):
+        self.original_stdout = original_stdout
+        self.buffer = []
+
+    def write(self, text):
+        # Buffer output instead of writing to stdout
+        self.buffer.append(text)
+
+    def flush(self):
+        # Do nothing - prevent any stdout writes
+        pass
+
+    def get_buffered_output(self):
+        """Get all buffered output for debugging if needed."""
+        return ''.join(self.buffer)
+
+    def restore(self):
+        """Restore original stdout."""
+        sys.stdout = self.original_stdout
+
+# CRITICAL: Detect stdio mode BEFORE importing logger
+# This must be done before ANY logging imports
+_is_stdio_mode = not sys.stdout.isatty()
+
+# NUCLEAR OPTION: Completely disable logger during stdio mode
+# Import logger first, then replace it with a no-op to prevent any stdout writes
+import logging
+
+if _is_stdio_mode:
+    # Replace stdout with our devnull version to catch any accidental writes
+    original_stdout = sys.stdout
+    sys.stdout = DevNullStdout(original_stdout)
+
+    # Create a null logger that does nothing
+    class NullLogger:
+        def debug(self, *args, **kwargs): pass
+        def info(self, *args, **kwargs): pass
+        def warning(self, *args, **kwargs): pass
+        def error(self, *args, **kwargs): pass
+        def critical(self, *args, **kwargs): pass
+        def exception(self, *args, **kwargs): pass
+
+        def setLevel(self, *args, **kwargs): pass
+        def addHandler(self, *args, **kwargs): pass
+        def removeHandler(self, *args, **kwargs): pass
+
+    # Replace the logging module's getLogger function
+    original_getLogger = logging.getLogger
+    def null_getLogger(name=None):
+        return NullLogger()
+    logging.getLogger = null_getLogger
+
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
@@ -21,7 +90,9 @@ from .utils.config_loader import ConfigLoader
 from .utils.error_handler import format_error_response, format_success_response, handle_tool_error
 from .utils.state_manager import RobotStateManager
 from .tools.robot_control import RobotControlTool
+from .tools.robot_manufacturing import RobotManufacturingTool
 from .tools.robot_model_tools import RobotModelTools
+from .tools.vbot_crud import VbotCrudTool
 
 # Configure structured logging
 structlog.configure(
@@ -124,8 +195,10 @@ class RoboticsMCP:
             )
             self.robot_control = RobotControlTool(self.mcp, self.state_manager, self.mounted_servers)
             self.robot_behavior = RobotBehaviorTool(self.mcp, self.state_manager, self.mounted_servers)
+            self.robot_manufacturing = RobotManufacturingTool(self.mcp, self.state_manager, self.mounted_servers)
             self.robot_virtual = RobotVirtualTool(self.mcp, self.state_manager, self.mounted_servers)
             self.robot_model_tools = RobotModelTools(self.mcp, self.state_manager, self.mounted_servers)
+            self.vbot_crud = VbotCrudTool(self.mcp, self.state_manager, self.mounted_servers)
 
             # Register all tools
             self._register_tools()
@@ -347,8 +420,12 @@ class RoboticsMCP:
             
             self.robot_control.register()  # Control: movement, status, control
             logger.debug("Registered robot_control tool")
-            
+
             self.robot_behavior.register()  # Behavior: animation, camera, navigation, manipulation
+            logger.debug("Registered robot_behavior tool")
+
+            self.robot_manufacturing.register()  # Manufacturing: 3D printers, CNC, laser cutters
+            logger.debug("Registered robot_manufacturing tool")
             logger.debug("Registered robot_behavior tool")
             
             self.robot_virtual.register()  # Virtual: CRUD + virtual robot operations
@@ -356,6 +433,9 @@ class RoboticsMCP:
             
             self.robot_model_tools.register()  # Model: create, import, export, convert, spz operations
             logger.debug("Registered robot_model_tools tool")
+
+            self.vbot_crud.register()  # Virtual robot CRUD operations
+            logger.debug("Registered vbot_crud tool")
 
             tools = getattr(self.mcp, '_tools', {})
             logger.info("All tools registered", tool_count=len(tools), tool_names=list(tools.keys()))
@@ -678,6 +758,25 @@ def main():
 
     try:
         server = RoboticsMCP(config)
+
+        # CRITICAL: After server initialization, restore stdout for stdio mode
+        # This allows the server to communicate via JSON-RPC while preventing initialization logging
+        if _is_stdio_mode:
+            if hasattr(sys.stdout, 'restore'):
+                sys.stdout.restore()
+                # Now we can safely write to stdout for JSON-RPC communication
+
+            # Restore the original logging functionality
+            logging.getLogger = original_getLogger
+
+            # Set up proper logging to stderr only (not stdout)
+            import logging
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                stream=sys.stderr  # Critical: log to stderr, not stdout
+            )
+
         server.run(mode=args.mode, host=args.host, port=args.port)
     except Exception as e:
         import traceback

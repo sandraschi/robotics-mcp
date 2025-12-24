@@ -1,0 +1,51 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["sandraschi"],
+  "name": "robotics-mcp",
+  "description": "Unified robotics control via MCP - Physical and virtual robots (bot + vbot). ALPHA status - requires multiple composited MCP servers to function.",
+  "type": "mcp_server",
+  "status": "alpha",
+  "framework": "FastMCP 2.13+",
+  "tools": 11,
+  "transport": ["stdio", "http"],
+  "dependencies": {
+    "required_mcp_servers": [
+      "osc-mcp",
+      "unity3d-mcp",
+      "vrchat-mcp",
+      "avatar-mcp",
+      "blender-mcp",
+      "gimp-mcp"
+    ],
+    "note": "This server composes 6+ MCP servers - all must be properly configured and running for full functionality"
+  },
+  "keywords": [
+    "robotics",
+    "mcp-server",
+    "ros",
+    "unity",
+    "vrchat",
+    "virtual-robotics",
+    "fastmcp",
+    "moorebot",
+    "unitree",
+    "alpha",
+    "mcp-composition"
+  ],
+  "features": {
+    "physical_robots": {
+      "enabled": false,
+      "note": "Planned - hardware arriving XMas 2025"
+    },
+    "virtual_robots": {
+      "enabled": true,
+      "prioritized": true,
+      "platforms": ["unity", "vrchat", "resonite"]
+    },
+    "mcp_composition": {
+      "enabled": true,
+      "composed_servers": 6
+    }
+  }
+}
+

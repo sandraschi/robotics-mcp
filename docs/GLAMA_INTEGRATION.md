@@ -15,6 +15,17 @@ Our **robotics-mcp** repository has been discovered and indexed by the Glama.ai 
 - **URL**: https://glama.ai/mcp/servers/%40sandraschi/robotics-mcp
 - **Status**: ✅ Indexed and Discoverable
 - **Search Terms**: `robotics-mcp`, `robotics`, `ros`, `unity`, `vrchat`, `sandraschi`, `moorebot`, `unitree`
+- **Discovery Method**: `glama.json` file in repository root (now added)
+
+### glama.json Configuration
+
+**Important**: Glama.ai uses `glama.json` for discovery (not naming conventions). Our `glama.json` clearly indicates:
+- Alpha status
+- Required composited MCP servers
+- Virtual robotics prioritization
+- MCP server composition requirements
+
+See `glama.json` in repository root for full configuration.
 
 ## 📊 Project Statistics
 
@@ -52,6 +63,40 @@ Our **robotics-mcp** repository has been discovered and indexed by the Glama.ai 
 - **Repository Analytics**: Views, downloads, engagement tracking
 
 ## 🔧 Repository Configuration
+
+### glama.json
+
+Repository metadata for Glama.ai indexing (located in repository root):
+```json
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["sandraschi"],
+  "name": "robotics-mcp",
+  "description": "Unified robotics control via MCP - Physical and virtual robots (bot + vbot). ALPHA status - requires multiple composited MCP servers to function.",
+  "type": "mcp_server",
+  "status": "alpha",
+  "framework": "FastMCP 2.13+",
+  "tools": 11,
+  "transport": ["stdio", "http"],
+  "dependencies": {
+    "required_mcp_servers": [
+      "osc-mcp",
+      "unity3d-mcp",
+      "vrchat-mcp",
+      "avatar-mcp",
+      "blender-mcp",
+      "gimp-mcp"
+    ],
+    "note": "This server composes 6+ MCP servers - all must be properly configured and running for full functionality"
+  }
+}
+```
+
+**Key Points:**
+- `"status": "alpha"` clearly indicates development status
+- `"dependencies.required_mcp_servers"` lists all 6 required composited servers
+- `"type": "mcp_server"` indicates this is an MCP server (not dual architecture)
+- Glama.ai will use this file for discovery and indexing
 
 ### Project Metadata
 - **Name**: robotics-mcp
@@ -119,6 +164,7 @@ Glama.ai automatically scans our repository for updates through:
 - [x] FastMCP 2.13+ compliance
 
 ### Platform Integration
+- [x] `glama.json` file created in repository root
 - [x] Repository indexed and discoverable
 - [x] Repository topics and description optimized
 - [x] GitHub Releases with MCPB packages
@@ -164,9 +210,12 @@ Glama.ai automatically scans our repository for updates through:
 ## 📋 Action Items
 
 ### Immediate
+- [x] `glama.json` file created in repository root
 - [x] Repository indexed and discoverable on Glama.ai
 - [x] Documentation created (this file)
 - [x] Repository metadata optimized
+- [x] Alpha status clearly documented in glama.json
+- [x] MCP server dependencies listed in glama.json
 - [ ] Monitor initial quality score from Glama.ai
 - [ ] Set up webhook integration (if available)
 

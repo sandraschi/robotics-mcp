@@ -1,6 +1,9 @@
 """Virtual Robot CRUD tool - Create, Read, Update, Delete for virtual robots."""
 
+import json
 from typing import Any, Dict, Literal, Optional
+
+from ..utils.mcp_client_helper import call_mounted_server_tool
 
 import structlog
 from fastmcp import Client
@@ -8,6 +11,32 @@ from fastmcp import Client
 from ..utils.error_handler import format_error_response, format_success_response, handle_tool_error
 
 logger = structlog.get_logger(__name__)
+
+
+def extract_result_data(result):
+    """Extract data from CallToolResult object."""
+    # Try .data attribute first (most direct)
+    if hasattr(result, 'data') and result.data:
+        return result.data
+
+    # Try .content attribute
+    if hasattr(result, 'content') and result.content:
+        if isinstance(result.content, list) and len(result.content) > 0:
+            first_content = result.content[0]
+            if hasattr(first_content, 'text'):
+                try:
+                    return json.loads(first_content.text)
+                except:
+                    return {"status": "success", "message": first_content.text}
+        elif hasattr(result.content, 'text'):
+            try:
+                return json.loads(result.content.text)
+            except:
+                return {"status": "success", "message": result.content.text}
+
+    # Fallback
+    return {"status": "unknown", "raw": str(result)}
+
 
 # Supported robot types
 SUPPORTED_ROBOT_TYPES = [
@@ -148,7 +177,7 @@ class VbotCrudTool:
                 else:
                     return format_error_response(f"Unknown operation: {operation}", error_type="validation_error")
             except Exception as e:
-                return handle_tool_error("vbot_crud", e, operation=operation, robot_type=robot_type, robot_id=robot_id)
+                return handle_tool_error("vbot_crud", e, action=operation, context={"robot_type": robot_type, "robot_id": robot_id})
 
     async def _create_vbot(
         self,
@@ -210,7 +239,8 @@ class VbotCrudTool:
         # Spawn in Unity/VRChat via mounted servers
         spawn_result = await self._spawn_in_platform(robot_id, robot_type, platform, position, scale, model_path)
 
-        if spawn_result.get("status") != "success":
+        spawn_data = extract_result_data(spawn_result)
+        if spawn_data.get("status") != "success":
             # Cleanup registration if spawn failed
             self.state_manager.unregister_robot(robot_id)
             return spawn_result
@@ -347,26 +377,27 @@ class VbotCrudTool:
         """
         try:
             if platform == "unity" and "unity" in self.mounted_servers:
-                async with Client(self.mcp) as client:
-                    # Use unity3d-mcp execute_unity_method to spawn robot
-                    # This calls VbotSpawner.SpawnRobot() static method
-                    # VbotSpawner.SpawnRobot(string robotId, string robotType, Vector3 position, float scale)
-                    pos = position or {"x": 0.0, "y": 0.0, "z": 0.0}
-                    scale_val = scale or 1.0
-                    result = await client.call_tool(
-                        "execute_unity_method",
-                        {
-                            "class_name": "VbotSpawner",
-                            "method_name": "SpawnRobot",
-                            "parameters": {
-                                "robotId": robot_id,
-                                "robotType": robot_type,
-                                "position": {"x": pos.get("x", 0.0), "y": pos.get("y", 0.0), "z": pos.get("z", 0.0)},
-                                "scale": scale_val,
-                            },
+                # Use unity3d-mcp execute_unity_method to spawn robot
+                # This calls VbotSpawner.SpawnRobot() static method
+                # VbotSpawner.SpawnRobot(string robotId, string robotType, Vector3 position, float scale)
+                pos = position or {"x": 0.0, "y": 0.0, "z": 0.0}
+                scale_val = scale or 1.0
+                result = await call_mounted_server_tool(
+                    self.mounted_servers,
+                    "unity",
+                    "execute_unity_method",
+                    {
+                        "class_name": "VbotSpawner",
+                        "method_name": "SpawnRobot",
+                        "parameters": {
+                            "robotId": robot_id,
+                            "robotType": robot_type,
+                            "position": {"x": pos.get("x", 0.0), "y": pos.get("y", 0.0), "z": pos.get("z", 0.0)},
+                            "scale": scale_val,
                         },
-                    )
-                    return result
+                    },
+                )
+                return result
             elif platform == "vrchat" and "osc" in self.mounted_servers:
                 # VRChat spawning via OSC
                 async with Client(self.mcp) as client:

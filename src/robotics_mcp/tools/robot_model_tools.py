@@ -807,10 +807,63 @@ class RobotModelTools:
             # Generate a single script that creates all objects
             create_script = f"""
 import bpy
+import math
+from mathutils import Vector, Euler
 
 # Clear default objects
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)
+
+def create_mecanum_wheel(wheel_radius=0.025, wheel_thickness=0.015, roller_count=12, roller_angle=45.0, location=(0,0,0), rotation=(0,0,0), name="mecanum_wheel"):
+    \"\"\"Create a proper mecanum wheel with angled rollers.\"\"\"
+    # Create main wheel hub (cylinder)
+    bpy.ops.mesh.primitive_cylinder_add(
+        radius=wheel_radius * 0.3,
+        depth=wheel_thickness,
+        location=location,
+        rotation=rotation
+    )
+    wheel_hub = bpy.context.active_object
+    wheel_hub.name = f"{{name}}_hub"
+
+    # Create main wheel rim (torus/donut shape for rollers to attach to)
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=wheel_radius * 0.8,
+        minor_radius=wheel_radius * 0.15,
+        major_segments=roller_count * 2,
+        minor_segments=8,
+        location=location,
+        rotation=rotation
+    )
+    wheel_rim = bpy.context.active_object
+    wheel_rim.name = f"{{name}}_rim"
+
+    # Create rollers
+    angle_step = 2 * math.pi / roller_count
+    for i in range(roller_count):
+        angle = i * angle_step
+        roller_x = location[0] + math.cos(angle) * (wheel_radius * 0.8)
+        roller_y = location[1] + math.sin(angle) * (wheel_radius * 0.8)
+        roller_z = location[2]
+
+        bpy.ops.mesh.primitive_cylinder_add(
+            radius=wheel_radius * 0.12,
+            depth=wheel_thickness * 0.9,
+            location=(roller_x, roller_y, roller_z),
+            rotation=(rotation[0], rotation[1], rotation[2] + math.radians(roller_angle))
+        )
+        roller = bpy.context.active_object
+        roller.name = f"{{name}}_roller_{{i+1}}"
+        roller.parent = wheel_rim
+        roller.rotation_euler.z += angle
+
+    # Create main wheel object
+    bpy.ops.object.empty_add(location=location, rotation=rotation)
+    main_wheel = bpy.context.active_object
+    main_wheel.name = name
+    wheel_hub.parent = main_wheel
+    wheel_rim.parent = main_wheel
+    return main_wheel
 
 # Step 1: Create main body
 bpy.ops.mesh.primitive_cube_add(
@@ -823,27 +876,31 @@ body.name = "{robot_type}_body"
 
 # Step 2: Add robot-specific features
 if "{robot_type}" in ["scout", "scout_e"]:
-    # Add wheels (4 mecanum wheels) - vertical orientation on sides
+    # Add proper mecanum wheels
     wheel_radius = 0.025
     wheel_thickness = 0.015
-    # Position wheels on the sides of the body, at the corners
-    # Wheels are on the SIDES (Y-axis), rotated 90° on X-axis to be vertical
     wheel_positions = [
         {wheel_positions[0]},  # Front-left
         {wheel_positions[1]},  # Front-right
         {wheel_positions[2]},  # Back-left
         {wheel_positions[3]},  # Back-right
     ]
-    for i, pos in enumerate(wheel_positions):
-        bpy.ops.mesh.primitive_cylinder_add(
-            radius=wheel_radius,
-            depth=wheel_thickness,
+    wheel_names = ["front_left", "front_right", "back_left", "back_right"]
+
+    wheel_names = ["front_left", "front_right", "back_left", "back_right"]
+    for i, (pos, name) in enumerate(zip(wheel_positions, wheel_names)):
+        # Alternate roller angles for proper mecanum movement
+        roller_angle = 45.0 if name in ["front_left", "back_right"] else -45.0
+
+        wheel = create_mecanum_wheel(
+            wheel_radius=wheel_radius,
+            wheel_thickness=wheel_thickness,
             location=pos,
-            rotation=(1.5708, 0, 0)  # Rotate 90 degrees (pi/2 radians) on X-axis to make vertical
+            rotation=(math.radians(90), 0, 0),  # Vertical orientation
+            roller_angle=roller_angle,
+            name="{robot_type}_wheel_" + name
         )
-        wheel = bpy.context.active_object
-        wheel.name = "{robot_type}_wheel_" + str(i+1)
-    
+
     # Add camera module
     camera_size = 0.012
     bpy.ops.mesh.primitive_cylinder_add(
@@ -853,7 +910,7 @@ if "{robot_type}" in ["scout", "scout_e"]:
     )
     camera = bpy.context.active_object
     camera.name = "{robot_type}_camera"
-    
+
     # Add top mounting plate
     bpy.ops.mesh.primitive_cube_add(
         size=1,
@@ -875,7 +932,7 @@ mat_wheel = bpy.data.materials.new(name="ScoutWheel")
 mat_wheel.use_nodes = True
 mat_wheel.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (0.1, 0.1, 0.1, 1.0)
 for obj in bpy.data.objects:
-    if "wheel" in obj.name.lower():
+    if "wheel" in obj.name.lower() and obj.type == 'MESH':
         obj.data.materials.append(mat_wheel)
 
 # Camera material (yellow)
@@ -884,6 +941,14 @@ if "{robot_type}_camera" in bpy.data.objects:
     mat_camera.use_nodes = True
     mat_camera.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (0.8, 0.8, 0.2, 1.0)
     bpy.data.objects["{robot_type}_camera"].data.materials.append(mat_camera)
+
+# Mounting plate material (gray)
+mat_plate = bpy.data.materials.new(name="ScoutPlate")
+mat_plate.use_nodes = True
+mat_plate.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (0.5, 0.5, 0.5, 1.0)
+for obj in bpy.data.objects:
+    if "plate" in obj.name.lower() and obj.type == 'MESH':
+        obj.data.materials.append(mat_plate)
 
 # Select all and frame view
 bpy.ops.object.select_all(action='SELECT')
@@ -901,7 +966,7 @@ try:
                 override['region'] = area.regions[-1]
                 bpy.ops.view3d.view_all(override)
                 break
-        print("Framed all objects in viewport")
+    print("Framed all objects in viewport")
 except Exception as e:
     print(f"Note: Could not frame viewport (background mode): {{str(e)}}")
 
@@ -985,7 +1050,7 @@ except Exception as save_error:
                     "blender",
                     "blender_export",
                     {
-                        "operation": "export_fbx",
+                        "operation": "export_unity",
                         "output_path": output_path,
                     },
                 )

@@ -22,7 +22,6 @@ if str(project_root) not in sys.path:
 
 from robotics_mcp.server import RoboticsMCP, RoboticsConfig
 from fastmcp import Client
-from fastmcp.messages import CallToolResult
 
 
 async def test_spawn_scout():
@@ -126,7 +125,7 @@ async def test_spawn_scout():
     print("  4. Test robot_animation, robot_camera, robot_navigation tools")
 
 
-def print_result(test_name: str, result: CallToolResult):
+def print_result(test_name: str, result):
     """Print test result."""
     if result.is_error:
         error_message = "Unknown error"
