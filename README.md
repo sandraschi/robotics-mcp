@@ -11,14 +11,15 @@
 
 ## ⚠️ Important: Alpha Status & Dependencies
 
-**This server is in ALPHA and requires multiple composited MCP servers to function:**
+**This server is in ALPHA status with Cursor MCP integration working:**
 
-- **Required MCP Servers**: `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp`
+- **✅ Cursor MCP Integration**: Server now starts successfully in Cursor IDE
+- **⏸️ MCP Server Composition**: Mounted servers temporarily disabled for stability (can be re-enabled)
 - **Status**: Active development - features may change, break, or be incomplete
 - **Virtual Robotics**: Prioritized (vbot) - physical robot support coming after hardware arrives (XMas 2025)
-- **MCP Server Composition**: This server composes 6+ MCP servers - all must be properly configured and running
+- **Core Functionality**: 7 portmanteau tools available for robot control and management
 
-See [MCP Server Dependencies](#-mcp-server-dependencies) section for setup details.
+See [Cursor MCP Setup](#-cursor-mcp-setup) section for integration details.
 
 ## 🎯 Overview
 
@@ -26,7 +27,7 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 
 **🚀 Project Stats**: ~9,200 lines of code, ~2,600 lines of tests, ~4,100 lines of documentation
 
-⚠️ **ALPHA STATUS - ONGOING DEVELOPMENT**: This server is in active development and requires multiple composited MCP servers to function properly. See [MCP Server Dependencies](#-mcp-server-dependencies) below.
+⚠️ **ALPHA STATUS - CURSOR INTEGRATION WORKING**: Server successfully starts in Cursor MCP mode. Mounted servers temporarily disabled for stability.
 
 ### Key Features
 
@@ -40,8 +41,9 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 - **Multi-Robot Coordination**: Physical and virtual robots together
 - **World Labs Marble/Chisel**: Environment generation and import
 - **Dual Transport**: stdio (MCP) + HTTP (FastAPI) endpoints
-- **MCP Server Composition**: Integrates with `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp`
-- **Robot Model Creation**: Automated 3D model creation using `blender-mcp` (geometry) + `gimp-mcp` (textures)
+- **MCP Server Composition**: Ready for integration with `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp` (temporarily disabled)
+- **7 Portmanteau Tools**: `robotics_system`, `robot_control`, `robot_behavior`, `robot_manufacturing`, `robot_virtual`, `robot_model_tools`, `vbot_crud`
+- **Robot Model Creation**: Framework ready for automated 3D model creation
 
 ## 📚 Documentation
 
@@ -52,25 +54,29 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 
 ## 🚀 Quick Start
 
-### Installation
+### Cursor MCP Integration
 
-```bash
-# Clone repository
-git clone https://github.com/sandraschi/robotics-mcp.git
-cd robotics-mcp
+✅ **The robotics-mcp server now works in Cursor IDE!**
 
-# Install dependencies
-pip install -e ".[dev]"
+**Setup Steps:**
+1. Install the package: `pip install -e ".[dev]"`
+2. Add to Cursor MCP configuration using the provided `mcpb.json`
+3. The server will automatically start when enabled in Cursor
 
-# Or install from PyPI (when published)
-pip install robotics-mcp
-```
+**Available Tools:**
+- `robotics_system` - System management (help, status, list_robots)
+- `robot_control` - Physical robot control (ready for hardware)
+- `robot_behavior` - Robot behavior and animation
+- `robot_manufacturing` - 3D printing and CNC control
+- `robot_virtual` - Virtual robotics operations
+- `robot_model_tools` - Model creation and conversion
+- `vbot_crud` - Virtual robot lifecycle management
 
 ### MCP Server Dependencies
 
-⚠️ **CRITICAL**: This server requires multiple composited MCP servers to function. You must install and configure all of the following:
+⏸️ **TEMPORARILY DISABLED**: MCP server composition is currently disabled for stability. The core robotics-mcp functionality works independently.
 
-**Required MCP Servers:**
+**Future Integration:**
 - **`osc-mcp`**: OSC communication for real-time robot control
 - **`unity3d-mcp`**: Unity3D integration for virtual robotics
 - **`vrchat-mcp`**: VRChat integration for social VR testing
@@ -78,20 +84,14 @@ pip install robotics-mcp
 - **`blender-mcp`**: 3D model creation (geometry)
 - **`gimp-mcp`**: Texture creation and image processing
 
-**Setup Steps:**
-1. Install each MCP server in your Claude Desktop/Cursor IDE configuration
-2. Ensure all servers are enabled and running
-3. Configure `robotics-mcp` to use the correct prefixes (see Configuration below)
-4. Verify connectivity using `robotics_system(operation="status")` tool
+**Re-enabling Steps (when ready):**
+1. Uncomment `_mount_mcp_servers()` call in `server.py`
+2. Install and configure each MCP server in Cursor
+3. Test connectivity using `robotics_system(operation="status")`
 
-**Troubleshooting:**
-- If tools fail, check that all required MCP servers are enabled
-- Use `robotics_system(operation="status")` to verify mounted server connectivity
-- See [MCP Integration](docs/MCP_INTEGRATION.md) for detailed setup
+### Configuration (Optional)
 
-### Configuration
-
-Create configuration file at `~/.robotics-mcp/config.yaml`:
+The server works out-of-the-box without configuration. For advanced setups, create `~/.robotics-mcp/config.yaml`:
 
 ```yaml
 robotics:
@@ -104,52 +104,50 @@ robotics:
   virtual:
     enabled: true
     platform: "unity"
-    unity:
-      host: "localhost"
-      port: 8080
-  mcp_integration:
-    osc_mcp:
-      enabled: true
-      prefix: "osc"
-    unity3d_mcp:
-      enabled: true
-      prefix: "unity"
-    vrchat_mcp:
-      enabled: true
-      prefix: "vrchat"
-    avatar_mcp:
-      enabled: true
-      prefix: "avatar"
-    blender_mcp:
-      enabled: true
-      prefix: "blender"
-    gimp_mcp:
-      enabled: true
-      prefix: "gimp"
 server:
   enable_http: true
   http_port: 8080
   log_level: "INFO"
 ```
 
+**MCP Integration Config** (for when mounted servers are re-enabled):
+```yaml
+mcp_integration:
+  osc_mcp:
+    enabled: true
+    prefix: "osc"
+  unity3d_mcp:
+    enabled: true
+    prefix: "unity"
+  vrchat_mcp:
+    enabled: true
+    prefix: "vrchat"
+  avatar_mcp:
+    enabled: true
+    prefix: "avatar"
+  blender_mcp:
+    enabled: true
+    prefix: "blender"
+  gimp_mcp:
+    enabled: true
+    prefix: "gimp"
+```
+
 ### Running the Server
 
-#### stdio Mode (MCP Protocol)
+**Primary Usage**: Configure as MCP server in Cursor IDE using `mcpb.json`
+
+#### Manual Operation (Development)
 
 ```bash
-python -m robotics_mcp.server --mode stdio
-```
+# MCP stdio mode (for testing)
+python -m robotics_mcp --mode stdio
 
-#### HTTP Mode (FastAPI)
+# HTTP API mode
+python -m robotics_mcp --mode http --port 8080
 
-```bash
-python -m robotics_mcp.server --mode http --port 8080
-```
-
-#### Dual Mode (Both stdio + HTTP)
-
-```bash
-python -m robotics_mcp.server --mode dual --port 8080
+# Dual mode (stdio + HTTP)
+python -m robotics_mcp --mode dual --port 8080
 ```
 
 ## 🛠️ Usage
@@ -339,36 +337,27 @@ mypy src/
 
 ## 🔧 Troubleshooting
 
-### MCP Server UI Desync (Critical for Composite Servers)
+### Cursor MCP Integration Issues
 
-**Problem:** Cursor IDE UI shows "error, no tools" for MCP servers, but the server process is running fine. This is **critical** for `robotics-mcp` because it composes 6+ MCP servers - if ANY desyncs, the entire workflow breaks.
+**Problem:** Server not appearing in Cursor MCP tools
 
 **Symptoms:**
-- Cursor IDE shows "error, no tools" for one or more MCP servers
-- Agent silently fails when trying to use robotics-mcp tools
-- Workflow breaks without clear error message
+- "robotics-mcp" not showing in MCP tools list
+- Tools not available in Cursor
 
 **Quick Fix:**
-1. Open Cursor IDE Settings → Features → Model Context Protocol
-2. For each server showing "error, no tools": Disable → Enable
-3. Wait ~5-10 seconds for reconnection
-4. Verify tools appear
+1. Open Cursor Settings → Features → Model Context Protocol
+2. Add new server using the `mcpb.json` configuration
+3. Ensure the server shows as "Healthy" in the list
+4. Restart Cursor if needed
 
-**Health Check:**
-```powershell
-# Check health of all robotics-mcp dependencies
-.\scripts\check-robotics-mcp-health.ps1
+**Server Status Check:**
+```bash
+# Verify server starts correctly
+python -c "from robotics_mcp.server import RoboticsMCP; RoboticsMCP(); print('SUCCESS')"
 ```
 
-**Automated Fix:**
-```powershell
-# Get instructions for fixing desynced servers
-.\scripts\fix-mcp-desync.ps1
-```
-
-**Full Documentation:**
-- [Composite MCP UI Desync - Critical Issue](docs/COMPOSITE_MCP_UI_DESYNC_CRITICAL.md)
-- [Cursor IDE Log Structure Analysis](docs/CURSOR_IDE_LOG_STRUCTURE_ANALYSIS.md)
+**Configuration File:** Use `mcpb.json` in the project root for Cursor MCP setup.
 
 ### Other Issues
 
@@ -404,7 +393,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Status**: ⚠️ **ALPHA - Ongoing Development** - Virtual robotics (vbot) prioritized, physical robot support coming after hardware arrives (XMas 2025)
+**Status**: ✅ **ALPHA - Cursor Integration Working** - Core robotics-mcp functionality operational, mounted servers temporarily disabled for stability
 
-**⚠️ Requires Multiple MCP Servers**: This server composes 6+ MCP servers (`osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp`) - all must be properly configured and running for full functionality.
+**⏸️ MCP Server Composition**: Currently runs standalone. Integration with `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp` planned for future releases.
 

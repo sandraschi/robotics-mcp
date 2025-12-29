@@ -1,69 +1,43 @@
 # MCP Servers Status Report
 
-**Date**: 2025-12-07  
-**Time**: 01:30 UTC
+**Date**: 2025-12-29
+**Time**: 03:00 UTC
 
-## Overall Status: ✅ HEALTHY
+## Overall Status: ✅ ROBOTICS-MCP WORKING IN CURSOR
 
-All MCP servers are operational and properly integrated.
+Robotics MCP server successfully starts in Cursor IDE. Mounted servers temporarily disabled for stability.
 
 ## Main Server: robotics-mcp
 
-- **Status**: ✅ Healthy
+- **Status**: ✅ Healthy (Cursor integration working)
 - **Version**: 0.1.0
-- **Transport**: stdio (HTTP disabled)
+- **Transport**: stdio (MCP protocol)
+- **Cursor IDE**: ✅ Successfully starts and responds to MCP initialize
 - **Robots Registered**: 0 (ready for vbots)
-- **Tools Registered**: 5 core tools
-- **Mounted Servers**: 4/4 available
+- **Tools Registered**: 7 core portmanteau tools
+- **Mounted Servers**: 0/6 disabled (for stability)
 
-### Core Tools
-1. ✅ `robot_model` - Model operations (create, import, export, convert)
-2. ✅ `vbot_crud` - Virtual robot CRUD operations
-3. ✅ `robotics_system` - System management (help, status, list_robots)
-4. ✅ `robot_control` - Physical robot control (ready for hardware)
-5. ✅ `virtual_robotics` - Virtual robotics operations
+### Core Tools (7 Available)
+1. ✅ `robotics_system` - System management (help, status, list_robots)
+2. ✅ `robot_control` - Physical robot control (ready for hardware)
+3. ✅ `robot_behavior` - Robot behavior and animation control
+4. ✅ `robot_manufacturing` - 3D printing and CNC operations
+5. ✅ `robot_virtual` - Virtual robotics operations
+6. ✅ `robot_model_tools` - Model creation, import, export, conversion
+7. ✅ `vbot_crud` - Virtual robot lifecycle management
 
-## Mounted MCP Servers
+## Mounted MCP Servers (Temporarily Disabled)
 
-### 1. osc-mcp ✅
-- **Status**: Available
-- **Tools**: `osc_send_osc`, `osc_start_osc_server`, `osc_stop_osc_server`
-- **Purpose**: OSC communication for VRChat/audio
-- **Usage**: VRChat vbot spawning, audio control
-- **Health**: ✅ Connected
+### Status: ⏸️ DISABLED FOR STABILITY
+Mounted servers are temporarily disabled to ensure robotics-mcp starts reliably in Cursor. They can be re-enabled once their import stability is improved.
 
-### 2. unity3d-mcp ✅
-- **Status**: Available
-- **Key Tools**: 
-  - `execute_unity_method` - Execute C# methods in Unity
-  - `import_marble_world` - World Labs Marble integration
-  - `import_vrm_avatar` - VRM avatar import
-- **Purpose**: Unity3D integration and control
-- **Usage**: Vbot spawning, scene manipulation
-- **Health**: ✅ Connected
-- **Unity Editor**: ⏳ Should be running for full functionality
-
-### 3. blender-mcp ✅
-- **Status**: Available
-- **Key Tools**:
-  - `blender_mesh` - Mesh creation operations
-  - `blender_export` - FBX/GLB export
-  - `blender_material` - Material creation
-- **Purpose**: 3D model creation and manipulation
-- **Usage**: Robot model creation, export to Unity
-- **Health**: ✅ Connected
-- **Blender**: ✅ Running (4.4.0)
-
-### 4. gimp-mcp ✅
-- **Status**: Available
-- **Key Tools**:
-  - `gimp_file` - File operations
-  - `gimp_filter` - Image filters
-  - `gimp_texture` - Texture creation
-- **Purpose**: Texture and image processing
-- **Usage**: Robot textures, material maps
-- **Health**: ✅ Connected
-- **GIMP**: ✅ Running
+**Planned Integration:**
+- **`osc-mcp`**: OSC communication for VRChat/audio
+- **`unity3d-mcp`**: Unity3D integration and control
+- **`blender-mcp`**: 3D model creation and manipulation
+- **`gimp-mcp`**: Texture and image processing
+- **`vrchat-mcp`**: VRChat integration for social VR testing
+- **`avatar-mcp`**: Avatar management and animation
 
 ## Integration Status
 
@@ -175,5 +149,5 @@ await robotics_system(operation="help")
 
 ## Summary
 
-**All MCP servers are healthy and ready!** The robotics-mcp ecosystem is fully operational with all 4 mounted servers available. The Scout vbot is successfully created and imported to Unity. Next step is to complete the Unity setup (Prefab + VbotSpawner) and test spawning.
+**Robotics MCP server is working in Cursor IDE!** ✅ The core robotics-mcp functionality is operational with 7 portmanteau tools available. Mounted servers are temporarily disabled for stability but can be re-enabled when their import processes are stabilized. The server successfully responds to MCP protocol messages and integrates properly with Cursor.
 

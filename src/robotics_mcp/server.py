@@ -1,5 +1,5 @@
-"""
-Robotics MCP Server - Unified control for physical and virtual robots.
+#!/usr/bin/env python3
+"""Robotics MCP Server - Unified control for physical and virtual robots.
 
 FastMCP 2.13+ compliant server with dual transport (stdio/HTTP) and MCP server composition.
 """
@@ -47,55 +47,22 @@ class DevNullStdout:
 # This must be done before ANY logging imports
 _is_stdio_mode = not sys.stdout.isatty()
 
-# NUCLEAR OPTION: Completely disable logger during stdio mode
-# Import logger first, then replace it with a no-op to prevent any stdout writes
-import logging
-
-if _is_stdio_mode:
-    # Replace stdout with our devnull version to catch any accidental writes
-    original_stdout = sys.stdout
-    sys.stdout = DevNullStdout(original_stdout)
-
-    # Create a null logger that does nothing
-    class NullLogger:
-        def __init__(self):
-            self.handlers = []  # Add handlers attribute
-            self.filters = []   # Add filters attribute
-            self.level = 0
-            self.disabled = False  # Add disabled attribute
-            self.name = "null"     # Add name attribute
-
-        def debug(self, *args, **kwargs): pass
-        def info(self, *args, **kwargs): pass
-        def warning(self, *args, **kwargs): pass
-        def error(self, *args, **kwargs): pass
-        def critical(self, *args, **kwargs): pass
-        def exception(self, *args, **kwargs): pass
-
-        def setLevel(self, *args, **kwargs): pass
-        def getEffectiveLevel(self): return 0  # Return lowest level (most verbose)
-        def addHandler(self, *args, **kwargs): pass
-        def removeHandler(self, *args, **kwargs): pass
-        def addFilter(self, *args, **kwargs): pass
-        def removeFilter(self, *args, **kwargs): pass
-        def getChild(self, suffix): return self  # Return self for getChild
-
-    # Replace the logging module's getLogger function
-    original_getLogger = logging.getLogger
-    def null_getLogger(name=None):
-        return NullLogger()
-    logging.getLogger = null_getLogger
-
+# Import all necessary modules
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 
 import structlog
+from pydantic import BaseModel, Field
+
+# TEMPORARILY DISABLE FastMCP IMPORT FOR DEBUGGING
+# Import FastMCP BEFORE doing logging replacement
+from fastmcp import FastMCP, Client
+
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from fastmcp import FastMCP, Client
-from pydantic import BaseModel, Field
 
 from .utils.config_loader import ConfigLoader
 from .utils.error_handler import format_error_response, format_success_response, handle_tool_error
@@ -144,12 +111,17 @@ class RoboticsConfig(BaseModel):
     config_path: Optional[str] = Field(default=None, description="Path to config YAML file")
 
 
-@asynccontextmanager
-async def server_lifespan(mcp_instance: FastMCP):
-    """Server lifespan for startup and cleanup."""
-    logger.info("Robotics MCP server starting up", version="0.1.0")
-    yield
-    logger.info("Robotics MCP server shutting down")
+# TEMPORARILY DISABLE LIFESPAN FOR DEBUGGING
+# @asynccontextmanager
+# async def server_lifespan(mcp_instance: FastMCP):
+#     """Server lifespan for startup and cleanup."""
+#     logger.info("Robotics MCP server starting up", version="0.1.0")
+#     yield
+#     logger.info("Robotics MCP server shutting down")
+
+def server_lifespan(mcp_instance):
+    """Stub lifespan function."""
+    return None
 
 
 class RoboticsMCP:
@@ -163,11 +135,10 @@ class RoboticsMCP:
         """
         self.config = config or RoboticsConfig()
 
-        # Initialize FastMCP with lifespan
+        # Initialize FastMCP without lifespan to avoid context manager issues
         self.mcp = FastMCP(
             name="Robotics-MCP",
             version="0.1.0",
-            lifespan=server_lifespan,
         )
 
         # Initialize managers
@@ -340,11 +311,15 @@ class RoboticsMCP:
 
     def _mount_mcp_servers(self):
         """Load external MCP servers for internal use (NOT exposed as tools).
-        
+
         These servers are kept in self.mounted_servers for internal use via Client.call_tool(),
         but their tools are NOT exposed to avoid tool explosion. Only robotics-mcp's own
         portmanteau tools are exposed.
         """
+        # TEMPORARILY DISABLED FOR DEBUGGING
+        logger.info("Mounted servers temporarily disabled to fix startup issue")
+        return
+
         try:
             # Load osc-mcp (for internal use only)
             try:
@@ -428,7 +403,7 @@ class RoboticsMCP:
             # Register consolidated portmanteau tools (SOTA: 5 tools total)
             self.robotics_system.register()  # System: help, status, list_robots
             logger.debug("Registered robotics_system tool")
-            
+
             self.robot_control.register()  # Control: movement, status, control
             logger.debug("Registered robot_control tool")
 
@@ -438,10 +413,10 @@ class RoboticsMCP:
             self.robot_manufacturing.register()  # Manufacturing: 3D printers, CNC, laser cutters
             logger.debug("Registered robot_manufacturing tool")
             logger.debug("Registered robot_behavior tool")
-            
+
             self.robot_virtual.register()  # Virtual: CRUD + virtual robot operations
             logger.debug("Registered robot_virtual tool")
-            
+
             self.robot_model_tools.register()  # Model: create, import, export, convert, spz operations
             logger.debug("Registered robot_model_tools tool")
 
@@ -456,247 +431,6 @@ class RoboticsMCP:
             logger.error("Failed to register tools", error=str(e), exc_info=True)
             print(f"ERROR: {error_msg}", file=sys.stderr)
             raise
-
-    # System tools moved to robotics_system portmanteau
-    # Keeping this method for backwards compatibility but it's now empty
-    def _register_system_tools(self):
-        """Register system management tools (DEPRECATED - use robotics_system portmanteau)."""
-        pass
-        # Legacy code removed - use robotics_system portmanteau instead
-        # @self.mcp.tool()
-        # async def help() -> Dict[str, Any]:
-        #     """Get help information about the Robotics MCP server and its tools.
-        #
-        #     Returns comprehensive information about the server's purpose, available tools,
-        #     and how to use them. This is the primary entry point for understanding
-        #     the Robotics MCP's capabilities.
-        #
-        #     Returns:
-        #         A dictionary containing server information, a list of available tools
-        #         with their descriptions, and usage guidance.
-        #
-        #     Examples:
-        #         Get help information:
-        #             help_info = await help()
-        #             # Returns: {
-        #             #     "server_name": "Robotics-MCP",
-        #             #     "version": "0.1.0",
-        #             #     "description": "...",
-        #             #     "tools": [...]
-        #             # }
-        #     """
-        #     try:
-        #         # Get all registered tools
-        #         tools_info = []
-        #         for tool_name, tool_info in self.mcp.list_tools().items():
-        #             tools_info.append(
-        #                 {
-        #                     "name": tool_name,
-        #                     "description": tool_info.get("description", ""),
-        #                 }
-        #             )
-        #
-        #         return {
-        #             "server_name": "Robotics-MCP",
-        #             "version": "0.1.0",
-        #             "description": (
-        #                 "Unified robotics control via MCP - Physical and virtual robots (bot + vbot). "
-        #                 "Provides comprehensive control for Moorebot Scout, Unitree robots, and virtual "
-        #                 "robots in Unity/VRChat. Integrates with osc-mcp, unity3d-mcp, vrchat-mcp, and "
-        #                 "avatar-mcp for seamless virtual robotics testing."
-        #             ),
-        #             "features": [
-        #                 "Physical robot control (ROS 1.4 via rosbridge)",
-        #                 "Virtual robot control (Unity3D/VRChat/Resonite)",
-        #                 "YDLIDAR SuperLight (95g) LiDAR integration",
-        #                 "World Labs Marble/Chisel environment generation",
-        #                 "Multi-robot coordination",
-        #                 "Dual transport (stdio + HTTP)",
-        #             ],
-        #             "tools": tools_info,
-        #             "mounted_servers": list(self.mounted_servers.keys()),
-        #             "configuration": {
-        #                 "http_enabled": self.config.enable_http,
-        #                 "http_port": self.config.http_port if self.config.enable_http else None,
-        #                 "config_path": str(self.config_loader.config_path),
-        #             },
-        #         }
-        #     except Exception as e:
-        #         logger.error("Failed to generate help", error=str(e), exc_info=True)
-        #         return format_error_response("Failed to generate help information", details={"error": str(e)})
-
-        @self.mcp.tool()
-        async def get_status() -> Dict[str, Any]:
-            """Get robotics MCP server status with connectivity tests.
-
-            Returns comprehensive server status including:
-            - Server version and health
-            - Registered robots (bot + vbot)
-            - Mounted MCP servers and their connectivity
-            - Configuration status
-            - HTTP server status (if enabled)
-
-            This tool also tests connectivity to mounted MCP servers to verify
-            they are properly configured and accessible.
-
-            Returns:
-                Dictionary containing server status information with connectivity test results.
-
-            Examples:
-                Get server status:
-                    status = await get_status()
-                    # Returns: {
-                    #     "version": "0.1.0",
-                    #     "status": "healthy",
-                    #     "robots": [...],
-                    #     "mounted_servers": {
-                    #         "osc": {"available": True, "tools": 3},
-                    #         "unity": {"available": True, "tools": 12}
-                    #     },
-                    #     "http_enabled": True,
-                    #     "http_port": 8080
-                    # }
-            """
-            try:
-                robots = self.state_manager.list_robots()
-
-                # Test mounted server connectivity
-                mounted_servers_status: Dict[str, Any] = {}
-                for server_name, server_instance in self.mounted_servers.items():
-                    try:
-                        # Try to list tools from mounted server
-                        if hasattr(server_instance, "list_tools"):
-                            tools = server_instance.list_tools()
-                            mounted_servers_status[server_name] = {
-                                "available": True,
-                                "tools_count": len(tools) if isinstance(tools, dict) else 0,
-                            }
-                        else:
-                            mounted_servers_status[server_name] = {
-                                "available": True,
-                                "tools_count": "unknown",
-                            }
-                    except Exception as e:
-                        logger.warning(
-                            "Mounted server connectivity test failed",
-                            server=server_name,
-                            error=str(e),
-                        )
-                        mounted_servers_status[server_name] = {
-                            "available": False,
-                            "error": str(e),
-                        }
-
-                # Test HTTP server if enabled
-                http_status = None
-                if self.config.enable_http:
-                    try:
-                        import socket
-
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        sock.settimeout(1)
-                        result = sock.connect_ex((self.config.http_host, self.config.http_port))
-                        sock.close()
-                        http_status = {
-                            "enabled": True,
-                            "host": self.config.http_host,
-                            "port": self.config.http_port,
-                            "reachable": result == 0,
-                        }
-                    except Exception as e:
-                        logger.warning("HTTP server status check failed", error=str(e))
-                        http_status = {
-                            "enabled": True,
-                            "host": self.config.http_host,
-                            "port": self.config.http_port,
-                            "reachable": False,
-                            "error": str(e),
-                        }
-
-                return format_success_response(
-                    "Server status retrieved successfully",
-                    data={
-                        "version": "0.1.0",
-                        "status": "healthy",
-                        "robots": [r.to_dict() for r in robots],
-                        "robots_count": len(robots),
-                        "mounted_servers": mounted_servers_status,
-                        "http": http_status,
-                        "config": {
-                            "http_enabled": self.config.enable_http,
-                            "log_level": self.config.log_level,
-                        },
-                    },
-                )
-            except Exception as e:
-                return handle_tool_error("get_status", e)
-
-        @self.mcp.tool()
-        async def list_robots(
-            robot_type: Optional[str] = None, is_virtual: Optional[bool] = None
-        ) -> Dict[str, Any]:
-            """List all registered robots with optional filtering.
-
-            Retrieves a list of all registered robots (both physical and virtual)
-            with optional filtering by robot type or virtual/physical status.
-            Returns detailed information about each robot including status,
-            platform, and metadata.
-
-            Args:
-                robot_type: Optional filter by robot type. Valid values:
-                    - "scout": Moorebot Scout robots
-                    - "go2": Unitree Go2 robots
-                    - "g1": Unitree G1 robots
-                    - Any custom robot type string
-                    If None, returns all robot types.
-                is_virtual: Optional filter by virtual/physical status:
-                    - True: Only virtual robots (vbots)
-                    - False: Only physical robots (bots)
-                    - None: Both virtual and physical robots
-
-            Returns:
-                Dictionary containing:
-                    - count: Number of robots matching filters
-                    - robots: List of robot dictionaries with:
-                        - robot_id: Unique robot identifier
-                        - robot_type: Type of robot
-                        - platform: Platform (unity, vrchat, ros, etc.)
-                        - is_virtual: Whether robot is virtual
-                        - connected: Connection status
-                        - metadata: Additional robot metadata
-
-            Examples:
-                List all robots:
-                    result = await list_robots()
-                    # Returns: {"count": 3, "robots": [...]}
-
-                List only virtual robots:
-                    result = await list_robots(is_virtual=True)
-                    # Returns: {"count": 2, "robots": [vbot_1, vbot_2]}
-
-                List only Scout robots:
-                    result = await list_robots(robot_type="scout")
-                    # Returns: {"count": 1, "robots": [scout_01]}
-
-                List physical Scout robots:
-                    result = await list_robots(robot_type="scout", is_virtual=False)
-                    # Returns: {"count": 1, "robots": [scout_01]}
-            """
-            try:
-                robots = self.state_manager.list_robots(robot_type=robot_type, is_virtual=is_virtual)
-                return format_success_response(
-                    f"Found {len(robots)} robot(s)",
-                    data={
-                        "count": len(robots),
-                        "robots": [r.to_dict() for r in robots],
-                        "filters": {
-                            "robot_type": robot_type,
-                            "is_virtual": is_virtual,
-                        },
-                    },
-                )
-            except Exception as e:
-                return handle_tool_error("list_robots", e, context={"robot_type": robot_type, "is_virtual": is_virtual})
 
     def run(
         self,
@@ -777,9 +511,6 @@ def main():
                 sys.stdout.restore()
                 # Now we can safely write to stdout for JSON-RPC communication
 
-            # Restore the original logging functionality
-            logging.getLogger = original_getLogger
-
             # Set up proper logging to stderr only (not stdout)
             import logging
             logging.basicConfig(
@@ -796,6 +527,12 @@ def main():
         sys.exit(1)
 
 
+# NOW DO THE LOGGING REPLACEMENT AFTER ALL IMPORTS ARE COMPLETE
+if _is_stdio_mode:
+    # Replace stdout with our devnull version to catch any accidental writes
+    original_stdout = sys.stdout
+    sys.stdout = DevNullStdout(original_stdout)
+
+
 if __name__ == "__main__":
     main()
-
