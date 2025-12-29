@@ -58,6 +58,13 @@ if _is_stdio_mode:
 
     # Create a null logger that does nothing
     class NullLogger:
+        def __init__(self):
+            self.handlers = []  # Add handlers attribute
+            self.filters = []   # Add filters attribute
+            self.level = 0
+            self.disabled = False  # Add disabled attribute
+            self.name = "null"     # Add name attribute
+
         def debug(self, *args, **kwargs): pass
         def info(self, *args, **kwargs): pass
         def warning(self, *args, **kwargs): pass
@@ -66,8 +73,12 @@ if _is_stdio_mode:
         def exception(self, *args, **kwargs): pass
 
         def setLevel(self, *args, **kwargs): pass
+        def getEffectiveLevel(self): return 0  # Return lowest level (most verbose)
         def addHandler(self, *args, **kwargs): pass
         def removeHandler(self, *args, **kwargs): pass
+        def addFilter(self, *args, **kwargs): pass
+        def removeFilter(self, *args, **kwargs): pass
+        def getChild(self, suffix): return self  # Return self for getChild
 
     # Replace the logging module's getLogger function
     original_getLogger = logging.getLogger

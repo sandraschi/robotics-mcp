@@ -360,13 +360,13 @@ class RobotManufacturingTool:
 
     async def _octoprint_update_firmware(self, device_id: str) -> Dict[str, Any]:
         return format_success_response("Firmware update started", data={"device_id": device_id})
-
     # CNC and Laser cutter placeholders
     async def _handle_cnc_machine(self, device_id: str, category: str, action: str, **kwargs) -> Dict[str, Any]:
         return format_success_response(f"CNC {category} {action} - Coming soon!", data={"device_id": device_id})
 
     async def _handle_laser_cutter(self, device_id: str, category: str, action: str, **kwargs) -> Dict[str, Any]:
         return format_success_response(f"Laser cutter {category} {action} - Coming soon!", data={"device_id": device_id})
+
 
 
 
