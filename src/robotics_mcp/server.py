@@ -150,9 +150,14 @@ class RoboticsMCP:
 
         # MCP server composition (will be mounted if available)
         self.mounted_servers: Dict[str, Any] = {}
+        self._unity_available = False  # Flag for Unity availability
 
+        # NOTE: Server mounting is now done asynchronously in initialize_async()
+
+    async def initialize_async(self):
+        """Async initialization of MCP servers with proper error handling."""
         # Mount external MCP servers first (needed by tools)
-        self._mount_mcp_servers()
+        await self._mount_mcp_servers()
 
         # Initialize FastAPI for HTTP endpoints
         if self.config.enable_http:
@@ -169,6 +174,7 @@ class RoboticsMCP:
             from robotics_mcp.tools.robotics_system import RoboticsSystemTool
             from robotics_mcp.tools.robot_behavior import RobotBehaviorTool
             from robotics_mcp.tools.robot_virtual import RobotVirtualTool
+            from robotics_mcp.tools.workflow_management import WorkflowManagementTool
 
             # Consolidated portmanteau tools (SOTA: max 15 tools)
             # Note: RobotControlTool and RobotModelTools are imported at module level
@@ -180,7 +186,16 @@ class RoboticsMCP:
             self.robot_manufacturing = RobotManufacturingTool(self.mcp, self.state_manager, self.mounted_servers)
             self.robot_virtual = RobotVirtualTool(self.mcp, self.state_manager, self.mounted_servers)
             self.robot_model_tools = RobotModelTools(self.mcp, self.state_manager, self.mounted_servers)
-            self.vbot_crud = VbotCrudTool(self.mcp, self.state_manager, self.mounted_servers)
+            self.vbot_crud = VbotCrudTool(self.mcp, self.state_manager, self.mounted_servers, self._unity_available)
+            
+            # Workflow management tool
+            from robotics_mcp.utils.mcp_client_helper import call_mounted_server_tool
+            self.workflow_management = WorkflowManagementTool(
+                self.mcp,
+                mounted_servers=self.mounted_servers,
+                mcp_client_helper=lambda server, tool, args: call_mounted_server_tool(self.mounted_servers, server, tool, args),
+                app_launcher=None,  # TODO: Add app launcher integration
+            )
 
             # Register all tools
             self._register_tools()
@@ -309,19 +324,15 @@ class RoboticsMCP:
 
         self.http_app.include_router(router)
 
-    def _mount_mcp_servers(self):
+    async def _mount_mcp_servers(self):
         """Load external MCP servers for internal use (NOT exposed as tools).
 
         These servers are kept in self.mounted_servers for internal use via Client.call_tool(),
         but their tools are NOT exposed to avoid tool explosion. Only robotics-mcp's own
         portmanteau tools are exposed.
         """
-        # TEMPORARILY DISABLED FOR DEBUGGING
-        logger.info("Mounted servers temporarily disabled to fix startup issue")
-        return
-
         try:
-            # Load osc-mcp (for internal use only)
+            # Load osc-mcp (for internal use only) - starts in Cursor and works with MCP protocol
             try:
                 from oscmcp.mcp_server import server as osc_mcp_server
                 self.mounted_servers["osc"] = osc_mcp_server
@@ -329,71 +340,127 @@ class RoboticsMCP:
             except ImportError:
                 logger.warning("osc-mcp not available, skipping")
 
-            # Load unity3d-mcp (for internal use only)
-            try:
-                from unity3d_mcp.server import Unity3DMCP
-                unity_server = Unity3DMCP()
-                self.mounted_servers["unity"] = unity_server
-                logger.info("Loaded unity3d-mcp server (internal use only)")
-            except ImportError:
-                logger.warning("unity3d-mcp not available, skipping")
+            # Load Unity3D-MCP with robust error handling and timeout protection
+            await self._mount_unity_server_safely()
 
-            # Load vrchat-mcp (for internal use only)
-            try:
-                from vrchat_mcp import VRChatMCP
-                vrchat_server = VRChatMCP()
-                self.mounted_servers["vrchat"] = vrchat_server
-                logger.info("Loaded vrchat-mcp server (internal use only)")
-            except ImportError:
-                logger.warning("vrchat-mcp not available, skipping")
-
-            # Load avatar-mcp (for internal use only)
-            try:
-                from avatarmcp.server import AvatarMCPServer
-                avatar_server = AvatarMCPServer()
-                self.mounted_servers["avatar"] = avatar_server
-                logger.info("Loaded avatar-mcp server (internal use only)")
-            except ImportError:
-                logger.warning("avatar-mcp not available, skipping")
-
-            # Load blender-mcp (for internal use only)
-            try:
-                import sys
-                from pathlib import Path
-
-                blender_mcp_path = Path(__file__).parent.parent.parent.parent / "blender-mcp" / "src"
-                if str(blender_mcp_path) not in sys.path:
-                    sys.path.insert(0, str(blender_mcp_path))
-
-                from blender_mcp.app import get_app
-                blender_app = get_app()
-                self.mounted_servers["blender"] = blender_app
-                logger.info("Loaded blender-mcp server (internal use only)")
-            except ImportError as e:
-                logger.warning(f"blender-mcp not available, skipping: {e}")
-            except Exception as e:
-                logger.warning(f"Failed to load blender-mcp: {e}")
-
-            # Load gimp-mcp (for internal use only)
-            try:
-                import sys
-                from pathlib import Path
-
-                gimp_mcp_path = Path(__file__).parent.parent.parent.parent / "gimp-mcp" / "src"
-                if str(gimp_mcp_path) not in sys.path:
-                    sys.path.insert(0, str(gimp_mcp_path))
-
-                from gimp_mcp.main import GimpMCPServer
-                gimp_server = GimpMCPServer()
-                self.mounted_servers["gimp"] = gimp_server
-                logger.info("Loaded gimp-mcp server (internal use only)")
-            except ImportError as e:
-                logger.warning(f"gimp-mcp not available, skipping: {e}")
-            except Exception as e:
-                logger.warning(f"Failed to load gimp-mcp: {e}")
+            # DISABLED SERVERS - cause MCP protocol hangs or conflicts:
+            # - vrchat-mcp: causes MCP protocol hangs (may re-enable after Unity works)
+            # - avatar-mcp: causes timeseries conflicts
+            # - blender-mcp: causes MCP protocol hangs
+            # - gimp-mcp: causes MCP protocol hangs
+            #
+            # ✅ ENABLED SERVERS - working with proper error handling:
+            # - unity3d-mcp: enabled with timeout protection and fallbacks
 
         except Exception as e:
-            logger.error("Error loading MCP servers", error=str(e))
+            logger.error("Error loading MCP servers", error=str(e), exc_info=True)
+
+    async def _mount_unity_server_safely(self):
+        """Safely mount Unity3D MCP server with timeout and error handling."""
+        import asyncio
+
+        UNITY_LOAD_TIMEOUT = 30.0  # 30 second timeout
+        MAX_RETRY_ATTEMPTS = 3
+        RETRY_DELAY = 2.0
+
+        logger.info("Attempting to load Unity3D MCP server with safety measures",
+                   timeout=UNITY_LOAD_TIMEOUT, max_retries=MAX_RETRY_ATTEMPTS)
+
+        for attempt in range(MAX_RETRY_ATTEMPTS):
+            try:
+                # Create a task with timeout for Unity server loading
+                load_task = asyncio.create_task(self._load_unity_server())
+
+                try:
+                    # Wait for Unity server to load with timeout
+                    await asyncio.wait_for(load_task, timeout=UNITY_LOAD_TIMEOUT)
+                    logger.info("Successfully loaded Unity3D MCP server",
+                               attempt=attempt + 1, server_count=len(self.mounted_servers))
+                    return  # Success - exit retry loop
+
+                except asyncio.TimeoutError:
+                    logger.warning(f"Unity server load timeout (attempt {attempt + 1}/{MAX_RETRY_ATTEMPTS})",
+                                 timeout=UNITY_LOAD_TIMEOUT)
+                    load_task.cancel()  # Cancel the hanging task
+
+                    if attempt < MAX_RETRY_ATTEMPTS - 1:
+                        logger.info(f"Retrying Unity server load in {RETRY_DELAY}s...")
+                        await asyncio.sleep(RETRY_DELAY)
+                        continue
+                    else:
+                        logger.error("Unity server load failed after all retry attempts",
+                                   total_attempts=MAX_RETRY_ATTEMPTS)
+                        break
+
+            except Exception as e:
+                logger.warning(f"Unity server load failed (attempt {attempt + 1}/{MAX_RETRY_ATTEMPTS})",
+                             error=str(e), error_type=type(e).__name__)
+
+                if attempt < MAX_RETRY_ATTEMPTS - 1:
+                    logger.info(f"Retrying Unity server load in {RETRY_DELAY}s...")
+                    await asyncio.sleep(RETRY_DELAY)
+                else:
+                    logger.error("Unity server load failed after all retry attempts",
+                               total_attempts=MAX_RETRY_ATTEMPTS, final_error=str(e))
+                    break
+
+        # If we get here, Unity loading failed - log graceful degradation
+        logger.warning("Unity3D MCP server not available - virtual robot Unity integration disabled",
+                      fallback_mode="local_fallbacks_only",
+                      available_servers=list(self.mounted_servers.keys()))
+
+        # Set a flag for tools to know Unity is not available
+        self._unity_available = False
+
+    async def _load_unity_server(self):
+        """Load Unity3D MCP server with proper error isolation."""
+        try:
+            logger.debug("Importing unity3d_mcp server module...")
+
+            # Import with timeout protection
+            import sys
+            from pathlib import Path
+
+            # Add unity3d-mcp to path if not already there
+            unity_mcp_path = Path(__file__).parent.parent.parent.parent / "unity3d-mcp" / "src"
+            if str(unity_mcp_path) not in sys.path:
+                sys.path.insert(0, str(unity_mcp_path))
+                logger.debug("Added unity3d-mcp to Python path", path=str(unity_mcp_path))
+
+            # Import the server module
+            from unity3d_mcp.server import Unity3DMCP
+
+            logger.debug("Creating Unity3D MCP server instance...")
+
+            # Create server instance with default configuration
+            # Note: Unity3DMCP doesn't accept enable_http parameter
+            unity_server = Unity3DMCP()
+
+            # Test that server is responsive (quick health check)
+            logger.debug("Testing Unity server responsiveness...")
+            if hasattr(unity_server, 'app') and hasattr(unity_server.app, 'list_tools'):
+                # Quick tool listing to verify server is working
+                tools = await asyncio.get_event_loop().run_in_executor(
+                    None, unity_server.app.list_tools
+                )
+                logger.debug("Unity server health check passed", tool_count=len(tools) if tools else 0)
+
+            # Store the server
+            self.mounted_servers["unity"] = unity_server
+            self._unity_available = True
+
+            logger.info("Unity3D MCP server loaded successfully",
+                       tools_available=len(tools) if 'tools' in locals() else "unknown")
+
+        except ImportError as e:
+            logger.warning("Unity3D MCP not available (not installed)",
+                         error=str(e), import_path=str(unity_mcp_path))
+            raise  # Re-raise to trigger retry logic
+
+        except Exception as e:
+            logger.error("Failed to load Unity3D MCP server",
+                        error=str(e), error_type=type(e).__name__, exc_info=True)
+            raise  # Re-raise to trigger retry logic
 
     def _register_tools(self):
         """Register all MCP tools."""
@@ -422,6 +489,9 @@ class RoboticsMCP:
 
             self.vbot_crud.register()  # Virtual robot CRUD operations
             logger.debug("Registered vbot_crud tool")
+
+            self.workflow_management.register()  # Workflow management operations
+            logger.debug("Registered workflow_management tool")
 
             tools = getattr(self.mcp, '_tools', {})
             logger.info("All tools registered", tool_count=len(tools), tool_names=list(tools.keys()))
@@ -503,6 +573,10 @@ def main():
 
     try:
         server = RoboticsMCP(config)
+
+        # Async initialization of MCP servers
+        import asyncio
+        asyncio.run(server.initialize_async())
 
         # CRITICAL: After server initialization, restore stdout for stdio mode
         # This allows the server to communicate via JSON-RPC while preventing initialization logging

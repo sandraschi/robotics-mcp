@@ -4,17 +4,122 @@
 
 **Unified robotics control via MCP - Physical and virtual robots (bot + vbot)**
 
+## ⚠️ **CRITICAL REQUIREMENTS**
+
+### **Hardware (Recommended)**
+- **Physical Robot**: Moorebot Scout, Unitree Go2/G1/H1
+- **Without hardware**: Virtual robotics only (Unity3D + VRChat)
+
+### **Software (MANDATORY)**
+- ✅ **Unity 3D** (6000.2.14f1+) - [Installation Guide](docs/SETUP_PREREQUISITES.md#unity-3d-required-for-virtual-robotics)
+- ✅ **VRChat** - [Installation Guide](docs/SETUP_PREREQUISITES.md#vrchat-required-for-social-vr-robotics)
+- ✅ **5 MCP Servers** - [Installation Guide](docs/SETUP_PREREQUISITES.md#-required-mcp-servers)
+
+**Without these, the system will not function.** See [Complete Setup Guide](docs/SETUP_PREREQUISITES.md).
+
 [![FastMCP](https://img.shields.io/badge/FastMCP-2.13+-blue)](https://gofastmcp.com)
 [![Python](https://img.shields.io/badge/Python-3.10+-green)](https://www.python.org)
+[![Unity](https://img.shields.io/badge/Unity-6000.2.14+-black)](https://unity.com)
+[![VRChat](https://img.shields.io/badge/VRChat-Required-blue)](https://hello.vrchat.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-ALPHA-orange)](README.md#-important-alpha-status--dependencies)
 
-## ⚠️ Important: Alpha Status & Dependencies
+## ⚠️ **REQUIRED: Prerequisites & Dependencies**
+
+### **🔴 PHYSICAL ROBOTS (RECOMMENDED)**
+**You SHOULD own one of these supported robots:**
+- **Moorebot Scout** (primary focus) - Mecanum wheeled robot with LiDAR
+- **Unitree Go2** - Advanced quadrupedal robot
+- **Unitree G1** - Humanoid robot with arms
+- **Unitree H1** - Humanoid robot platform
+
+*Physical robots provide the complete robotics experience. Virtual robots are for testing/simulation.*
+
+### **🟡 REQUIRED SOFTWARE**
+**You MUST install these applications:**
+
+#### **Unity 3D** (Required for virtual robotics)
+```bash
+# Download and install Unity Hub from:
+# https://unity.com/download
+
+# Then install Unity Editor version 6000.2.14f1 or later:
+# 1. Open Unity Hub
+# 2. Go to "Installs" tab
+# 3. Click "Add" → "Official releases"
+# 4. Select "6000.2.14f1" (LTS recommended)
+# 5. Install with default components + Android Build Support
+```
+
+#### **VRChat** (Required for social VR robotics)
+```bash
+# Download from Steam:
+# https://store.steampowered.com/app/438100/VRChat/
+
+# Or from VRChat website:
+# https://hello.vrchat.com/
+```
+
+### **🟢 REQUIRED MCP SERVERS**
+**You MUST install and configure these MCP servers:**
+
+#### **1. Unity3D-MCP** (Virtual robot control)
+```bash
+# Clone and install:
+git clone https://github.com/sandraschi/unity3d-mcp.git
+cd unity3d-mcp
+pip install -e .
+
+# Add to Cursor MCP configuration
+```
+
+#### **2. OSC-MCP** (Real-time communication)
+```bash
+# Clone and install:
+git clone https://github.com/sandraschi/osc-mcp.git
+cd osc-mcp
+pip install -e .
+
+# Add to Cursor MCP configuration
+```
+
+#### **3. VRChat-MCP** (Social VR integration)
+```bash
+# Clone and install:
+git clone https://github.com/sandraschi/vrchat-mcp.git
+cd vrchat-mcp
+pip install -e .
+
+# Add to Cursor MCP configuration
+```
+
+#### **4. Blender-MCP** (3D model creation)
+```bash
+# Clone and install:
+git clone https://github.com/sandraschi/blender-mcp.git
+cd blender-mcp
+pip install -e .
+
+# Requires Blender 4.0+ installed
+```
+
+#### **5. Avatar-MCP** (Avatar management)
+```bash
+# Clone and install:
+git clone https://github.com/sandraschi/avatar-mcp.git
+cd avatar-mcp
+pip install -e .
+```
+
+---
+
+## ⚠️ Important: Alpha Status & Current State
 
 **This server is in ALPHA status with Cursor MCP integration working:**
 
 - **✅ Cursor MCP Integration**: Server now starts successfully in Cursor IDE
-- **⏸️ MCP Server Composition**: Mounted servers temporarily disabled for stability (can be re-enabled)
+- **✅ Unity Integration**: Now enabled with robust error handling and fallbacks
+- **⏸️ Other MCP Servers**: Composition temporarily limited for stability
 - **Status**: Active development - features may change, break, or be incomplete
 - **Virtual Robotics**: Prioritized (vbot) - physical robot support coming after hardware arrives (XMas 2025)
 - **Core Functionality**: 7 portmanteau tools available for robot control and management
@@ -47,6 +152,7 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 
 ## 📚 Documentation
 
+- **[Setup Prerequisites](docs/SETUP_PREREQUISITES.md)** ⚠️ **REQUIRED: Complete installation guide for Unity3D, VRChat, and all MCP servers**
 - **[AI Research Workflow](docs/AI_RESEARCH_WORKFLOW.md)** 🧠 **Architect first: AI-powered research methodology for all development**
 - **[Vienna Technical Museum Makerspace](docs/VIENNA_TECHNICAL_MUSEUM_MAKERSPACE.md)** 🛠️ **Fantastic makerspace - free equipment, pay only consumables!**
 - **[Progress Report](docs/PROGRESS_REPORT.md)** 🎉 **Comprehensive project status and achievements!**
@@ -54,14 +160,18 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 
 ## 🚀 Quick Start
 
+### Prerequisites Check
+⚠️ **BEFORE STARTING**: Complete all [Setup Prerequisites](docs/SETUP_PREREQUISITES.md) - Unity3D, VRChat, and MCP servers are REQUIRED.
+
 ### Cursor MCP Integration
 
 ✅ **The robotics-mcp server now works in Cursor IDE!**
 
 **Setup Steps:**
-1. Install the package: `pip install -e ".[dev]"`
-2. Add to Cursor MCP configuration using the provided `mcpb.json`
-3. The server will automatically start when enabled in Cursor
+1. **Complete Prerequisites**: Install Unity3D, VRChat, and all required MCP servers
+2. Install the package: `pip install -e ".[dev]"`
+3. Add to Cursor MCP configuration using the provided `mcpb.json`
+4. The server will automatically start when enabled in Cursor
 
 **Available Tools:**
 - `robotics_system` - System management (help, status, list_robots)
@@ -72,22 +182,27 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 - `robot_model_tools` - Model creation and conversion
 - `vbot_crud` - Virtual robot lifecycle management
 
-### MCP Server Dependencies
+### MCP Server Integration
 
-⏸️ **TEMPORARILY DISABLED**: MCP server composition is currently disabled for stability. The core robotics-mcp functionality works independently.
+✅ **ENABLED WITH SAFETY**: Unity3D-MCP is now enabled with robust error handling, timeouts, and fallbacks.
 
-**Future Integration:**
-- **`osc-mcp`**: OSC communication for real-time robot control
-- **`unity3d-mcp`**: Unity3D integration for virtual robotics
-- **`vrchat-mcp`**: VRChat integration for social VR testing
-- **`avatar-mcp`**: Avatar management and animation
-- **`blender-mcp`**: 3D model creation (geometry)
-- **`gimp-mcp`**: Texture creation and image processing
+**Active Integration:**
+- **`osc-mcp`**: ✅ **ENABLED** - OSC communication for real-time robot control
+- **`unity3d-mcp`**: ✅ **ENABLED** - Unity3D integration for virtual robotics
+- **`vrchat-mcp`**: ⏸️ **DISABLED** - VRChat integration (protocol conflicts)
+- **`avatar-mcp`**: ⏸️ **DISABLED** - Avatar management (timeseries conflicts)
+- **`blender-mcp`**: ⏸️ **DISABLED** - 3D model creation (protocol hangs)
+- **`gimp-mcp`**: ⏸️ **DISABLED** - Texture creation (protocol hangs)
 
-**Re-enabling Steps (when ready):**
-1. Uncomment `_mount_mcp_servers()` call in `server.py`
-2. Install and configure each MCP server in Cursor
-3. Test connectivity using `robotics_system(operation="status")`
+**Safety Features:**
+- **30-second timeouts** for server loading
+- **3 retry attempts** with exponential backoff
+- **Graceful fallbacks** to mock operations if Unity unavailable
+- **Never blocks** robotics-mcp server operation
+- **Comprehensive logging** for debugging
+
+**Configuration:**
+All required MCP servers are automatically loaded with error protection. If Unity is not available, virtual robot operations fall back to mock mode with full functionality preservation.
 
 ### Configuration (Optional)
 

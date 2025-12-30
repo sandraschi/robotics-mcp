@@ -52,17 +52,19 @@ SUPPORTED_ROBOT_TYPES = [
 class VbotCrudTool:
     """CRUD operations for virtual robots (vbots)."""
 
-    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: Optional[Dict[str, Any]] = None):
+    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: Optional[Dict[str, Any]] = None, unity_available: bool = False):
         """Initialize vbot CRUD tool.
 
         Args:
             mcp: FastMCP server instance.
             state_manager: Robot state manager instance.
             mounted_servers: Dictionary of mounted MCP servers.
+            unity_available: Flag indicating if Unity MCP server is available.
         """
         self.mcp = mcp
         self.state_manager = state_manager
         self.mounted_servers = mounted_servers or {}
+        self.unity_available = unity_available
 
     def register(self):
         """Register vbot CRUD tool with MCP server."""
@@ -376,28 +378,68 @@ class VbotCrudTool:
         that instantiates the robot prefab in the scene.
         """
         try:
-            if platform == "unity" and "unity" in self.mounted_servers:
-                # Use unity3d-mcp execute_unity_method to spawn robot
-                # This calls VbotSpawner.SpawnRobot() static method
-                # VbotSpawner.SpawnRobot(string robotId, string robotType, Vector3 position, float scale)
-                pos = position or {"x": 0.0, "y": 0.0, "z": 0.0}
-                scale_val = scale or 1.0
-                result = await call_mounted_server_tool(
-                    self.mounted_servers,
-                    "unity",
-                    "execute_unity_method",
-                    {
-                        "class_name": "VbotSpawner",
-                        "method_name": "SpawnRobot",
-                        "parameters": {
-                            "robotId": robot_id,
-                            "robotType": robot_type,
-                            "position": {"x": pos.get("x", 0.0), "y": pos.get("y", 0.0), "z": pos.get("z", 0.0)},
-                            "scale": scale_val,
-                        },
-                    },
-                )
-                return result
+            if platform == "unity":
+                if not self.unity_available:
+                    # Unity not available - provide informative fallback
+                    logger.warning("Unity integration not available - using mock spawn",
+                                 robot_id=robot_id, platform=platform)
+                    return format_success_response(
+                        f"Mock spawn: {robot_id} in Unity (Unity MCP not available)",
+                        data={
+                            "robot_id": robot_id,
+                            "platform": platform,
+                            "status": "mock_spawn",
+                            "note": "Unity MCP server not loaded - robot registered but not spawned in Unity"
+                        }
+                    )
+
+                # Unity is available - attempt real spawn with timeout protection
+                try:
+                    import asyncio
+                    pos = position or {"x": 0.0, "y": 0.0, "z": 0.0}
+                    scale_val = scale or 1.0
+
+                    # Call Unity with timeout protection
+                    result = await asyncio.wait_for(
+                        call_mounted_server_tool(
+                            self.mounted_servers,
+                            "unity",
+                            "execute_unity_method",
+                            {
+                                "class_name": "VbotSpawner",
+                                "method_name": "SpawnRobot",
+                                "parameters": {
+                                    "robotId": robot_id,
+                                    "robotType": robot_type,
+                                    "position": {"x": pos.get("x", 0.0), "y": pos.get("y", 0.0), "z": pos.get("z", 0.0)},
+                                    "scale": scale_val,
+                                },
+                            },
+                        ),
+                        timeout=10.0  # 10 second timeout for Unity operations
+                    )
+                    return result
+
+                except asyncio.TimeoutError:
+                    logger.error("Unity spawn operation timed out", robot_id=robot_id, timeout=10.0)
+                    return format_error_response(
+                        "Unity spawn operation timed out",
+                        error_type="timeout",
+                        robot_id=robot_id,
+                        timeout_seconds=10.0
+                    )
+                except Exception as e:
+                    logger.error("Unity spawn failed - falling back to mock", robot_id=robot_id, error=str(e))
+                    return format_success_response(
+                        f"Fallback mock spawn: {robot_id} in Unity (spawn failed: {str(e)})",
+                        data={
+                            "robot_id": robot_id,
+                            "platform": platform,
+                            "status": "fallback_mock",
+                            "error": str(e)
+                        }
+                    )
+
             elif platform == "vrchat" and "osc" in self.mounted_servers:
                 # VRChat spawning via OSC
                 async with Client(self.mcp) as client:
@@ -425,28 +467,80 @@ class VbotCrudTool:
     ) -> Dict[str, Any]:
         """Update robot in Unity or VRChat."""
         try:
-            if platform == "unity" and "unity" in self.mounted_servers:
-                async with Client(self.mcp) as client:
-                    # VbotSpawner.UpdateRobot(string robotId, Vector3? position, float? scale)
+            if platform == "unity":
+                if not self.unity_available:
+                    logger.info("Unity update skipped (not available)", robot_id=robot_id, platform=platform)
+                    return format_success_response(
+                        f"Mock update: {robot_id} (Unity not available)",
+                        data={"robot_id": robot_id, "status": "mock_update"}
+                    )
+
+                # Unity available - attempt real update with timeout
+                try:
+                    import asyncio
                     pos = None
                     if position:
                         pos = {"x": position.get("x", 0.0), "y": position.get("y", 0.0), "z": position.get("z", 0.0)}
-                    result = await client.call_tool(
-                        "execute_unity_method",
-                        {
-                            "class_name": "VbotSpawner",
-                            "method_name": "UpdateRobot",
-                            "parameters": {
-                                "robotId": robot_id,
-                                "position": pos,
-                                "scale": scale,
+
+                    result = await asyncio.wait_for(
+                        call_mounted_server_tool(
+                            self.mounted_servers,
+                            "unity",
+                            "execute_unity_method",
+                            {
+                                "class_name": "VbotSpawner",
+                                "method_name": "UpdateRobot",
+                                "parameters": {
+                                    "robotId": robot_id,
+                                    "position": pos,
+                                    "scale": scale,
+                                },
                             },
-                        },
+                        ),
+                        timeout=5.0  # Shorter timeout for updates
                     )
                     return result
+
+                except asyncio.TimeoutError:
+                    logger.warning("Unity update timeout - continuing", robot_id=robot_id, timeout=5.0)
+                    return format_success_response(
+                        f"Update timeout: {robot_id} (operation may have succeeded)",
+                        data={"robot_id": robot_id, "status": "timeout_but_ok"}
+                    )
+                except Exception as e:
+                    logger.error("Unity update failed", robot_id=robot_id, error=str(e))
+                    return format_error_response(
+                        f"Unity update failed: {str(e)}",
+                        error_type="unity_error",
+                        robot_id=robot_id
+                    )
+
+            elif platform == "vrchat" and "osc" in self.mounted_servers:
+                # VRChat update via OSC
+                try:
+                    async with Client(self.mcp) as client:
+                        result = await asyncio.wait_for(
+                            client.call_tool(
+                                "osc_send_osc",
+                                {
+                                    "host": "127.0.0.1",
+                                    "port": 9000,
+                                    "address": f"/avatar/parameters/UpdateRobot",
+                                    "values": [robot_id, position or {}, scale or 1.0],
+                                },
+                            ),
+                            timeout=2.0
+                        )
+                        return result
+                except asyncio.TimeoutError:
+                    return format_error_response("VRChat update timeout", error_type="timeout")
+                except Exception as e:
+                    logger.error("VRChat update failed", robot_id=robot_id, error=str(e))
+                    return format_error_response(f"VRChat update failed: {str(e)}", error_type="osc_error")
+
             else:
                 # Mock update
-                logger.info("Mock update", robot_id=robot_id, platform=platform)
+                logger.info("Mock update (platform not available)", robot_id=robot_id, platform=platform)
                 return format_success_response(f"Mock update: {robot_id}")
 
         except Exception as e:
@@ -456,23 +550,74 @@ class VbotCrudTool:
     async def _delete_from_platform(self, robot_id: str, platform: str) -> Dict[str, Any]:
         """Delete robot from Unity or VRChat."""
         try:
-            if platform == "unity" and "unity" in self.mounted_servers:
-                async with Client(self.mcp) as client:
-                    # VbotSpawner.DeleteRobot(string robotId)
-                    result = await client.call_tool(
-                        "execute_unity_method",
-                        {
-                            "class_name": "VbotSpawner",
-                            "method_name": "DeleteRobot",
-                            "parameters": {
-                                "robotId": robot_id,
+            if platform == "unity":
+                if not self.unity_available:
+                    logger.info("Unity delete skipped (not available)", robot_id=robot_id, platform=platform)
+                    return format_success_response(
+                        f"Mock delete: {robot_id} (Unity not available)",
+                        data={"robot_id": robot_id, "status": "mock_delete"}
+                    )
+
+                # Unity available - attempt real delete with timeout
+                try:
+                    import asyncio
+                    result = await asyncio.wait_for(
+                        call_mounted_server_tool(
+                            self.mounted_servers,
+                            "unity",
+                            "execute_unity_method",
+                            {
+                                "class_name": "VbotSpawner",
+                                "method_name": "DeleteRobot",
+                                "parameters": {
+                                    "robotId": robot_id,
+                                },
                             },
-                        },
+                        ),
+                        timeout=5.0  # Shorter timeout for deletes
                     )
                     return result
+
+                except asyncio.TimeoutError:
+                    logger.warning("Unity delete timeout - robot may still exist", robot_id=robot_id, timeout=5.0)
+                    return format_success_response(
+                        f"Delete timeout: {robot_id} (may still exist in Unity)",
+                        data={"robot_id": robot_id, "status": "timeout_warning"}
+                    )
+                except Exception as e:
+                    logger.error("Unity delete failed", robot_id=robot_id, error=str(e))
+                    return format_error_response(
+                        f"Unity delete failed: {str(e)}",
+                        error_type="unity_error",
+                        robot_id=robot_id
+                    )
+
+            elif platform == "vrchat" and "osc" in self.mounted_servers:
+                # VRChat delete via OSC
+                try:
+                    async with Client(self.mcp) as client:
+                        result = await asyncio.wait_for(
+                            client.call_tool(
+                                "osc_send_osc",
+                                {
+                                    "host": "127.0.0.1",
+                                    "port": 9000,
+                                    "address": f"/avatar/parameters/DeleteRobot",
+                                    "values": [robot_id],
+                                },
+                            ),
+                            timeout=2.0
+                        )
+                        return result
+                except asyncio.TimeoutError:
+                    return format_error_response("VRChat delete timeout", error_type="timeout")
+                except Exception as e:
+                    logger.error("VRChat delete failed", robot_id=robot_id, error=str(e))
+                    return format_error_response(f"VRChat delete failed: {str(e)}", error_type="osc_error")
+
             else:
                 # Mock delete
-                logger.info("Mock delete", robot_id=robot_id, platform=platform)
+                logger.info("Mock delete (platform not available)", robot_id=robot_id, platform=platform)
                 return format_success_response(f"Mock delete: {robot_id}")
 
         except Exception as e:

@@ -4,20 +4,34 @@ All notable changes to Robotics MCP will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Unity Integration**: Enabled unity3d-mcp with robust error handling, timeouts, and fallbacks
+- **Prerequisites Documentation**: Comprehensive setup guides for Unity3D, VRChat, and MCP servers
+- **Webapp Build Fixes**: Replaced shadcn/ui components with HTML/Tailwind for stability
+- **Setup Prerequisites Pages**: Interactive web documentation for installation requirements
+- **Hardware Requirements**: Detailed specifications for supported robots
+- **Software Installation Guide**: Step-by-step installation instructions
+
 ### Fixed
+- **Unity Server Loading**: Added 30-second timeouts and 3 retry attempts with graceful fallbacks
+- **Webapp Component Errors**: Resolved @radix-ui/react-label build errors by removing shadcn/ui dependencies
 - **Cursor MCP Integration**: Fixed server startup issues preventing robotics-mcp from loading in Cursor IDE
 - **NullLogger Replacement**: Removed problematic NullLogger that was causing hangs during FastMCP initialization
 - **Lifespan Context Manager**: Fixed AttributeError in FastMCP lifespan handling
 - **MCPB Configuration**: Updated to use correct module path for Cursor integration
 
 ### Changed
-- **Mounted Servers**: Temporarily disabled MCP server composition for stability (can be re-enabled)
-- **Status Update**: Changed from "requires multiple MCP servers" to "Cursor integration working"
-- **Documentation**: Updated README to reflect current working state
+- **Unity Availability**: Now tracked with fallback support when Unity MCP server is unavailable
+- **Virtual Robot Operations**: Enhanced with timeout protection and mock fallbacks
+- **Mounted Servers**: Unity3D-MCP now enabled with safety measures, other servers remain disabled
+- **Documentation**: Major updates to clearly state prerequisites and installation requirements
+- **Status Update**: Changed from "requires multiple MCP servers" to "Unity integration active"
+- **Webapp Components**: Migrated from shadcn/ui to pure HTML/Tailwind for dependency-free operation
 
-### Added
-- **7 Portmanteau Tools**: Core robotics functionality now available without external dependencies
-- **Cursor MCP Setup**: Clear instructions for Cursor IDE integration
+### Security
+- **Error Handling**: Added comprehensive error isolation for Unity server loading
+- **Timeout Protection**: Implemented timeouts to prevent hangs during MCP server operations
+- **Fallback Mechanisms**: Added mock operations when external dependencies are unavailable
 
 ## [0.1.0] - 2025-12-02
 
