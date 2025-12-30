@@ -155,6 +155,7 @@ class ExecutionStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     PAUSED = "paused"
+    DEBUGGING = "debugging"  # Paused at breakpoint or step-by-step mode
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
@@ -195,3 +196,5 @@ class WorkflowExecution(BaseModel):
     completed_at: datetime | None = None
     error_message: str | None = None
     current_step_id: str | None = None
+    debug_mode: bool = False  # Step-by-step debugging mode
+    step_outputs: dict[str, Any] = Field(default_factory=dict)  # Current step outputs for inspection

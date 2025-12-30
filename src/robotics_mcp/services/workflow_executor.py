@@ -40,6 +40,8 @@ class WorkflowExecutor:
         self.mcp_client_helper = mcp_client_helper
         self.app_launcher = app_launcher
         self.running_executions: dict[str, asyncio.Task] = {}
+        self.debug_executions: dict[str, asyncio.Event] = {}  # Events for step control in debug mode
+        self.debug_continue_events: dict[str, asyncio.Event] = {}  # Events to continue from breakpoint
 
     def _substitute_variables(self, text: str, variables: dict[str, Any], step_outputs: dict[str, Any]) -> str:
         """Substitute variables in text.
@@ -193,12 +195,37 @@ class WorkflowExecutor:
         await asyncio.sleep(delay_seconds)
         return {"success": True, "data": {"delayed": delay_seconds}}
 
+    async def _wait_for_debug_continue(self, execution_id: str) -> None:
+        """Wait for debug continue signal.
+
+        Args:
+            execution_id: Execution identifier.
+        """
+        if execution_id in self.debug_continue_events:
+            await self.debug_continue_events[execution_id].wait()
+            self.debug_continue_events[execution_id].clear()
+
+    async def _check_breakpoint(self, step: Any, execution_id: str, debug_mode: bool) -> None:
+        """Check if execution should pause at breakpoint.
+
+        Args:
+            step: Workflow step.
+            execution_id: Execution identifier.
+            debug_mode: Whether debug mode is enabled.
+        """
+        if step.breakpoint or debug_mode:
+            # Pause execution
+            self.storage.update_execution_status(execution_id, ExecutionStatus.DEBUGGING, current_step_id=step.id)
+            logger.info("Paused at breakpoint", step_id=step.id, execution_id=execution_id)
+            await self._wait_for_debug_continue(execution_id)
+
     async def _execute_step(
         self,
         step: Any,
         variables: dict[str, Any],
         step_outputs: dict[str, Any],
         execution_id: str,
+        debug_mode: bool = False,
     ) -> StepExecutionResult:
         """Execute a single workflow step.
 
@@ -207,10 +234,14 @@ class WorkflowExecutor:
             variables: Execution variables.
             step_outputs: Previous step outputs.
             execution_id: Execution identifier.
+            debug_mode: Whether to pause after each step for debugging.
 
         Returns:
             Step execution result.
         """
+        # Check breakpoint before execution
+        await self._check_breakpoint(step, execution_id, debug_mode)
+
         step_result = StepExecutionResult(
             step_id=step.id,
             step_name=step.name,
@@ -221,7 +252,10 @@ class WorkflowExecutor:
         try:
             # Execute based on step type
             if step.type == StepType.MCP_TOOL:
-                result = await self._execute_mcp_tool_step(step, variables, step_outputs)
+                result = await self._execute_mcp_tool_step(step, variables, step_outputs, execution_id)
+                # Store MCP tool call details in result
+                step_result.mcp_tool_call = result.get("mcp_tool_call")
+                step_result.mcp_tool_response = result.get("mcp_tool_response")
             elif step.type == StepType.APP_LAUNCH:
                 result = await self._execute_app_launch_step(step, variables, step_outputs)
             elif step.type == StepType.DELAY:
@@ -245,6 +279,16 @@ class WorkflowExecutor:
 
         # Save step result
         self.storage.add_step_result(execution_id, step_result)
+
+        # Update step outputs in execution record for inspection
+        execution = self.storage.get_execution(execution_id)
+        if execution:
+            execution.step_outputs = step_outputs.copy()
+            self.storage.update_execution(execution)
+
+        # Pause after step in debug mode
+        if debug_mode:
+            await self._check_breakpoint(step, execution_id, debug_mode)
 
         return step_result
 
@@ -369,11 +413,10 @@ class WorkflowExecutor:
         Args:
             execution_id: Execution identifier.
         """
-        # TODO: Implement pause functionality
         self.storage.update_execution_status(execution_id, ExecutionStatus.PAUSED)
 
     async def resume_execution(self, execution_id: str):
-        """Resume workflow execution.
+        """Resume workflow execution from current step.
 
         Args:
             execution_id: Execution identifier.
@@ -387,8 +430,27 @@ class WorkflowExecutor:
             raise ValueError(f"Workflow not found: {execution.workflow_id}")
 
         # Resume from current step
-        # TODO: Implement resume functionality
-        await self.execute_workflow(execution.workflow_id, execution.variables, execution_id)
+        await self.execute_workflow(
+            execution.workflow_id, execution.variables, execution_id, debug_mode=execution.debug_mode
+        )
+
+    async def step_execution(self, execution_id: str):
+        """Step to next instruction in debug mode.
+
+        Args:
+            execution_id: Execution identifier.
+        """
+        if execution_id in self.debug_continue_events:
+            self.debug_continue_events[execution_id].set()
+
+    async def continue_execution(self, execution_id: str):
+        """Continue execution from breakpoint (run until next breakpoint or end).
+
+        Args:
+            execution_id: Execution identifier.
+        """
+        if execution_id in self.debug_continue_events:
+            self.debug_continue_events[execution_id].set()
 
     async def cancel_execution(self, execution_id: str):
         """Cancel workflow execution.
