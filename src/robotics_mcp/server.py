@@ -10,19 +10,22 @@ FastMCP 2.13+ compliant server with dual transport (stdio/HTTP) and MCP server c
 import os
 import sys
 
-if os.name == 'nt':  # Windows only
+if os.name == "nt":  # Windows only
     try:
         # Force binary mode for stdin/stdout to prevent CRLF conversion
         import msvcrt
+
         msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
         msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
     except (OSError, AttributeError):
         # Fallback: just ensure no CRLF conversion
         pass
 
+
 # DevNullStdout class for stdio mode to prevent any console output during initialization
 class DevNullStdout:
     """Suppress all stdout writes during stdio mode to prevent JSON-RPC protocol corruption."""
+
     def __init__(self, original_stdout):
         self.original_stdout = original_stdout
         self.buffer = []
@@ -37,11 +40,12 @@ class DevNullStdout:
 
     def get_buffered_output(self):
         """Get all buffered output for debugging if needed."""
-        return ''.join(self.buffer)
+        return "".join(self.buffer)
 
     def restore(self):
         """Restore original stdout."""
         sys.stdout = self.original_stdout
+
 
 # CRITICAL: Detect stdio mode BEFORE importing logger
 # This must be done before ANY logging imports
@@ -65,7 +69,11 @@ from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
 from .utils.config_loader import ConfigLoader
-from .utils.error_handler import format_error_response, format_success_response, handle_tool_error
+from .utils.error_handler import (
+    format_error_response,
+    format_success_response,
+    handle_tool_error,
+)
 from .utils.state_manager import RobotStateManager
 from .tools.robot_control import RobotControlTool
 from .tools.robot_manufacturing import RobotManufacturingTool
@@ -104,11 +112,15 @@ logger = structlog.get_logger(__name__)
 class RoboticsConfig(BaseModel):
     """Configuration for Robotics MCP server."""
 
-    enable_http: bool = Field(default=True, description="Enable HTTP interface alongside stdio")
+    enable_http: bool = Field(
+        default=True, description="Enable HTTP interface alongside stdio"
+    )
     http_port: int = Field(default=8080, description="HTTP server port")
     http_host: str = Field(default="0.0.0.0", description="HTTP server host")
     log_level: str = Field(default="INFO", description="Logging level")
-    config_path: Optional[str] = Field(default=None, description="Path to config YAML file")
+    config_path: Optional[str] = Field(
+        default=None, description="Path to config YAML file"
+    )
 
 
 # TEMPORARILY DISABLE LIFESPAN FOR DEBUGGING
@@ -118,6 +130,7 @@ class RoboticsConfig(BaseModel):
 #     logger.info("Robotics MCP server starting up", version="0.1.0")
 #     yield
 #     logger.info("Robotics MCP server shutting down")
+
 
 def server_lifespan(mcp_instance):
     """Stub lifespan function."""
@@ -179,38 +192,60 @@ class RoboticsMCP:
             # Consolidated portmanteau tools (SOTA: max 15 tools)
             # Note: RobotControlTool and RobotModelTools are imported at module level
             self.robotics_system = RoboticsSystemTool(
-                self.mcp, self.state_manager, self.config, self.config_loader, self.mounted_servers
+                self.mcp,
+                self.state_manager,
+                self.config,
+                self.config_loader,
+                self.mounted_servers,
             )
-            self.robot_control = RobotControlTool(self.mcp, self.state_manager, self.mounted_servers)
-            self.robot_behavior = RobotBehaviorTool(self.mcp, self.state_manager, self.mounted_servers)
-            self.robot_manufacturing = RobotManufacturingTool(self.mcp, self.state_manager, self.mounted_servers)
-            self.robot_virtual = RobotVirtualTool(self.mcp, self.state_manager, self.mounted_servers)
-            self.robot_model_tools = RobotModelTools(self.mcp, self.state_manager, self.mounted_servers)
-            self.vbot_crud = VbotCrudTool(self.mcp, self.state_manager, self.mounted_servers, self._unity_available)
-            
+            self.robot_control = RobotControlTool(
+                self.mcp, self.state_manager, self.mounted_servers
+            )
+            self.robot_behavior = RobotBehaviorTool(
+                self.mcp, self.state_manager, self.mounted_servers
+            )
+            self.robot_manufacturing = RobotManufacturingTool(
+                self.mcp, self.state_manager, self.mounted_servers
+            )
+            self.robot_virtual = RobotVirtualTool(
+                self.mcp, self.state_manager, self.mounted_servers
+            )
+            self.robot_model_tools = RobotModelTools(
+                self.mcp, self.state_manager, self.mounted_servers
+            )
+            self.vbot_crud = VbotCrudTool(
+                self.mcp,
+                self.state_manager,
+                self.mounted_servers,
+                self._unity_available,
+            )
+
             # Workflow management tool
             from robotics_mcp.utils.mcp_client_helper import call_mounted_server_tool
+
             self.workflow_management = WorkflowManagementTool(
                 self.mcp,
                 mounted_servers=self.mounted_servers,
-                mcp_client_helper=lambda server, tool, args: call_mounted_server_tool(self.mounted_servers, server, tool, args),
+                mcp_client_helper=lambda server, tool, args: call_mounted_server_tool(
+                    self.mounted_servers, server, tool, args
+                ),
                 app_launcher=None,  # TODO: Add app launcher integration
             )
 
             # Register all tools
             self._register_tools()
         except Exception as e:
-            import traceback
-            error_msg = f"Failed to initialize tools: {e}\n{traceback.format_exc()}"
+            error_msg = f"Failed to initialize tools: {e}"
             logger.error("Failed to initialize tools", error=str(e), exc_info=True)
-            print(f"ERROR: {error_msg}", file=sys.stderr)
             raise
 
         # Setup HTTP routes after tools are registered
         if self.config.enable_http:
             self._setup_http_routes()
 
-        logger.info("Robotics MCP server initialized", http_enabled=self.config.enable_http)
+        logger.info(
+            "Robotics MCP server initialized", http_enabled=self.config.enable_http
+        )
 
     def _setup_http_routes(self):
         """Set up FastAPI HTTP routes."""
@@ -232,7 +267,9 @@ class RoboticsMCP:
             """Get robot information."""
             robot = self.state_manager.get_robot(robot_id)
             if not robot:
-                raise HTTPException(status_code=404, detail=f"Robot {robot_id} not found")
+                raise HTTPException(
+                    status_code=404, detail=f"Robot {robot_id} not found"
+                )
             return robot.to_dict()
 
         @router.post("/robots/{robot_id}/control")
@@ -244,7 +281,9 @@ class RoboticsMCP:
                 action = request.get("action", "get_status")
                 params = {k: v for k, v in request.items() if k != "action"}
                 # Use the robot_control tool
-                result = await self.robot_control.handle_action(robot_id, action, params)
+                result = await self.robot_control.handle_action(
+                    robot_id, action, params
+                )
                 return result
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
@@ -254,10 +293,10 @@ class RoboticsMCP:
             """List all available MCP tools."""
             tools = []
             # FastMCP stores tools in _tools dict - get info from function
-            for tool_name, tool_func in getattr(self.mcp, '_tools', {}).items():
+            for tool_name, tool_func in getattr(self.mcp, "_tools", {}).items():
                 description = ""
-                if hasattr(tool_func, '__doc__') and tool_func.__doc__:
-                    description = tool_func.__doc__.split('\n')[0].strip()
+                if hasattr(tool_func, "__doc__") and tool_func.__doc__:
+                    description = tool_func.__doc__.split("\n")[0].strip()
                 tools.append(
                     {
                         "name": tool_name,
@@ -273,12 +312,52 @@ class RoboticsMCP:
             if params is None:
                 params = {}
             try:
-                # Execute tool using MCP instance
-                # Note: FastMCP 2.13 tool calling interface
-                result = await self.mcp.call_tool(tool_name, **params)
+                # Try multiple ways to access FastMCP tools
+                tool_func = None
+
+                # Method 1: Check _tools dict
+                if hasattr(self.mcp, "_tools") and tool_name in self.mcp._tools:
+                    tool_func = self.mcp._tools[tool_name]
+                # Method 2: Check if tool_name is a method on mcp
+                elif hasattr(self.mcp, tool_name):
+                    attr = getattr(self.mcp, tool_name)
+                    if callable(attr):
+                        tool_func = attr
+                # Method 3: Use FastMCP's call_tool method if available
+                elif hasattr(self.mcp, "call_tool"):
+                    try:
+                        result = await self.mcp.call_tool(tool_name, arguments=params)
+                        return {"result": result}
+                    except Exception as e:
+                        logger.error(f"FastMCP call_tool failed: {e}")
+                        raise HTTPException(
+                            status_code=404,
+                            detail=f"Tool '{tool_name}' not found via call_tool",
+                        )
+
+                if tool_func is None:
+                    # Debug: log available attributes
+                    available_attrs = [
+                        attr for attr in dir(self.mcp) if not attr.startswith("_")
+                    ]
+                    logger.error(
+                        f"Tool '{tool_name}' not found. Available: {available_attrs}"
+                    )
+                    raise HTTPException(
+                        status_code=404, detail=f"Tool '{tool_name}' not found"
+                    )
+
+                # Call the tool function with params as keyword arguments
+                result = await tool_func(**params)
                 return {"result": result}
+            except HTTPException:
+                raise
             except Exception as e:
-                raise HTTPException(status_code=500, detail=str(e))
+                import traceback
+
+                error_detail = f"{str(e)}\n{traceback.format_exc()}"
+                logger.error(f"Error calling tool {tool_name}: {error_detail}")
+                raise HTTPException(status_code=500, detail=str(e)) from e
 
         @router.get("/status")
         async def get_status():
@@ -302,7 +381,9 @@ class RoboticsMCP:
                 metadata = request.get("metadata", {})
 
                 if not robot_id or not robot_type:
-                    raise HTTPException(status_code=400, detail="robot_id and robot_type required")
+                    raise HTTPException(
+                        status_code=400, detail="robot_id and robot_type required"
+                    )
 
                 robot = self.state_manager.register_robot(
                     robot_id, robot_type, platform=platform, metadata=metadata
@@ -318,7 +399,10 @@ class RoboticsMCP:
             """Unregister a robot."""
             try:
                 self.state_manager.unregister_robot(robot_id)
-                return {"status": "success", "message": f"Robot {robot_id} unregistered"}
+                return {
+                    "status": "success",
+                    "message": f"Robot {robot_id} unregistered",
+                }
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
 
@@ -335,6 +419,7 @@ class RoboticsMCP:
             # Load osc-mcp (for internal use only) - starts in Cursor and works with MCP protocol
             try:
                 from oscmcp.mcp_server import server as osc_mcp_server
+
                 self.mounted_servers["osc"] = osc_mcp_server
                 logger.info("Loaded osc-mcp server (internal use only)")
             except ImportError:
@@ -349,7 +434,7 @@ class RoboticsMCP:
             # - blender-mcp: causes MCP protocol hangs
             # - gimp-mcp: causes MCP protocol hangs
             #
-            # ✅ ENABLED SERVERS - working with proper error handling:
+            # ENABLED SERVERS - working with proper error handling:
             # - unity3d-mcp: enabled with timeout protection and fallbacks
 
         except Exception as e:
@@ -363,8 +448,11 @@ class RoboticsMCP:
         MAX_RETRY_ATTEMPTS = 3
         RETRY_DELAY = 2.0
 
-        logger.info("Attempting to load Unity3D MCP server with safety measures",
-                   timeout=UNITY_LOAD_TIMEOUT, max_retries=MAX_RETRY_ATTEMPTS)
+        logger.info(
+            "Attempting to load Unity3D MCP server with safety measures",
+            timeout=UNITY_LOAD_TIMEOUT,
+            max_retries=MAX_RETRY_ATTEMPTS,
+        )
 
         for attempt in range(MAX_RETRY_ATTEMPTS):
             try:
@@ -374,13 +462,18 @@ class RoboticsMCP:
                 try:
                     # Wait for Unity server to load with timeout
                     await asyncio.wait_for(load_task, timeout=UNITY_LOAD_TIMEOUT)
-                    logger.info("Successfully loaded Unity3D MCP server",
-                               attempt=attempt + 1, server_count=len(self.mounted_servers))
+                    logger.info(
+                        "Successfully loaded Unity3D MCP server",
+                        attempt=attempt + 1,
+                        server_count=len(self.mounted_servers),
+                    )
                     return  # Success - exit retry loop
 
                 except asyncio.TimeoutError:
-                    logger.warning(f"Unity server load timeout (attempt {attempt + 1}/{MAX_RETRY_ATTEMPTS})",
-                                 timeout=UNITY_LOAD_TIMEOUT)
+                    logger.warning(
+                        f"Unity server load timeout (attempt {attempt + 1}/{MAX_RETRY_ATTEMPTS})",
+                        timeout=UNITY_LOAD_TIMEOUT,
+                    )
                     load_task.cancel()  # Cancel the hanging task
 
                     if attempt < MAX_RETRY_ATTEMPTS - 1:
@@ -388,26 +481,36 @@ class RoboticsMCP:
                         await asyncio.sleep(RETRY_DELAY)
                         continue
                     else:
-                        logger.error("Unity server load failed after all retry attempts",
-                                   total_attempts=MAX_RETRY_ATTEMPTS)
+                        logger.error(
+                            "Unity server load failed after all retry attempts",
+                            total_attempts=MAX_RETRY_ATTEMPTS,
+                        )
                         break
 
             except Exception as e:
-                logger.warning(f"Unity server load failed (attempt {attempt + 1}/{MAX_RETRY_ATTEMPTS})",
-                             error=str(e), error_type=type(e).__name__)
+                logger.warning(
+                    f"Unity server load failed (attempt {attempt + 1}/{MAX_RETRY_ATTEMPTS})",
+                    error=str(e),
+                    error_type=type(e).__name__,
+                )
 
                 if attempt < MAX_RETRY_ATTEMPTS - 1:
                     logger.info(f"Retrying Unity server load in {RETRY_DELAY}s...")
                     await asyncio.sleep(RETRY_DELAY)
                 else:
-                    logger.error("Unity server load failed after all retry attempts",
-                               total_attempts=MAX_RETRY_ATTEMPTS, final_error=str(e))
+                    logger.error(
+                        "Unity server load failed after all retry attempts",
+                        total_attempts=MAX_RETRY_ATTEMPTS,
+                        final_error=str(e),
+                    )
                     break
 
         # If we get here, Unity loading failed - log graceful degradation
-        logger.warning("Unity3D MCP server not available - virtual robot Unity integration disabled",
-                      fallback_mode="local_fallbacks_only",
-                      available_servers=list(self.mounted_servers.keys()))
+        logger.warning(
+            "Unity3D MCP server not available - virtual robot Unity integration disabled",
+            fallback_mode="local_fallbacks_only",
+            available_servers=list(self.mounted_servers.keys()),
+        )
 
         # Set a flag for tools to know Unity is not available
         self._unity_available = False
@@ -422,10 +525,14 @@ class RoboticsMCP:
             from pathlib import Path
 
             # Add unity3d-mcp to path if not already there
-            unity_mcp_path = Path(__file__).parent.parent.parent.parent / "unity3d-mcp" / "src"
+            unity_mcp_path = (
+                Path(__file__).parent.parent.parent.parent / "unity3d-mcp" / "src"
+            )
             if str(unity_mcp_path) not in sys.path:
                 sys.path.insert(0, str(unity_mcp_path))
-                logger.debug("Added unity3d-mcp to Python path", path=str(unity_mcp_path))
+                logger.debug(
+                    "Added unity3d-mcp to Python path", path=str(unity_mcp_path)
+                )
 
             # Import the server module
             from unity3d_mcp.server import Unity3DMCP
@@ -438,28 +545,40 @@ class RoboticsMCP:
 
             # Test that server is responsive (quick health check)
             logger.debug("Testing Unity server responsiveness...")
-            if hasattr(unity_server, 'app') and hasattr(unity_server.app, 'list_tools'):
+            if hasattr(unity_server, "app") and hasattr(unity_server.app, "list_tools"):
                 # Quick tool listing to verify server is working
                 tools = await asyncio.get_event_loop().run_in_executor(
                     None, unity_server.app.list_tools
                 )
-                logger.debug("Unity server health check passed", tool_count=len(tools) if tools else 0)
+                logger.debug(
+                    "Unity server health check passed",
+                    tool_count=len(tools) if tools else 0,
+                )
 
             # Store the server
             self.mounted_servers["unity"] = unity_server
             self._unity_available = True
 
-            logger.info("Unity3D MCP server loaded successfully",
-                       tools_available=len(tools) if 'tools' in locals() else "unknown")
+            logger.info(
+                "Unity3D MCP server loaded successfully",
+                tools_available=len(tools) if "tools" in locals() else "unknown",
+            )
 
         except ImportError as e:
-            logger.warning("Unity3D MCP not available (not installed)",
-                         error=str(e), import_path=str(unity_mcp_path))
+            logger.warning(
+                "Unity3D MCP not available (not installed)",
+                error=str(e),
+                import_path=str(unity_mcp_path),
+            )
             raise  # Re-raise to trigger retry logic
 
         except Exception as e:
-            logger.error("Failed to load Unity3D MCP server",
-                        error=str(e), error_type=type(e).__name__, exc_info=True)
+            logger.error(
+                "Failed to load Unity3D MCP server",
+                error=str(e),
+                error_type=type(e).__name__,
+                exc_info=True,
+            )
             raise  # Re-raise to trigger retry logic
 
     def _register_tools(self):
@@ -493,13 +612,15 @@ class RoboticsMCP:
             self.workflow_management.register()  # Workflow management operations
             logger.debug("Registered workflow_management tool")
 
-            tools = getattr(self.mcp, '_tools', {})
-            logger.info("All tools registered", tool_count=len(tools), tool_names=list(tools.keys()))
+            tools = getattr(self.mcp, "_tools", {})
+            logger.info(
+                "All tools registered",
+                tool_count=len(tools),
+                tool_names=list(tools.keys()),
+            )
         except Exception as e:
-            import traceback
-            error_msg = f"Failed to register tools: {e}\n{traceback.format_exc()}"
+            error_msg = f"Failed to register tools: {e}"
             logger.error("Failed to register tools", error=str(e), exc_info=True)
-            print(f"ERROR: {error_msg}", file=sys.stderr)
             raise
 
     def run(
@@ -576,28 +697,28 @@ def main():
 
         # Async initialization of MCP servers
         import asyncio
+
         asyncio.run(server.initialize_async())
 
         # CRITICAL: After server initialization, restore stdout for stdio mode
         # This allows the server to communicate via JSON-RPC while preventing initialization logging
         if _is_stdio_mode:
-            if hasattr(sys.stdout, 'restore'):
+            if hasattr(sys.stdout, "restore"):
                 sys.stdout.restore()
                 # Now we can safely write to stdout for JSON-RPC communication
 
             # Set up proper logging to stderr only (not stdout)
             import logging
+
             logging.basicConfig(
                 level=logging.INFO,
-                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                stream=sys.stderr  # Critical: log to stderr, not stdout
+                format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                stream=sys.stderr,  # Critical: log to stderr, not stdout
             )
 
         server.run(mode=args.mode, host=args.host, port=args.port)
     except Exception as e:
-        import traceback
-        print(f"ERROR: Failed to start server: {e}", file=sys.stderr)
-        traceback.print_exc(file=sys.stderr)
+        logger.critical("Failed to start server", error=str(e), exc_info=True)
         sys.exit(1)
 
 
