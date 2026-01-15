@@ -67,6 +67,8 @@ from fastmcp import FastMCP, Client
 
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from .utils.config_loader import ConfigLoader
 from .utils.error_handler import (
@@ -167,6 +169,73 @@ class RoboticsMCP:
 
         # NOTE: Server mounting is now done asynchronously in initialize_async()
 
+    async def _load_robots_from_config(self):
+        """Load and register robots from configuration."""
+        try:
+            robotics_config = self.config_data.get("robotics", {})
+
+            # Load physical robots
+            for robot_key, robot_config in robotics_config.items():
+                if robot_key == "virtual" or robot_key == "coordination" or robot_key == "mcp_integration":
+                    continue
+
+                if isinstance(robot_config, dict) and robot_config.get("enabled", False):
+                    robot_id = robot_config.get("robot_id")
+                    if not robot_id:
+                        continue
+
+                    # Determine robot type from key
+                    if robot_key.startswith("yahboom"):
+                        robot_type = "yahboom"
+                    elif robot_key.startswith("moorebot"):
+                        robot_type = "scout"
+                    elif robot_key.startswith("unitree_go2"):
+                        robot_type = "go2"
+                    elif robot_key.startswith("unitree_g1"):
+                        robot_type = "g1"
+                    else:
+                        robot_type = robot_key
+
+                    # Register robot
+                    try:
+                        self.state_manager.register_robot(
+                            robot_id=robot_id,
+                            robot_type=robot_type,
+                            platform=None,  # Physical robot
+                            metadata=robot_config
+                        )
+                        logger.info("Registered robot from config",
+                                  robot_id=robot_id,
+                                  robot_type=robot_type,
+                                  config_key=robot_key)
+                    except ValueError as e:
+                        logger.warning("Failed to register robot",
+                                     robot_id=robot_id,
+                                     error=str(e))
+
+            # Load virtual robots
+            virtual_config = robotics_config.get("virtual", {})
+            if virtual_config.get("enabled", False):
+                robots_config = virtual_config.get("robots", {})
+                for robot_id, robot_info in robots_config.items():
+                    try:
+                        self.state_manager.register_robot(
+                            robot_id=robot_id,
+                            robot_type=robot_info.get("type", "unknown"),
+                            platform=robot_info.get("platform", "unity"),
+                            metadata=robot_info
+                        )
+                        logger.info("Registered virtual robot from config",
+                                  robot_id=robot_id,
+                                  platform=robot_info.get("platform"))
+                    except ValueError as e:
+                        logger.warning("Failed to register virtual robot",
+                                     robot_id=robot_id,
+                                     error=str(e))
+
+        except Exception as e:
+            logger.error("Failed to load robots from config", error=str(e))
+
     async def initialize_async(self):
         """Async initialization of MCP servers with proper error handling."""
         # Mount external MCP servers first (needed by tools)
@@ -179,8 +248,18 @@ class RoboticsMCP:
                 description="HTTP API for Robotics MCP Server",
                 version="0.1.0",
             )
+
+            # Mount static files
+            import os
+            web_dir = Path(__file__).parent.parent.parent / "web"
+            if web_dir.exists():
+                self.http_app.mount("/static", StaticFiles(directory=str(web_dir)), name="static")
+
         else:
             self.http_app = None
+
+        # Load robots from configuration
+        await self._load_robots_from_config()
 
         # Initialize tool handlers (after MCP is created and servers are mounted)
         try:
@@ -405,6 +484,20 @@ class RoboticsMCP:
                 }
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
+
+        # Add web interface route
+        @self.http_app.get("/")
+        async def serve_web_interface():
+            """Serve the main web interface."""
+            web_dir = Path(__file__).parent.parent.parent / "web"
+            index_file = web_dir / "index.html"
+            if index_file.exists():
+                return FileResponse(str(index_file), media_type="text/html")
+            else:
+                return JSONResponse(
+                    {"error": "Web interface not available", "detail": "index.html not found"},
+                    status_code=404
+                )
 
         self.http_app.include_router(router)
 

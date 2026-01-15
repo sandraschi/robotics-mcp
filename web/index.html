@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robotics MCP Control Panel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Robotics MCP Control Panel</h1>
+            <div class="status-bar">
+                <span id="connection-status" class="status-disconnected">🔴 Disconnected</span>
+                <button id="refresh-btn" class="btn-secondary">🔄 Refresh</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="robot-selector">
+                <h2>Robot Selection</h2>
+                <div class="robot-list" id="robot-list">
+                    <p>Loading robots...</p>
+                </div>
+            </section>
+
+            <div class="control-panels" id="control-panels" style="display: none;">
+                <section class="robot-status">
+                    <h2>Robot Status</h2>
+                    <div class="status-grid" id="status-display">
+                        <div class="status-item">
+                            <span class="label">Model:</span>
+                            <span id="robot-model">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Connected:</span>
+                            <span id="robot-connected">🔴 No</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Battery:</span>
+                            <span id="robot-battery">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Position:</span>
+                            <span id="robot-position">-</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="movement-controls">
+                    <h2>Movement Control</h2>
+                    <div class="movement-grid">
+                        <div></div>
+                        <button id="move-forward" class="move-btn forward" disabled>⬆️</button>
+                        <div></div>
+
+                        <button id="turn-left" class="move-btn left" disabled>⬅️</button>
+                        <button id="stop" class="move-btn stop" disabled>⏹️</button>
+                        <button id="turn-right" class="move-btn right" disabled>➡️</button>
+
+                        <div></div>
+                        <button id="move-backward" class="move-btn backward" disabled>⬇️</button>
+                        <div></div>
+                    </div>
+                    <div class="speed-controls">
+                        <label for="linear-speed">Speed:</label>
+                        <input type="range" id="linear-speed" min="0.1" max="0.5" step="0.1" value="0.2">
+                        <span id="speed-value">0.2 m/s</span>
+                    </div>
+                </section>
+
+                <section class="special-actions">
+                    <h2>Special Actions</h2>
+                    <div class="action-buttons">
+                        <button id="home-patrol" class="action-btn patrol" disabled>🏠 Patrol</button>
+                        <button id="camera-capture" class="action-btn camera" disabled>📷 Capture</button>
+                        <button id="get-status" class="action-btn status" disabled>📊 Status</button>
+                    </div>
+                </section>
+
+                <section class="arm-controls" id="arm-section" style="display: none;">
+                    <h2>Arm & Gripper Control</h2>
+                    <div class="arm-controls-grid">
+                        <div class="joint-controls">
+                            <h3>Joint Angles</h3>
+                            <div class="joint-inputs" id="joint-inputs">
+                                <!-- Dynamically populated -->
+                            </div>
+                            <button id="move-arm" class="action-btn arm" disabled>🦾 Move Arm</button>
+                        </div>
+                        <div class="gripper-controls">
+                            <h3>Gripper</h3>
+                            <button id="gripper-open" class="action-btn gripper" disabled>👐 Open</button>
+                            <button id="gripper-close" class="action-btn gripper" disabled>✊ Close</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="command-log">
+                    <h2>Command Log</h2>
+                    <div class="log-container" id="command-log">
+                        <!-- Command history -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

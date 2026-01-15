@@ -5,6 +5,13 @@ All notable changes to Robotics MCP will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Yahboom Robot Integration**: Full ROS 2 support for Raspbot-V2 with camera, navigation, and arm control
+- **Yahboom ROS 2 Client**: Complete client implementation for Yahboom robot communication
+- **Web Control Interface**: Modern web-based control panel for robot management
+- **Robot Auto-Loading**: Automatic robot registration from YAML configuration
+- **Home Patrol Features**: Pre-configured patrol routes for home security
+- **Arm & Gripper Control**: Full support for robotic arms and grippers when equipped
+- **Real-time Status Monitoring**: Live battery, position, and sensor status updates
 - **Unity Integration**: Enabled unity3d-mcp with robust error handling, timeouts, and fallbacks
 - **Prerequisites Documentation**: Comprehensive setup guides for Unity3D, VRChat, and MCP servers
 - **Webapp Build Fixes**: Replaced shadcn/ui components with HTML/Tailwind for stability

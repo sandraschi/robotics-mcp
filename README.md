@@ -335,7 +335,25 @@ await robot_model_convert(
     target_format="glb",
     target_path="D:/Models/scout.glb"
 )
+
 ```
+
+### Web Interface
+
+The Robotics MCP server includes a modern web-based control panel for easy robot management:
+
+```
+http://localhost:8081
+```
+
+**Features:**
+- Real-time robot control with intuitive movement buttons
+- Live status monitoring (battery, position, sensors)
+- Camera capture and arm/gripper control
+- Command logging and connection status
+- Responsive design for desktop and mobile
+
+See [Web Interface Documentation](web/README.md) for detailed usage instructions.
 
 ### HTTP API
 

@@ -14,13 +14,22 @@ from typing import Any, Dict, Literal, Optional
 import structlog
 from fastmcp import Client
 
-from ..utils.error_handler import format_error_response, format_success_response, handle_tool_error
+from ..utils.error_handler import (
+    format_error_response,
+    format_success_response,
+    handle_tool_error,
+)
 from ..utils.mcp_client_helper import call_mounted_server_tool
 
 logger = structlog.get_logger(__name__)
 
 # Supported formats for robots
-ROBOT_MODEL_FORMATS = ["fbx", "glb", "obj", "blend"]  # Note: VRM only for humanoid robots
+ROBOT_MODEL_FORMATS = [
+    "fbx",
+    "glb",
+    "obj",
+    "blend",
+]  # Note: VRM only for humanoid robots
 HUMANOID_ROBOT_TYPES = ["robbie", "g1"]  # Robots that CAN use VRM
 NON_HUMANOID_ROBOT_TYPES = ["scout", "scout_e", "go2"]  # Robots that should NOT use VRM
 
@@ -28,7 +37,12 @@ NON_HUMANOID_ROBOT_TYPES = ["scout", "scout_e", "go2"]  # Robots that should NOT
 class RobotModelTools:
     """Tools for importing, exporting, and converting robot 3D models."""
 
-    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        mcp: Any,
+        state_manager: Any,
+        mounted_servers: Optional[Dict[str, Any]] = None,
+    ):
         """Initialize robot model tools.
 
         Args:
@@ -45,7 +59,16 @@ class RobotModelTools:
 
         @self.mcp.tool()
         async def robot_model(
-            operation: Literal["create", "import", "export", "convert", "spz_check", "spz_convert", "spz_extract", "spz_install"],
+            operation: Literal[
+                "create",
+                "import",
+                "export",
+                "convert",
+                "spz_check",
+                "spz_convert",
+                "spz_extract",
+                "spz_install",
+            ],
             robot_type: Optional[str] = None,
             model_path: Optional[str] = None,
             output_path: Optional[str] = None,
@@ -59,7 +82,9 @@ class RobotModelTools:
             project_path: Optional[str] = None,
             create_prefab: bool = True,
             source_path: Optional[str] = None,
-            source_format: Optional[Literal["fbx", "glb", "obj", "blend", "vrm"]] = None,
+            source_format: Optional[
+                Literal["fbx", "glb", "obj", "blend", "vrm"]
+            ] = None,
             target_format: Optional[Literal["fbx", "glb", "obj", "vrm"]] = None,
             target_path: Optional[str] = None,
             spz_path: Optional[str] = None,
@@ -71,7 +96,7 @@ class RobotModelTools:
             PORTMANTEAU PATTERN RATIONALE:
             Instead of creating 4 separate tools (create, import, export, convert), this tool
             consolidates related model operations into a single interface. This design:
-            - Prevents tool explosion (4 tools → 1 tool) while maintaining full functionality
+            - Prevents tool explosion (4 tools -> 1 tool) while maintaining full functionality
             - Improves discoverability by grouping related operations together
             - Reduces cognitive load when working with robot models
             - Enables consistent model interface across all operations
@@ -160,7 +185,12 @@ class RobotModelTools:
                             error_type="validation_error",
                         )
                     return await self._handle_create(
-                        robot_type, output_path, format, dimensions, create_textures, texture_style
+                        robot_type,
+                        output_path,
+                        format,
+                        dimensions,
+                        create_textures,
+                        texture_style,
                     )
                 elif operation == "import":
                     if not robot_type or not model_path:
@@ -168,37 +198,65 @@ class RobotModelTools:
                             "robot_type and model_path are required for 'import' operation",
                             error_type="validation_error",
                         )
-                    return await self._handle_import(robot_type, model_path, format, platform, project_path, create_prefab)
+                    return await self._handle_import(
+                        robot_type,
+                        model_path,
+                        format,
+                        platform,
+                        project_path,
+                        create_prefab,
+                    )
                 elif operation == "export":
                     if not robot_id:
                         return format_error_response(
                             "robot_id is required for 'export' operation",
                             error_type="validation_error",
                         )
-                    return await self._handle_export(robot_id, format, output_path, include_animations)
+                    return await self._handle_export(
+                        robot_id, format, output_path, include_animations
+                    )
                 elif operation == "convert":
                     if not source_path or not source_format or not target_format:
                         return format_error_response(
                             "source_path, source_format, and target_format are required for 'convert' operation",
                             error_type="validation_error",
                         )
-                    return await self._handle_convert(source_path, source_format, target_format, target_path, robot_type)
+                    return await self._handle_convert(
+                        source_path,
+                        source_format,
+                        target_format,
+                        target_path,
+                        robot_type,
+                    )
                 elif operation == "spz_check":
                     return await self._handle_spz_check()
                 elif operation == "spz_convert":
                     if not spz_path:
-                        return format_error_response("spz_path required for spz_convert", error_type="validation_error")
-                    return await self._handle_spz_convert(spz_path, target_path, output_format)
+                        return format_error_response(
+                            "spz_path required for spz_convert",
+                            error_type="validation_error",
+                        )
+                    return await self._handle_spz_convert(
+                        spz_path, target_path, output_format
+                    )
                 elif operation == "spz_extract":
                     if not spz_path:
-                        return format_error_response("spz_path required for spz_extract", error_type="validation_error")
+                        return format_error_response(
+                            "spz_path required for spz_extract",
+                            error_type="validation_error",
+                        )
                     return await self._handle_spz_extract(spz_path)
                 elif operation == "spz_install":
                     if not unity_project_path:
-                        return format_error_response("unity_project_path required for spz_install", error_type="validation_error")
+                        return format_error_response(
+                            "unity_project_path required for spz_install",
+                            error_type="validation_error",
+                        )
                     return await self._handle_spz_install(unity_project_path)
                 else:
-                    return format_error_response(f"Unknown operation: {operation}", error_type="validation_error")
+                    return format_error_response(
+                        f"Unknown operation: {operation}", error_type="validation_error"
+                    )
             except Exception as e:
                 return handle_tool_error("robot_model", e, operation=operation)
 
@@ -224,7 +282,12 @@ class RobotModelTools:
                 dimensions = self._get_default_dimensions(robot_type)
 
             return await self._create_model_via_blender(
-                robot_type, output_path, format, dimensions, create_textures, texture_style
+                robot_type,
+                output_path,
+                format,
+                dimensions,
+                create_textures,
+                texture_style,
             )
         except Exception as e:
             return handle_tool_error("robot_model", e, operation="create")
@@ -249,32 +312,50 @@ class RobotModelTools:
                 )
 
             if platform == "unity":
-                return await self._import_to_unity(robot_type, model_path, format, project_path, create_prefab)
+                return await self._import_to_unity(
+                    robot_type, model_path, format, project_path, create_prefab
+                )
             elif platform == "vrchat":
-                return await self._import_to_vrchat(robot_type, model_path, format, project_path)
+                return await self._import_to_vrchat(
+                    robot_type, model_path, format, project_path
+                )
             elif platform == "resonite":
                 return await self._import_to_resonite(robot_type, model_path, format)
             else:
-                return format_error_response(f"Unsupported platform: {platform}", error_type="validation_error")
+                return format_error_response(
+                    f"Unsupported platform: {platform}", error_type="validation_error"
+                )
         except Exception as e:
             return handle_tool_error("robot_model", e, operation="import")
 
     async def _handle_export(
-        self, robot_id: str, format: str, output_path: Optional[str], include_animations: bool
+        self,
+        robot_id: str,
+        format: str,
+        output_path: Optional[str],
+        include_animations: bool,
     ) -> Dict[str, Any]:
         """Handle export operation."""
         try:
             robot = self.state_manager.get_robot(robot_id)
             if not robot:
-                return format_error_response(f"Robot {robot_id} not found", error_type="not_found", robot_id=robot_id)
+                return format_error_response(
+                    f"Robot {robot_id} not found",
+                    error_type="not_found",
+                    robot_id=robot_id,
+                )
 
             if not robot.is_virtual:
                 return format_error_response(
-                    f"Robot {robot_id} is not a virtual robot", error_type="validation_error", robot_id=robot_id
+                    f"Robot {robot_id} is not a virtual robot",
+                    error_type="validation_error",
+                    robot_id=robot_id,
                 )
 
             if robot.platform == "unity" and "unity" in self.mounted_servers:
-                return await self._export_from_unity(robot_id, format, output_path, include_animations)
+                return await self._export_from_unity(
+                    robot_id, format, output_path, include_animations
+                )
             else:
                 return format_error_response(
                     f"Export not yet implemented for platform: {robot.platform}",
@@ -294,7 +375,11 @@ class RobotModelTools:
     ) -> Dict[str, Any]:
         """Handle convert operation."""
         try:
-            if target_format == "vrm" and robot_type and robot_type in NON_HUMANOID_ROBOT_TYPES:
+            if (
+                target_format == "vrm"
+                and robot_type
+                and robot_type in NON_HUMANOID_ROBOT_TYPES
+            ):
                 return format_error_response(
                     f"VRM conversion only works for humanoid robots. {robot_type} is not humanoid.",
                     error_type="validation_error",
@@ -308,7 +393,9 @@ class RobotModelTools:
                     details={"mounted_servers": list(self.mounted_servers.keys())},
                 )
 
-            return await self._convert_via_blender(source_path, source_format, target_format, target_path)
+            return await self._convert_via_blender(
+                source_path, source_format, target_format, target_path
+            )
         except Exception as e:
             return handle_tool_error("robot_model", e, operation="convert")
 
@@ -386,16 +473,31 @@ class RobotModelTools:
                     )
 
                 if platform == "unity":
-                    return await self._import_to_unity(robot_type, model_path, format, project_path, create_prefab)
+                    return await self._import_to_unity(
+                        robot_type, model_path, format, project_path, create_prefab
+                    )
                 elif platform == "vrchat":
-                    return await self._import_to_vrchat(robot_type, model_path, format, project_path)
+                    return await self._import_to_vrchat(
+                        robot_type, model_path, format, project_path
+                    )
                 elif platform == "resonite":
-                    return await self._import_to_resonite(robot_type, model_path, format)
+                    return await self._import_to_resonite(
+                        robot_type, model_path, format
+                    )
                 else:
-                    return format_error_response(f"Unsupported platform: {platform}", error_type="validation_error")
+                    return format_error_response(
+                        f"Unsupported platform: {platform}",
+                        error_type="validation_error",
+                    )
 
             except Exception as e:
-                return handle_tool_error("robot_model_import", e, robot_type=robot_type, format=format, platform=platform)
+                return handle_tool_error(
+                    "robot_model_import",
+                    e,
+                    robot_type=robot_type,
+                    format=format,
+                    platform=platform,
+                )
 
         @self.mcp.tool()
         async def robot_model_export(
@@ -432,16 +534,24 @@ class RobotModelTools:
             try:
                 robot = self.state_manager.get_robot(robot_id)
                 if not robot:
-                    return format_error_response(f"Robot {robot_id} not found", error_type="not_found", robot_id=robot_id)
+                    return format_error_response(
+                        f"Robot {robot_id} not found",
+                        error_type="not_found",
+                        robot_id=robot_id,
+                    )
 
                 if not robot.is_virtual:
                     return format_error_response(
-                        f"Robot {robot_id} is not a virtual robot", error_type="validation_error", robot_id=robot_id
+                        f"Robot {robot_id} is not a virtual robot",
+                        error_type="validation_error",
+                        robot_id=robot_id,
                     )
 
                 # Export via Unity or Blender
                 if robot.platform == "unity" and "unity" in self.mounted_servers:
-                    return await self._export_from_unity(robot_id, format, output_path, include_animations)
+                    return await self._export_from_unity(
+                        robot_id, format, output_path, include_animations
+                    )
                 else:
                     return format_error_response(
                         f"Export not yet implemented for platform: {robot.platform}",
@@ -450,7 +560,9 @@ class RobotModelTools:
                     )
 
             except Exception as e:
-                return handle_tool_error("robot_model_export", e, robot_id=robot_id, format=format)
+                return handle_tool_error(
+                    "robot_model_export", e, robot_id=robot_id, format=format
+                )
 
         @self.mcp.tool()
         async def robot_model_create(
@@ -518,11 +630,18 @@ class RobotModelTools:
 
                 # Create model using blender-mcp
                 return await self._create_model_via_blender(
-                    robot_type, output_path, format, dimensions, create_textures, texture_style
+                    robot_type,
+                    output_path,
+                    format,
+                    dimensions,
+                    create_textures,
+                    texture_style,
                 )
 
             except Exception as e:
-                return handle_tool_error("robot_model_create", e, robot_type=robot_type, format=format)
+                return handle_tool_error(
+                    "robot_model_create", e, robot_type=robot_type, format=format
+                )
 
         @self.mcp.tool()
         async def robot_model_convert(
@@ -569,7 +688,11 @@ class RobotModelTools:
             """
             try:
                 # Validate VRM conversion
-                if target_format == "vrm" and robot_type and robot_type in NON_HUMANOID_ROBOT_TYPES:
+                if (
+                    target_format == "vrm"
+                    and robot_type
+                    and robot_type in NON_HUMANOID_ROBOT_TYPES
+                ):
                     return format_error_response(
                         f"Cannot convert {robot_type} to VRM - not humanoid. Use FBX/GLB instead.",
                         error_type="validation_error",
@@ -579,7 +702,9 @@ class RobotModelTools:
 
                 # Use Blender MCP for conversion if available
                 if "blender" in self.mounted_servers:
-                    return await self._convert_via_blender(source_path, source_format, target_format, target_path)
+                    return await self._convert_via_blender(
+                        source_path, source_format, target_format, target_path
+                    )
                 else:
                     return format_error_response(
                         "Blender MCP not available for format conversion",
@@ -589,11 +714,19 @@ class RobotModelTools:
 
             except Exception as e:
                 return handle_tool_error(
-                    "robot_model_convert", e, source_format=source_format, target_format=target_format
+                    "robot_model_convert",
+                    e,
+                    source_format=source_format,
+                    target_format=target_format,
                 )
 
     async def _import_to_unity(
-        self, robot_type: str, model_path: str, format: str, project_path: Optional[str], create_prefab: bool
+        self,
+        robot_type: str,
+        model_path: str,
+        format: str,
+        project_path: Optional[str],
+        create_prefab: bool,
     ) -> Dict[str, Any]:
         """Import model to Unity."""
         try:
@@ -619,28 +752,40 @@ class RobotModelTools:
                         data={
                             "model_path": model_path,
                             "format": format,
-                            "prefab_path": f"Assets/Prefabs/{robot_type}.prefab" if create_prefab else None,
+                            "prefab_path": f"Assets/Prefabs/{robot_type}.prefab"
+                            if create_prefab
+                            else None,
                         },
                     )
                 return result
             else:
                 return format_success_response(
                     f"Mock import: {robot_type}",
-                    data={"model_path": model_path, "format": format, "note": "Unity MCP not available"},
+                    data={
+                        "model_path": model_path,
+                        "format": format,
+                        "note": "Unity MCP not available",
+                    },
                 )
 
         except Exception as e:
             logger.error("Unity import failed", robot_type=robot_type, error=str(e))
-            return format_error_response(f"Unity import failed: {str(e)}", error_type="import_error")
+            return format_error_response(
+                f"Unity import failed: {str(e)}", error_type="import_error"
+            )
 
     async def _import_to_vrchat(
         self, robot_type: str, model_path: str, format: str, project_path: Optional[str]
     ) -> Dict[str, Any]:
         """Import model to VRChat."""
         # VRChat uses Unity, so similar to Unity import
-        return await self._import_to_unity(robot_type, model_path, format, project_path, create_prefab=True)
+        return await self._import_to_unity(
+            robot_type, model_path, format, project_path, create_prefab=True
+        )
 
-    async def _import_to_resonite(self, robot_type: str, model_path: str, format: str) -> Dict[str, Any]:
+    async def _import_to_resonite(
+        self, robot_type: str, model_path: str, format: str
+    ) -> Dict[str, Any]:
         """Import model to Resonite."""
         # Resonite imports VRM/GLB directly
         return format_success_response(
@@ -653,7 +798,11 @@ class RobotModelTools:
         )
 
     async def _export_from_unity(
-        self, robot_id: str, format: str, output_path: Optional[str], include_animations: bool
+        self,
+        robot_id: str,
+        format: str,
+        output_path: Optional[str],
+        include_animations: bool,
     ) -> Dict[str, Any]:
         """Export model from Unity."""
         try:
@@ -667,11 +816,14 @@ class RobotModelTools:
             # Generate output path if not provided
             if not output_path:
                 from pathlib import Path
+
                 robot = self.state_manager.get_robot(robot_id)
                 robot_type = robot.robot_type if robot else "robot"
                 output_dir = Path("D:/Exports")
                 output_dir.mkdir(parents=True, exist_ok=True)
-                output_path = str(output_dir / f"{robot_id}_{robot_type}.{format.lower()}")
+                output_path = str(
+                    output_dir / f"{robot_id}_{robot_type}.{format.lower()}"
+                )
 
             # Normalize format
             format_lower = format.lower()
@@ -753,21 +905,32 @@ class RobotModelTools:
                     )
 
         except Exception as e:
-            logger.error("Unity export failed", robot_id=robot_id, format=format, error=str(e))
+            logger.error(
+                "Unity export failed", robot_id=robot_id, format=format, error=str(e)
+            )
             return format_error_response(
-                f"Unity export failed: {str(e)}", error_type="export_error", robot_id=robot_id, format=format
+                f"Unity export failed: {str(e)}",
+                error_type="export_error",
+                robot_id=robot_id,
+                format=format,
             )
 
     def _get_default_dimensions(self, robot_type: str) -> Dict[str, float]:
         """Get default dimensions for robot type (in meters)."""
         defaults = {
-            "scout": {"length": 0.115, "width": 0.10, "height": 0.08},  # 11.5×10×8 cm
-            "scout_e": {"length": 0.12, "width": 0.11, "height": 0.09},  # Slightly larger
+            "scout": {"length": 0.115, "width": 0.10, "height": 0.08},  # 11.5x10x8 cm
+            "scout_e": {
+                "length": 0.12,
+                "width": 0.11,
+                "height": 0.09,
+            },  # Slightly larger
             "go2": {"length": 0.50, "width": 0.30, "height": 0.40},  # Quadruped
             "g1": {"length": 0.50, "width": 0.40, "height": 1.60},  # Humanoid
             "robbie": {"length": 0.60, "width": 0.50, "height": 1.80},  # Humanoid robot
         }
-        return defaults.get(robot_type, {"length": 0.2, "width": 0.15, "height": 0.12})  # Default custom size
+        return defaults.get(
+            robot_type, {"length": 0.2, "width": 0.15, "height": 0.12}
+        )  # Default custom size
 
     async def _create_model_via_blender(
         self,
@@ -788,22 +951,39 @@ class RobotModelTools:
                     error_type="not_available",
                     details={"mounted_servers": list(self.mounted_servers.keys())},
                 )
-            
+
             # Create all objects in a SINGLE Blender script execution
             # This ensures all objects are in the same scene when we save
             from blender_mcp.utils.blender_executor import get_blender_executor
+
             executor = get_blender_executor()
-            
+
             # Calculate wheel positions in Python (before script generation)
             wheel_radius = 0.025
             wheel_thickness = 0.015
             wheel_positions = [
-                (-dimensions["length"] / 2 - wheel_radius, dimensions["width"] / 2, wheel_radius),  # Front-left
-                (dimensions["length"] / 2 + wheel_radius, dimensions["width"] / 2, wheel_radius),   # Front-right
-                (-dimensions["length"] / 2 - wheel_radius, -dimensions["width"] / 2, wheel_radius), # Back-left
-                (dimensions["length"] / 2 + wheel_radius, -dimensions["width"] / 2, wheel_radius),  # Back-right
+                (
+                    -dimensions["length"] / 2 - wheel_radius,
+                    dimensions["width"] / 2,
+                    wheel_radius,
+                ),  # Front-left
+                (
+                    dimensions["length"] / 2 + wheel_radius,
+                    dimensions["width"] / 2,
+                    wheel_radius,
+                ),  # Front-right
+                (
+                    -dimensions["length"] / 2 - wheel_radius,
+                    -dimensions["width"] / 2,
+                    wheel_radius,
+                ),  # Back-left
+                (
+                    dimensions["length"] / 2 + wheel_radius,
+                    -dimensions["width"] / 2,
+                    wheel_radius,
+                ),  # Back-right
             ]
-            
+
             # Generate a single script that creates all objects
             create_script = f"""
 import bpy
@@ -952,9 +1132,9 @@ for obj in bpy.data.objects:
 
 # Select all and frame view
 bpy.ops.object.select_all(action='SELECT')
-print(f"Created {{len(bpy.data.objects)}} objects:")
+print(f"Created {len(bpy.data.objects)} objects:")
 for obj in bpy.data.objects:
-    print(f"  - {{obj.name}} at {{obj.location}}")
+    print(f"  - {obj.name} at {obj.location}")
 
 # Frame all objects in viewport (zoom to fit) - skip in background mode
 try:
@@ -968,35 +1148,39 @@ try:
                 break
     print("Framed all objects in viewport")
 except Exception as e:
-    print(f"Note: Could not frame viewport (background mode): {{str(e)}}")
+    print(f"Note: Could not frame viewport (background mode): {str(e)}")
 
 # Save .blend file (do this BEFORE any potential errors)
 import os
-blend_path = r"{str(Path(output_path).with_suffix('.blend'))}"
+blend_path = r"{str(Path(output_path).with_suffix(".blend"))}"
 os.makedirs(os.path.dirname(blend_path), exist_ok=True)
 try:
     bpy.ops.wm.save_as_mainfile(filepath=blend_path)
-    print(f"SUCCESS: Saved .blend file: {{blend_path}}")
-    print(f"Objects saved: {{len(bpy.data.objects)}}")
+    print(f"SUCCESS: Saved .blend file: {blend_path}")
+    print(f"Objects saved: {len(bpy.data.objects)}")
 except Exception as save_error:
-    print(f"ERROR saving blend file: {{save_error}}")
+    print(f"ERROR saving blend file: {save_error}")
     raise
 """
-            
+
             # Execute the creation script (creates objects AND saves blend file)
-            blend_path = Path(output_path).with_suffix('.blend')
+            blend_path = Path(output_path).with_suffix(".blend")
             blend_path_before = blend_path.exists()
             blend_mtime_before = blend_path.stat().st_mtime if blend_path_before else 0
-            
+
             # Debug: Write script to file for inspection
             debug_script_path = Path("D:/Models/create_scout_debug.py")
             debug_script_path.parent.mkdir(parents=True, exist_ok=True)
             debug_script_path.write_text(create_script)
             logger.debug(f"Wrote debug script to {debug_script_path}")
-            
+
             try:
-                result = await executor.execute_script(create_script, script_name="create_scout")
-                logger.info(f"Created all {robot_type} objects and saved blend file in single script execution")
+                result = await executor.execute_script(
+                    create_script, script_name="create_scout"
+                )
+                logger.info(
+                    f"Created all {robot_type} objects and saved blend file in single script execution"
+                )
                 logger.debug(f"Script output: {result}")
             except Exception as e:
                 # Check if blend file was created/updated despite the error (TBBmalloc warning)
@@ -1004,28 +1188,40 @@ except Exception as save_error:
                 if blend_path.exists():
                     blend_mtime_after = blend_path.stat().st_mtime
                     if not blend_path_before or blend_mtime_after > blend_mtime_before:
-                        logger.warning(f"Blender exited with error but blend file was created/updated: {error_str}")
+                        logger.warning(
+                            f"Blender exited with error but blend file was created/updated: {error_str}"
+                        )
                         # Treat as success if file was created - TBBmalloc warning is harmless
                     elif "TBBmalloc" in error_str:
                         # TBBmalloc warning - check if file exists and is recent
-                        logger.warning(f"TBBmalloc warning detected, but continuing if file exists")
+                        logger.warning(
+                            f"TBBmalloc warning detected, but continuing if file exists"
+                        )
                     else:
                         raise
                 elif "TBBmalloc" in error_str:
                     # TBBmalloc warning but file doesn't exist - script might have failed before save
-                    logger.error(f"TBBmalloc warning and no blend file created - script may have failed: {error_str}")
-                    logger.error(f"Debug script saved to {debug_script_path} for inspection")
+                    logger.error(
+                        f"TBBmalloc warning and no blend file created - script may have failed: {error_str}"
+                    )
+                    logger.error(
+                        f"Debug script saved to {debug_script_path} for inspection"
+                    )
                     raise
                 else:
                     logger.error(f"Script failed: {error_str}")
-                    logger.error(f"Debug script saved to {debug_script_path} for inspection")
+                    logger.error(
+                        f"Debug script saved to {debug_script_path} for inspection"
+                    )
                     raise
-            
+
             # Now use helper for any additional operations that need the mounted server
             # Step 3: Create textures if requested
             texture_paths = []
             if create_textures and "gimp" in self.mounted_servers:
-                texture_paths = await self._create_textures_via_gimp(robot_type, texture_style)
+                texture_paths = await self._create_textures_via_gimp(
+                    robot_type, texture_style
+                )
                 logger.info(f"Created {len(texture_paths)} textures via GIMP")
 
             # Step 4: Apply materials/textures (if created)
@@ -1057,8 +1253,8 @@ except Exception as save_error:
                 logger.info(f"Exported {robot_type} model", result=export_result)
 
                 # Get blend file path
-                blend_path = str(Path(output_path).with_suffix('.blend'))
-                
+                blend_path = str(Path(output_path).with_suffix(".blend"))
+
                 return format_success_response(
                     f"Created {robot_type} model",
                     data={
@@ -1067,15 +1263,21 @@ except Exception as save_error:
                         "blend_path": blend_path,
                         "format": format,
                         "dimensions": dimensions,
-                        "textures_created": len(texture_paths) if create_textures else 0,
+                        "textures_created": len(texture_paths)
+                        if create_textures
+                        else 0,
                         "texture_paths": texture_paths,
                         "note": f"Open {blend_path} in Blender to see the model",
                     },
                 )
 
         except Exception as e:
-            logger.error("Blender model creation failed", robot_type=robot_type, error=str(e))
-            return format_error_response(f"Model creation failed: {str(e)}", error_type="creation_error")
+            logger.error(
+                "Blender model creation failed", robot_type=robot_type, error=str(e)
+            )
+            return format_error_response(
+                f"Model creation failed: {str(e)}", error_type="creation_error"
+            )
 
     async def _create_textures_via_gimp(
         self, robot_type: str, texture_style: str
@@ -1095,6 +1297,7 @@ except Exception as save_error:
 
             # Create a temporary base image file first
             import tempfile
+
             temp_base = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
             temp_base_path = temp_base.name
             temp_base.close()
@@ -1120,78 +1323,123 @@ except Exception as save_error:
             )
 
         except Exception as e:
-            logger.warning("GIMP texture creation failed", robot_type=robot_type, error=str(e))
+            logger.warning(
+                "GIMP texture creation failed", robot_type=robot_type, error=str(e)
+            )
             # Continue without textures if GIMP fails
 
         return texture_paths
 
     async def _convert_via_blender(
-        self, source_path: str, source_format: str, target_format: str, target_path: Optional[str]
+        self,
+        source_path: str,
+        source_format: str,
+        target_format: str,
+        target_path: Optional[str],
     ) -> Dict[str, Any]:
         """Convert model using Blender MCP."""
         try:
             # Import source
             if source_format == "fbx":
                 result = await call_mounted_server_tool(
-                    self.mounted_servers, "blender", "blender_import", {"filepath": source_path, "file_format": "fbx"}
+                    self.mounted_servers,
+                    "blender",
+                    "blender_import",
+                    {"filepath": source_path, "file_format": "fbx"},
                 )
             elif source_format == "obj":
                 result = await call_mounted_server_tool(
-                    self.mounted_servers, "blender", "blender_import", {"filepath": source_path, "file_format": "obj"}
+                    self.mounted_servers,
+                    "blender",
+                    "blender_import",
+                    {"filepath": source_path, "file_format": "obj"},
                 )
             elif source_format == "blend":
                 result = await call_mounted_server_tool(
-                    self.mounted_servers, "blender", "blender_open", {"filepath": source_path}
+                    self.mounted_servers,
+                    "blender",
+                    "blender_open",
+                    {"filepath": source_path},
                 )
             else:
-                return format_error_response(f"Unsupported source format: {source_format}", error_type="validation_error")
+                return format_error_response(
+                    f"Unsupported source format: {source_format}",
+                    error_type="validation_error",
+                )
 
             # Export target
             if target_format == "fbx":
                 result = await call_mounted_server_tool(
-                    self.mounted_servers, "blender", "blender_export", {"filepath": target_path, "file_format": "fbx"}
+                    self.mounted_servers,
+                    "blender",
+                    "blender_export",
+                    {"filepath": target_path, "file_format": "fbx"},
                 )
             elif target_format == "glb":
                 result = await call_mounted_server_tool(
-                    self.mounted_servers, "blender", "blender_export", {"filepath": target_path, "file_format": "gltf"}
+                    self.mounted_servers,
+                    "blender",
+                    "blender_export",
+                    {"filepath": target_path, "file_format": "gltf"},
                 )
             elif target_format == "vrm":
                 result = await call_mounted_server_tool(
-                    self.mounted_servers, "blender", "blender_export", {"filepath": target_path, "file_format": "vrm"}
+                    self.mounted_servers,
+                    "blender",
+                    "blender_export",
+                    {"filepath": target_path, "file_format": "vrm"},
                 )
             else:
-                return format_error_response(f"Unsupported target format: {target_format}", error_type="validation_error")
+                return format_error_response(
+                    f"Unsupported target format: {target_format}",
+                    error_type="validation_error",
+                )
 
                 return format_success_response(
                     f"Converted {source_format} to {target_format}",
-                    data={"source_path": source_path, "target_path": target_path, "formats": [source_format, target_format]},
+                    data={
+                        "source_path": source_path,
+                        "target_path": target_path,
+                        "formats": [source_format, target_format],
+                    },
                 )
 
         except Exception as e:
             logger.error("Blender conversion failed", error=str(e))
-            return format_error_response(f"Blender conversion failed: {str(e)}", error_type="conversion_error")
+            return format_error_response(
+                f"Blender conversion failed: {str(e)}", error_type="conversion_error"
+            )
 
     async def _handle_spz_check(self) -> Dict[str, Any]:
         """Check available .spz conversion tools (from spz_converter.py)."""
         import subprocess
+
         tools_available = {
             "adobe_spz_tools": False,
             "python_spz_lib": False,
             "manual_conversion": True,
         }
         try:
-            result = subprocess.run(["spz-decompress", "--version"], capture_output=True, timeout=5)
+            result = subprocess.run(
+                ["spz-decompress", "--version"], capture_output=True, timeout=5
+            )
             tools_available["adobe_spz_tools"] = result.returncode == 0
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
         try:
             import spz  # type: ignore
+
             tools_available["python_spz_lib"] = True
         except ImportError:
             pass
         recommendations = []
-        if not tools_available["adobe_spz_tools"] and not tools_available["python_spz_lib"]:
-            recommendations.append("No .spz conversion tools found. Recommended: Re-export from Marble as .ply or .fbx/.glb")
+        if (
+            not tools_available["adobe_spz_tools"]
+            and not tools_available["python_spz_lib"]
+        ):
+            recommendations.append(
+                "No .spz conversion tools found. Recommended: Re-export from Marble as .ply or .fbx/.glb"
+            )
         return format_success_response(
             "SPZ support check completed",
             data={
@@ -1201,13 +1449,18 @@ except Exception as save_error:
             },
         )
 
-    async def _handle_spz_convert(self, spz_path: str, output_path: Optional[str], output_format: str) -> Dict[str, Any]:
+    async def _handle_spz_convert(
+        self, spz_path: str, output_path: Optional[str], output_format: str
+    ) -> Dict[str, Any]:
         """Convert .spz file to .ply or other format (from spz_converter.py)."""
         from pathlib import Path
         import subprocess
+
         spz_file = Path(spz_path)
         if not spz_file.exists():
-            return format_error_response(f".spz file not found: {spz_path}", error_type="file_not_found")
+            return format_error_response(
+                f".spz file not found: {spz_path}", error_type="file_not_found"
+            )
         if not output_path:
             output_path = str(spz_file.with_suffix(f".{output_format}"))
         output_file = Path(output_path)
@@ -1226,7 +1479,9 @@ except Exception as save_error:
                         "output_file": str(output_file),
                         "format": output_format,
                         "method": "adobe_spz_tools",
-                        "file_size": output_file.stat().st_size if output_file.exists() else 0,
+                        "file_size": output_file.stat().st_size
+                        if output_file.exists()
+                        else 0,
                     },
                 )
         except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -1246,17 +1501,24 @@ except Exception as save_error:
     async def _handle_spz_extract(self, spz_path: str) -> Dict[str, Any]:
         """Extract metadata from .spz file (from spz_converter.py)."""
         from pathlib import Path
+
         spz_file = Path(spz_path)
         if not spz_file.exists():
-            return format_error_response(f".spz file not found: {spz_path}", error_type="file_not_found")
+            return format_error_response(
+                f".spz file not found: {spz_path}", error_type="file_not_found"
+            )
         file_size = spz_file.stat().st_size
         try:
             with open(spz_file, "rb") as f:
                 header = f.read(16)
                 header_hex = header.hex()
-                header_ascii = "".join(chr(b) if 32 <= b < 127 else "." for b in header[:8])
+                header_ascii = "".join(
+                    chr(b) if 32 <= b < 127 else "." for b in header[:8]
+                )
         except Exception as e:
-            return format_error_response(f"Failed to read .spz file: {e}", error_type="read_error")
+            return format_error_response(
+                f"Failed to read .spz file: {e}", error_type="read_error"
+            )
         return format_success_response(
             "SPZ file info extracted",
             data={
@@ -1274,11 +1536,13 @@ except Exception as save_error:
         """Install Unity Gaussian Splatting plugin (from spz_converter.py)."""
         from pathlib import Path
         import json
+
         project_path = Path(unity_project_path)
         manifest_path = project_path / "Packages" / "manifest.json"
         if not manifest_path.exists():
             return format_error_response(
-                f"Not a valid Unity project: {manifest_path} not found", error_type="invalid_project"
+                f"Not a valid Unity project: {manifest_path} not found",
+                error_type="invalid_project",
             )
         try:
             with open(manifest_path, "r") as f:
@@ -1295,7 +1559,9 @@ except Exception as save_error:
                         "note": "This plugin supports .ply files. Re-export from Marble as .ply to use it.",
                     },
                 )
-            dependencies[gs_package] = "https://github.com/aras-p/UnityGaussianSplatting.git?path=/package"
+            dependencies[gs_package] = (
+                "https://github.com/aras-p/UnityGaussianSplatting.git?path=/package"
+            )
             manifest["dependencies"] = dependencies
             with open(manifest_path, "w") as f:
                 json.dump(manifest, f, indent=2)
@@ -1313,5 +1579,6 @@ except Exception as save_error:
             )
         except Exception as e:
             logger.error(f"Failed to install Gaussian Splatting: {e}")
-            return format_error_response(f"Failed to install plugin: {e}", error_type="installation_error")
-
+            return format_error_response(
+                f"Failed to install plugin: {e}", error_type="installation_error"
+            )

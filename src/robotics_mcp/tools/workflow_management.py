@@ -69,6 +69,7 @@ class WorkflowManagementTool:
             category: str | None = None,
             tags: list[str] | None = None,
             search: str | None = None,
+            debug_mode: bool = False,
         ) -> dict[str, Any]:
             """Comprehensive workflow management operations.
 
@@ -152,7 +153,9 @@ class WorkflowManagementTool:
 
                 elif operation == "update":
                     if not workflow_id or not workflow_data:
-                        return format_error_response("workflow_id and workflow_data required for update operation")
+                        return format_error_response(
+                            "workflow_id and workflow_data required for update operation"
+                        )
 
                     workflow_data["id"] = workflow_id
                     workflow = Workflow(**workflow_data)
@@ -173,10 +176,14 @@ class WorkflowManagementTool:
                     if not deleted:
                         return format_error_response(f"Workflow not found: {workflow_id}")
 
-                    return format_success_response({"message": f"Workflow {workflow_id} deleted successfully"})
+                    return format_success_response(
+                        {"message": f"Workflow {workflow_id} deleted successfully"}
+                    )
 
                 elif operation == "list":
-                    workflows = self.storage.list_workflows(category=category, tags=tags, search=search)
+                    workflows = self.storage.list_workflows(
+                        category=category, tags=tags, search=search
+                    )
                     return format_success_response(
                         {
                             "workflows": [w.model_dump() for w in workflows],
@@ -191,7 +198,9 @@ class WorkflowManagementTool:
                     if not variables:
                         variables = {}
 
-                    execution_id = await self.executor.execute_workflow(workflow_id, variables, debug_mode=debug_mode)
+                    execution_id = await self.executor.execute_workflow(
+                        workflow_id, variables, debug_mode=debug_mode
+                    )
 
                     return format_success_response(
                         {
@@ -276,7 +285,12 @@ class WorkflowManagementTool:
                     return format_error_response(f"Unknown operation: {operation}")
 
             except Exception as e:
-                logger.error("Workflow management operation failed", operation=operation, error=str(e), exc_info=True)
+                logger.error(
+                    "Workflow management operation failed",
+                    operation=operation,
+                    error=str(e),
+                    exc_info=True,
+                )
                 return format_error_response(f"Operation failed: {str(e)}")
 
     def _get_templates(self) -> list[dict[str, Any]]:
@@ -286,6 +300,156 @@ class WorkflowManagementTool:
             List of workflow templates.
         """
         return [
+            {
+                "id": "mixed_reality_launch",
+                "name": "Mixed Reality Launch (Scout)",
+                "description": "Launch Unity, Resonite, and Blender with Pilot Labs Scout model",
+                "category": "demo",
+                "steps": [
+                    {
+                        "id": "check_model",
+                        "order": 1,
+                        "name": "Check Model Exists",
+                        "type": "condition",
+                        "condition": {
+                            "expression": "exists('${model_path}')",
+                            "true_branch": ["launch_unity"],
+                            "false_branch": ["create_model"],
+                        },
+                    },
+                    {
+                        "id": "create_model",
+                        "order": 2,
+                        "name": "Create Scout Model",
+                        "type": "mcp_tool",
+                        "mcp_server": "robotics",
+                        "tool_name": "robot_model",
+                        "arguments": {
+                            "operation": "create",
+                            "robot_type": "scout",
+                            "output_path": "${model_path}",
+                            "format": "fbx",
+                        },
+                    },
+                    {
+                        "id": "launch_unity",
+                        "order": 3,
+                        "name": "Launch Unity3D",
+                        "type": "app_launch",
+                        "app_id": "unity3d",
+                        "app_config": {"desktop": 1, "monitor": 1},
+                    },
+                    {
+                        "id": "launch_resonite",
+                        "order": 4,
+                        "name": "Launch Resonite",
+                        "type": "app_launch",
+                        "app_id": "resonite",
+                        "app_config": {"desktop": 2, "monitor": 2},
+                    },
+                    {
+                        "id": "launch_blender",
+                        "order": 5,
+                        "name": "Launch Blender",
+                        "type": "app_launch",
+                        "app_id": "blender",
+                    },
+                    {
+                        "id": "load_model_blender",
+                        "order": 6,
+                        "name": "Load Model in Blender",
+                        "type": "mcp_tool",
+                        "mcp_server": "blender",
+                        "tool_name": "open_file",
+                        "arguments": {"file_path": "${model_path}"},
+                    },
+                    {
+                        "id": "zoom_model_blender",
+                        "order": 7,
+                        "name": "Zoom to Model",
+                        "type": "mcp_tool",
+                        "mcp_server": "blender",
+                        "tool_name": "execute_script",
+                        "arguments": {"script": "import bpy; bpy.ops.view3d.view_all(center=True)"},
+                    },
+                    {
+                        "id": "color_pink_blender",
+                        "order": 8,
+                        "name": "Color it Pink",
+                        "type": "mcp_tool",
+                        "mcp_server": "blender",
+                        "tool_name": "execute_script",
+                        "arguments": {
+                            "script": "import bpy; obj = bpy.context.active_object; mat = obj.data.materials[0] if obj.data.materials else bpy.data.materials.new(name='Pink'); obj.data.materials.append(mat) if not obj.data.materials else None; mat.use_nodes = True; bsdf = mat.node_tree.nodes.get('Principled BSDF'); bsdf.inputs['Base Color'].default_value = (1.0, 0.4, 0.7, 1.0) if bsdf else None; mat.diffuse_color = (1.0, 0.4, 0.7, 1.0)"
+                        },
+                    },
+                    {
+                        "id": "create_racetrack_blender",
+                        "order": 9,
+                        "name": "Create Racetrack",
+                        "type": "mcp_tool",
+                        "mcp_server": "blender",
+                        "tool_name": "execute_script",
+                        "arguments": {
+                            "script": "import bpy; bpy.ops.mesh.primitive_torus_add(location=(0,0,-0.2), major_radius=8, minor_radius=2); track = bpy.context.active_object; track.name = 'Racetrack'; track.scale = (1, 1, 0.05); mat = bpy.data.materials.new(name='Asphalt'); mat.use_nodes = True; bsdf = mat.node_tree.nodes.get('Principled BSDF'); bsdf.inputs['Base Color'].default_value = (0.1, 0.1, 0.1, 1.0) if bsdf else None; track.data.materials.append(mat)"
+                        },
+                    },
+                    {
+                        "id": "create_clown_nose",
+                        "order": 10,
+                        "name": "Clown Nose",
+                        "type": "mcp_tool",
+                        "mcp_server": "blender",
+                        "tool_name": "execute_script",
+                        "arguments": {
+                            "script": "import bpy; bpy.ops.mesh.primitive_uv_sphere_add(radius=0.015, location=(0, -0.06, 0.04)); nose = bpy.context.active_object; nose.name = 'Clown Nose'; mat = bpy.data.materials.new(name='Red Nose'); mat.use_nodes = True; bsdf = mat.node_tree.nodes.get('Principled BSDF'); bsdf.inputs['Base Color'].default_value = (1.0, 0.0, 0.0, 1.0) if bsdf else None; nose.data.materials.append(mat)"
+                        },
+                    },
+                    {
+                        "id": "save_blend_file",
+                        "order": 11,
+                        "name": "Save as scout2.blend",
+                        "type": "mcp_tool",
+                        "mcp_server": "blender",
+                        "arguments": {
+                            "script": "import bpy; bpy.ops.wm.save_as_mainfile(filepath=r'D:\\Models\\scout2.blend')"
+                        },
+                    },
+                    {
+                        "id": "import_scout_model",
+                        "order": 12,
+                        "name": "Import Scout Model to Unity",
+                        "type": "mcp_tool",
+                        "mcp_server": "unity3d",
+                        "tool_name": "import_3d_model",
+                        "arguments": {"model_path": r"D:\Models\scout2.blend"},
+                    },
+                    {
+                        "id": "create_light",
+                        "order": 13,
+                        "name": "Create Pretty Spotlight",
+                        "type": "mcp_tool",
+                        "mcp_server": "unity3d",
+                        "tool_name": "create_unity_light",
+                        "arguments": {
+                            "light_name": "PrettySpotlight",
+                            "light_type": "Spot",
+                            "color": [1.0, 1.0, 0.8, 1.0],
+                            "intensity": 2.0,
+                            "position": {"x": 2.0, "y": 5.0, "z": -2.0},
+                        },
+                    },
+                ],
+                "variables": [
+                    {
+                        "name": "model_path",
+                        "type": "file_path",
+                        "default_value": "D:/Models/test_scout.blend",
+                        "description": "Path to Pilot Labs Scout model",
+                        "required": True,
+                    }
+                ],
+            },
             {
                 "id": "vroid_to_vrchat",
                 "name": "VRoid to VRChat Avatar",
@@ -335,7 +499,10 @@ class WorkflowManagementTool:
                         "type": "mcp_tool",
                         "mcp_server": "vrchat",
                         "tool_name": "vrchat_avatar",
-                        "arguments": {"operation": "upload_avatar", "avatar_path": "${avatar_build_path}"},
+                        "arguments": {
+                            "operation": "upload_avatar",
+                            "avatar_path": "${avatar_build_path}",
+                        },
                     },
                 ],
                 "variables": [
@@ -366,7 +533,10 @@ class WorkflowManagementTool:
                         "type": "mcp_tool",
                         "mcp_server": "avatar",
                         "tool_name": "avatar_convert",
-                        "arguments": {"operation": "convert_to_vrm", "input_file": "${model_file_path}"},
+                        "arguments": {
+                            "operation": "convert_to_vrm",
+                            "input_file": "${model_file_path}",
+                        },
                     },
                     {
                         "id": "step2",
@@ -421,10 +591,10 @@ class WorkflowManagementTool:
                         "tool_name": "avatar_management",
                         "arguments": {
                             "operation": "list_avatars",
-                            "source_path": "D:\\Dev\\repos\\avatar-mcp\\models"
+                            "source_path": "D:\\Dev\\repos\\avatar-mcp\\models",
                         },
                         "required": True,
-                        "output_variable": "available_vrms"
+                        "output_variable": "available_vrms",
                     },
                     {
                         "id": "step2",
@@ -436,10 +606,10 @@ class WorkflowManagementTool:
                         "arguments": {
                             "operation": "get_avatar",
                             "avatar_id": "${vrm_name}",
-                            "source_path": "D:\\Dev\\repos\\avatar-mcp\\models"
+                            "source_path": "D:\\Dev\\repos\\avatar-mcp\\models",
                         },
                         "required": True,
-                        "output_variable": "selected_vrm_path"
+                        "output_variable": "selected_vrm_path",
                     },
                     {
                         "id": "step3",
@@ -451,9 +621,9 @@ class WorkflowManagementTool:
                             "desktop": 2,
                             "monitor": 1,
                             "project_path": "${unity_project_path}",
-                            "fullscreen": False
+                            "fullscreen": False,
                         },
-                        "required": True
+                        "required": True,
                     },
                     {
                         "id": "step4",
@@ -461,7 +631,7 @@ class WorkflowManagementTool:
                         "name": "Wait for Unity3D",
                         "type": "delay",
                         "arguments": {"delay": 5},
-                        "required": False
+                        "required": False,
                     },
                     {
                         "id": "step5",
@@ -474,10 +644,10 @@ class WorkflowManagementTool:
                             "operation": "import_vrm",
                             "vrm_path": "${selected_vrm_path}",
                             "project_path": "${unity_project_path}",
-                            "create_prefab": True
+                            "create_prefab": True,
                         },
                         "required": True,
-                        "output_variable": "unity_prefab_path"
+                        "output_variable": "unity_prefab_path",
                     },
                     {
                         "id": "step6",
@@ -492,10 +662,10 @@ class WorkflowManagementTool:
                             "avatar_name": "${avatar_name}",
                             "add_descriptor": True,
                             "configure_expression_menu": True,
-                            "configure_gesture_controller": True
+                            "configure_gesture_controller": True,
                         },
                         "required": True,
-                        "output_variable": "vrchat_avatar_path"
+                        "output_variable": "vrchat_avatar_path",
                     },
                     {
                         "id": "step7",
@@ -508,10 +678,10 @@ class WorkflowManagementTool:
                             "operation": "build_avatar",
                             "avatar_path": "${vrchat_avatar_path}",
                             "output_path": "${build_output_path}",
-                            "platform": "Windows"
+                            "platform": "Windows",
                         },
                         "required": True,
-                        "output_variable": "built_avatar_path"
+                        "output_variable": "built_avatar_path",
                     },
                     {
                         "id": "step8",
@@ -524,10 +694,10 @@ class WorkflowManagementTool:
                             "operation": "upload_avatar",
                             "avatar_file": "${built_avatar_path}",
                             "avatar_name": "${avatar_name}",
-                            "description": "${avatar_description}"
+                            "description": "${avatar_description}",
                         },
                         "required": True,
-                        "output_variable": "vrchat_avatar_id"
+                        "output_variable": "vrchat_avatar_id",
                     },
                     {
                         "id": "step9",
@@ -535,12 +705,8 @@ class WorkflowManagementTool:
                         "name": "Launch VRChat",
                         "type": "app_launch",
                         "app_id": "vrchat",
-                        "app_config": {
-                            "desktop": 2,
-                            "monitor": 2,
-                            "fullscreen": False
-                        },
-                        "required": False
+                        "app_config": {"desktop": 2, "monitor": 2, "fullscreen": False},
+                        "required": False,
                     },
                     {
                         "id": "step10",
@@ -553,10 +719,10 @@ class WorkflowManagementTool:
                             "operation": "connect",
                             "host": "127.0.0.1",
                             "port": 9000,
-                            "protocol": "udp"
+                            "protocol": "udp",
                         },
                         "required": True,
-                        "output_variable": "osc_connection_id"
+                        "output_variable": "osc_connection_id",
                     },
                     {
                         "id": "step11",
@@ -569,10 +735,10 @@ class WorkflowManagementTool:
                             "operation": "send_message",
                             "connection_id": "${osc_connection_id}",
                             "address": "/avatar/change",
-                            "args": ["${vrchat_avatar_id}"]
+                            "args": ["${vrchat_avatar_id}"],
                         },
-                        "required": False
-                    }
+                        "required": False,
+                    },
                 ],
                 "variables": [
                     {
@@ -580,7 +746,7 @@ class WorkflowManagementTool:
                         "type": "string",
                         "required": True,
                         "description": "Name of the VRM file to import (without .vrm extension)",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "unity_project_path",
@@ -588,14 +754,14 @@ class WorkflowManagementTool:
                         "required": True,
                         "default_value": "C:\\UnityProjects\\VRChatAvatars",
                         "description": "Path to Unity3D project for VRChat avatars",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "avatar_name",
                         "type": "string",
                         "required": True,
                         "description": "Name for the VRChat avatar",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "avatar_description",
@@ -603,7 +769,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "Avatar imported via workflow",
                         "description": "Description for the VRChat avatar",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "build_output_path",
@@ -611,20 +777,20 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "C:\\VRChatAvatars\\Builds",
                         "description": "Output path for built avatar files",
-                        "source": "user_input"
-                    }
+                        "source": "user_input",
+                    },
                 ],
                 "error_handling": {
                     "on_error": "stop",
                     "retry_count": 2,
                     "rollback_steps": [],
-                    "error_notification": True
+                    "error_notification": True,
                 },
                 "metadata": {
                     "estimated_duration": "15-20 minutes",
                     "complexity": "high",
-                    "requires": ["Unity3D", "VRChat SDK", "OSC-MCP"]
-                }
+                    "requires": ["Unity3D", "VRChat SDK", "OSC-MCP"],
+                },
             },
             {
                 "id": "vrm_to_resonite_with_osc",
@@ -645,10 +811,10 @@ class WorkflowManagementTool:
                         "arguments": {
                             "operation": "get_avatar",
                             "avatar_id": "${vrm_name}",
-                            "source_path": "D:\\Dev\\repos\\avatar-mcp\\models"
+                            "source_path": "D:\\Dev\\repos\\avatar-mcp\\models",
                         },
                         "required": True,
-                        "output_variable": "vrm_file_path"
+                        "output_variable": "vrm_file_path",
                     },
                     {
                         "id": "step2",
@@ -660,9 +826,9 @@ class WorkflowManagementTool:
                             "desktop": 2,
                             "monitor": 1,
                             "project_path": "${unity_project_path}",
-                            "fullscreen": False
+                            "fullscreen": False,
                         },
-                        "required": True
+                        "required": True,
                     },
                     {
                         "id": "step3",
@@ -670,7 +836,7 @@ class WorkflowManagementTool:
                         "name": "Wait for Unity3D",
                         "type": "delay",
                         "arguments": {"delay": 5},
-                        "required": False
+                        "required": False,
                     },
                     {
                         "id": "step4",
@@ -683,10 +849,10 @@ class WorkflowManagementTool:
                             "operation": "import_vrm",
                             "vrm_path": "${vrm_file_path}",
                             "project_path": "${unity_project_path}",
-                            "create_prefab": True
+                            "create_prefab": True,
                         },
                         "required": True,
-                        "output_variable": "unity_prefab_path"
+                        "output_variable": "unity_prefab_path",
                     },
                     {
                         "id": "step5",
@@ -700,10 +866,10 @@ class WorkflowManagementTool:
                             "prefab_path": "${unity_prefab_path}",
                             "avatar_name": "${avatar_name}",
                             "configure_rig": True,
-                            "add_resonite_components": True
+                            "add_resonite_components": True,
                         },
                         "required": True,
-                        "output_variable": "resonite_avatar_path"
+                        "output_variable": "resonite_avatar_path",
                     },
                     {
                         "id": "step6",
@@ -716,10 +882,10 @@ class WorkflowManagementTool:
                             "operation": "build_avatar",
                             "avatar_path": "${resonite_avatar_path}",
                             "output_path": "${build_output_path}",
-                            "platform": "Windows"
+                            "platform": "Windows",
                         },
                         "required": True,
-                        "output_variable": "built_avatar_path"
+                        "output_variable": "built_avatar_path",
                     },
                     {
                         "id": "step7",
@@ -731,10 +897,10 @@ class WorkflowManagementTool:
                         "arguments": {
                             "operation": "upload_avatar",
                             "avatar_file": "${built_avatar_path}",
-                            "avatar_name": "${avatar_name}"
+                            "avatar_name": "${avatar_name}",
                         },
                         "required": True,
-                        "output_variable": "resonite_avatar_id"
+                        "output_variable": "resonite_avatar_id",
                     },
                     {
                         "id": "step8",
@@ -742,12 +908,8 @@ class WorkflowManagementTool:
                         "name": "Launch Resonite",
                         "type": "app_launch",
                         "app_id": "resonite",
-                        "app_config": {
-                            "desktop": 2,
-                            "monitor": 2,
-                            "fullscreen": False
-                        },
-                        "required": False
+                        "app_config": {"desktop": 2, "monitor": 2, "fullscreen": False},
+                        "required": False,
                     },
                     {
                         "id": "step9",
@@ -760,10 +922,10 @@ class WorkflowManagementTool:
                             "operation": "connect",
                             "host": "127.0.0.1",
                             "port": 9001,
-                            "protocol": "udp"
+                            "protocol": "udp",
                         },
                         "required": True,
-                        "output_variable": "osc_connection_id"
+                        "output_variable": "osc_connection_id",
                     },
                     {
                         "id": "step10",
@@ -776,10 +938,10 @@ class WorkflowManagementTool:
                             "operation": "send_message",
                             "connection_id": "${osc_connection_id}",
                             "address": "/avatar/load",
-                            "args": ["${resonite_avatar_id}"]
+                            "args": ["${resonite_avatar_id}"],
                         },
-                        "required": False
-                    }
+                        "required": False,
+                    },
                 ],
                 "variables": [
                     {
@@ -787,7 +949,7 @@ class WorkflowManagementTool:
                         "type": "string",
                         "required": True,
                         "description": "Name of the VRM file to import (without .vrm extension)",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "unity_project_path",
@@ -795,14 +957,14 @@ class WorkflowManagementTool:
                         "required": True,
                         "default_value": "C:\\UnityProjects\\ResoniteAvatars",
                         "description": "Path to Unity3D project for Resonite avatars",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "avatar_name",
                         "type": "string",
                         "required": True,
                         "description": "Name for the Resonite avatar",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "build_output_path",
@@ -810,20 +972,20 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "C:\\ResoniteAvatars\\Builds",
                         "description": "Output path for built avatar files",
-                        "source": "user_input"
-                    }
+                        "source": "user_input",
+                    },
                 ],
                 "error_handling": {
                     "on_error": "stop",
                     "retry_count": 2,
                     "rollback_steps": [],
-                    "error_notification": True
+                    "error_notification": True,
                 },
                 "metadata": {
                     "estimated_duration": "15-20 minutes",
                     "complexity": "high",
-                    "requires": ["Unity3D", "Resonite SDK", "OSC-MCP"]
-                }
+                    "requires": ["Unity3D", "Resonite SDK", "OSC-MCP"],
+                },
             },
             {
                 "id": "dual_platform_avatar_deploy",
@@ -844,10 +1006,10 @@ class WorkflowManagementTool:
                         "arguments": {
                             "operation": "get_avatar",
                             "avatar_id": "${vrm_name}",
-                            "source_path": "D:\\Dev\\repos\\avatar-mcp\\models"
+                            "source_path": "D:\\Dev\\repos\\avatar-mcp\\models",
                         },
                         "required": True,
-                        "output_variable": "vrm_file_path"
+                        "output_variable": "vrm_file_path",
                     },
                     {
                         "id": "step2",
@@ -859,9 +1021,9 @@ class WorkflowManagementTool:
                             "desktop": 2,
                             "monitor": 1,
                             "project_path": "${unity_project_path}",
-                            "fullscreen": False
+                            "fullscreen": False,
                         },
-                        "required": True
+                        "required": True,
                     },
                     {
                         "id": "step3",
@@ -869,7 +1031,7 @@ class WorkflowManagementTool:
                         "name": "Wait for Unity3D",
                         "type": "delay",
                         "arguments": {"delay": 5},
-                        "required": False
+                        "required": False,
                     },
                     {
                         "id": "step4",
@@ -882,10 +1044,10 @@ class WorkflowManagementTool:
                             "operation": "import_vrm",
                             "vrm_path": "${vrm_file_path}",
                             "project_path": "${unity_project_path}",
-                            "create_prefab": True
+                            "create_prefab": True,
                         },
                         "required": True,
-                        "output_variable": "unity_prefab_path"
+                        "output_variable": "unity_prefab_path",
                     },
                     {
                         "id": "step5",
@@ -898,10 +1060,10 @@ class WorkflowManagementTool:
                             "operation": "setup_vrchat_avatar",
                             "prefab_path": "${unity_prefab_path}",
                             "avatar_name": "${avatar_name}_vrchat",
-                            "add_descriptor": True
+                            "add_descriptor": True,
                         },
                         "required": True,
-                        "output_variable": "vrchat_avatar_path"
+                        "output_variable": "vrchat_avatar_path",
                     },
                     {
                         "id": "step6",
@@ -914,10 +1076,10 @@ class WorkflowManagementTool:
                             "operation": "setup_resonite_avatar",
                             "prefab_path": "${unity_prefab_path}",
                             "avatar_name": "${avatar_name}_resonite",
-                            "configure_rig": True
+                            "configure_rig": True,
                         },
                         "required": True,
-                        "output_variable": "resonite_avatar_path"
+                        "output_variable": "resonite_avatar_path",
                     },
                     {
                         "id": "step7",
@@ -930,10 +1092,10 @@ class WorkflowManagementTool:
                             "operation": "build_avatar",
                             "avatar_path": "${vrchat_avatar_path}",
                             "output_path": "${build_output_path}/vrchat",
-                            "platform": "Windows"
+                            "platform": "Windows",
                         },
                         "required": True,
-                        "output_variable": "built_vrchat_avatar"
+                        "output_variable": "built_vrchat_avatar",
                     },
                     {
                         "id": "step8",
@@ -946,10 +1108,10 @@ class WorkflowManagementTool:
                             "operation": "build_avatar",
                             "avatar_path": "${resonite_avatar_path}",
                             "output_path": "${build_output_path}/resonite",
-                            "platform": "Windows"
+                            "platform": "Windows",
                         },
                         "required": True,
-                        "output_variable": "built_resonite_avatar"
+                        "output_variable": "built_resonite_avatar",
                     },
                     {
                         "id": "step9",
@@ -961,10 +1123,10 @@ class WorkflowManagementTool:
                         "arguments": {
                             "operation": "upload_avatar",
                             "avatar_file": "${built_vrchat_avatar}",
-                            "avatar_name": "${avatar_name}_vrchat"
+                            "avatar_name": "${avatar_name}_vrchat",
                         },
                         "required": True,
-                        "output_variable": "vrchat_avatar_id"
+                        "output_variable": "vrchat_avatar_id",
                     },
                     {
                         "id": "step10",
@@ -976,10 +1138,10 @@ class WorkflowManagementTool:
                         "arguments": {
                             "operation": "upload_avatar",
                             "avatar_file": "${built_resonite_avatar}",
-                            "avatar_name": "${avatar_name}_resonite"
+                            "avatar_name": "${avatar_name}_resonite",
                         },
                         "required": True,
-                        "output_variable": "resonite_avatar_id"
+                        "output_variable": "resonite_avatar_id",
                     },
                     {
                         "id": "step11",
@@ -987,12 +1149,8 @@ class WorkflowManagementTool:
                         "name": "Launch VRChat",
                         "type": "app_launch",
                         "app_id": "vrchat",
-                        "app_config": {
-                            "desktop": 2,
-                            "monitor": 2,
-                            "fullscreen": False
-                        },
-                        "required": False
+                        "app_config": {"desktop": 2, "monitor": 2, "fullscreen": False},
+                        "required": False,
                     },
                     {
                         "id": "step12",
@@ -1000,12 +1158,8 @@ class WorkflowManagementTool:
                         "name": "Launch Resonite",
                         "type": "app_launch",
                         "app_id": "resonite",
-                        "app_config": {
-                            "desktop": 2,
-                            "monitor": 3,
-                            "fullscreen": False
-                        },
-                        "required": False
+                        "app_config": {"desktop": 2, "monitor": 3, "fullscreen": False},
+                        "required": False,
                     },
                     {
                         "id": "step13",
@@ -1019,10 +1173,10 @@ class WorkflowManagementTool:
                             "host": "127.0.0.1",
                             "port": 9000,
                             "protocol": "udp",
-                            "name": "vrchat_connection"
+                            "name": "vrchat_connection",
                         },
                         "required": True,
-                        "output_variable": "osc_vrchat_connection"
+                        "output_variable": "osc_vrchat_connection",
                     },
                     {
                         "id": "step14",
@@ -1036,10 +1190,10 @@ class WorkflowManagementTool:
                             "host": "127.0.0.1",
                             "port": 9001,
                             "protocol": "udp",
-                            "name": "resonite_connection"
+                            "name": "resonite_connection",
                         },
                         "required": True,
-                        "output_variable": "osc_resonite_connection"
+                        "output_variable": "osc_resonite_connection",
                     },
                     {
                         "id": "step15",
@@ -1052,9 +1206,9 @@ class WorkflowManagementTool:
                             "operation": "send_message",
                             "connection_id": "${osc_vrchat_connection}",
                             "address": "/avatar/change",
-                            "args": ["${vrchat_avatar_id}"]
+                            "args": ["${vrchat_avatar_id}"],
                         },
-                        "required": False
+                        "required": False,
                     },
                     {
                         "id": "step16",
@@ -1067,10 +1221,10 @@ class WorkflowManagementTool:
                             "operation": "send_message",
                             "connection_id": "${osc_resonite_connection}",
                             "address": "/avatar/load",
-                            "args": ["${resonite_avatar_id}"]
+                            "args": ["${resonite_avatar_id}"],
                         },
-                        "required": False
-                    }
+                        "required": False,
+                    },
                 ],
                 "variables": [
                     {
@@ -1078,7 +1232,7 @@ class WorkflowManagementTool:
                         "type": "string",
                         "required": True,
                         "description": "Name of the VRM file to import (without .vrm extension)",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "unity_project_path",
@@ -1086,14 +1240,14 @@ class WorkflowManagementTool:
                         "required": True,
                         "default_value": "C:\\UnityProjects\\MultiPlatformAvatars",
                         "description": "Path to Unity3D project",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "avatar_name",
                         "type": "string",
                         "required": True,
                         "description": "Base name for the avatar (will be suffixed with _vrchat and _resonite)",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "build_output_path",
@@ -1101,21 +1255,21 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "C:\\Avatars\\Builds",
                         "description": "Output path for built avatar files",
-                        "source": "user_input"
-                    }
+                        "source": "user_input",
+                    },
                 ],
                 "error_handling": {
                     "on_error": "continue",
                     "retry_count": 2,
                     "rollback_steps": ["step4"],
-                    "error_notification": True
+                    "error_notification": True,
                 },
                 "metadata": {
                     "estimated_duration": "20-25 minutes",
                     "complexity": "very_high",
                     "requires": ["Unity3D", "VRChat SDK", "Resonite SDK", "OSC-MCP"],
-                    "parallel_steps": ["step7", "step8", "step9", "step10"]
-                }
+                    "parallel_steps": ["step7", "step8", "step9", "step10"],
+                },
             },
             {
                 "id": "worldlabs_splat_to_resonite",
@@ -1124,7 +1278,14 @@ class WorkflowManagementTool:
                 "category": "avatar",
                 "version": "1.0.0",
                 "author": "Robotics Workflow System",
-                "tags": ["splat", "worldlabs", "resonite", "unity3d", "gaussian", "neural_radiance"],
+                "tags": [
+                    "splat",
+                    "worldlabs",
+                    "resonite",
+                    "unity3d",
+                    "gaussian",
+                    "neural_radiance",
+                ],
                 "steps": [
                     {
                         "id": "step1",
@@ -1137,10 +1298,10 @@ class WorkflowManagementTool:
                             "operation": "search",
                             "url": "https://worldlabs.ai",
                             "query": "${splat_search_query}",
-                            "content_type": "splat"
+                            "content_type": "splat",
                         },
                         "required": True,
-                        "output_variable": "splat_search_results"
+                        "output_variable": "splat_search_results",
                     },
                     {
                         "id": "step2",
@@ -1152,10 +1313,10 @@ class WorkflowManagementTool:
                         "arguments": {
                             "operation": "extract",
                             "url": "${splat_url}",
-                            "extract_type": "splat_metadata"
+                            "extract_type": "splat_metadata",
                         },
                         "required": True,
-                        "output_variable": "splat_metadata"
+                        "output_variable": "splat_metadata",
                     },
                     {
                         "id": "step3",
@@ -1168,10 +1329,10 @@ class WorkflowManagementTool:
                             "operation": "download",
                             "url": "${splat_download_url}",
                             "output_path": "${download_output_path}",
-                            "file_type": "splat"
+                            "file_type": "splat",
                         },
                         "required": True,
-                        "output_variable": "splat_file_path"
+                        "output_variable": "splat_file_path",
                     },
                     {
                         "id": "step4",
@@ -1184,10 +1345,10 @@ class WorkflowManagementTool:
                             "operation": "extract",
                             "archive_path": "${splat_file_path}",
                             "output_path": "${extracted_splat_path}",
-                            "format": "zip"
+                            "format": "zip",
                         },
                         "required": True,
-                        "output_variable": "extracted_splat_path"
+                        "output_variable": "extracted_splat_path",
                     },
                     {
                         "id": "step5",
@@ -1199,9 +1360,9 @@ class WorkflowManagementTool:
                             "desktop": 2,
                             "monitor": 1,
                             "project_path": "${unity_project_path}",
-                            "fullscreen": False
+                            "fullscreen": False,
                         },
-                        "required": True
+                        "required": True,
                     },
                     {
                         "id": "step6",
@@ -1209,7 +1370,7 @@ class WorkflowManagementTool:
                         "name": "Wait for Unity3D",
                         "type": "delay",
                         "arguments": {"delay": 5},
-                        "required": False
+                        "required": False,
                     },
                     {
                         "id": "step7",
@@ -1226,11 +1387,11 @@ class WorkflowManagementTool:
                             "import_settings": {
                                 "scale": "${splat_scale}",
                                 "position": "${splat_position}",
-                                "rotation": "${splat_rotation}"
-                            }
+                                "rotation": "${splat_rotation}",
+                            },
                         },
                         "required": True,
-                        "output_variable": "unity_splat_object"
+                        "output_variable": "unity_splat_object",
                     },
                     {
                         "id": "step8",
@@ -1245,10 +1406,10 @@ class WorkflowManagementTool:
                             "splat_name": "${splat_name}",
                             "configure_lighting": True,
                             "configure_collision": True,
-                            "optimize_for_resonite": True
+                            "optimize_for_resonite": True,
                         },
                         "required": True,
-                        "output_variable": "resonite_splat_path"
+                        "output_variable": "resonite_splat_path",
                     },
                     {
                         "id": "step9",
@@ -1262,13 +1423,10 @@ class WorkflowManagementTool:
                             "splat_path": "${resonite_splat_path}",
                             "output_path": "${build_output_path}",
                             "platform": "Windows",
-                            "build_settings": {
-                                "compression": "high",
-                                "optimize": True
-                            }
+                            "build_settings": {"compression": "high", "optimize": True},
                         },
                         "required": True,
-                        "output_variable": "built_splat_path"
+                        "output_variable": "built_splat_path",
                     },
                     {
                         "id": "step10",
@@ -1283,10 +1441,10 @@ class WorkflowManagementTool:
                             "world_name": "${world_name}",
                             "splat_name": "${splat_name}",
                             "description": "${splat_description}",
-                            "tags": "${splat_tags}"
+                            "tags": "${splat_tags}",
                         },
                         "required": True,
-                        "output_variable": "resonite_splat_id"
+                        "output_variable": "resonite_splat_id",
                     },
                     {
                         "id": "step11",
@@ -1294,12 +1452,8 @@ class WorkflowManagementTool:
                         "name": "Launch Resonite",
                         "type": "app_launch",
                         "app_id": "resonite",
-                        "app_config": {
-                            "desktop": 2,
-                            "monitor": 2,
-                            "fullscreen": False
-                        },
-                        "required": False
+                        "app_config": {"desktop": 2, "monitor": 2, "fullscreen": False},
+                        "required": False,
                     },
                     {
                         "id": "step12",
@@ -1311,10 +1465,10 @@ class WorkflowManagementTool:
                         "arguments": {
                             "operation": "load_splat",
                             "splat_id": "${resonite_splat_id}",
-                            "world_name": "${world_name}"
+                            "world_name": "${world_name}",
                         },
-                        "required": False
-                    }
+                        "required": False,
+                    },
                 ],
                 "variables": [
                     {
@@ -1322,21 +1476,21 @@ class WorkflowManagementTool:
                         "type": "string",
                         "required": True,
                         "description": "Search query for splat on worldlabs.ai",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "splat_url",
                         "type": "string",
                         "required": False,
                         "description": "Direct URL to splat page on worldlabs.ai (if known)",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "splat_download_url",
                         "type": "string",
                         "required": False,
                         "description": "Direct download URL for splat file (auto-detected if not provided)",
-                        "source": "step_output"
+                        "source": "step_output",
                     },
                     {
                         "name": "download_output_path",
@@ -1344,7 +1498,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "C:\\Splats\\Downloads",
                         "description": "Path to download splat files",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "extracted_splat_path",
@@ -1352,7 +1506,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "C:\\Splats\\Extracted",
                         "description": "Path for extracted splat files",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "unity_project_path",
@@ -1360,14 +1514,14 @@ class WorkflowManagementTool:
                         "required": True,
                         "default_value": "C:\\UnityProjects\\ResoniteSplats",
                         "description": "Path to Unity3D project for Resonite splats",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "splat_name",
                         "type": "string",
                         "required": True,
                         "description": "Name for the splat in Unity3D and Resonite",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "splat_scale",
@@ -1375,7 +1529,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": 1.0,
                         "description": "Scale factor for splat import (default: 1.0)",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "splat_position",
@@ -1383,7 +1537,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "0,0,0",
                         "description": "Position for splat in Unity3D (format: x,y,z)",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "splat_rotation",
@@ -1391,7 +1545,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "0,0,0",
                         "description": "Rotation for splat in Unity3D (format: x,y,z)",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "build_output_path",
@@ -1399,7 +1553,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "C:\\Splats\\Builds",
                         "description": "Output path for built splat files",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "world_name",
@@ -1407,7 +1561,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "My Splat World",
                         "description": "Name of the Resonite world to upload splat to",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "splat_description",
@@ -1415,7 +1569,7 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "Gaussian splat imported from worldlabs.ai",
                         "description": "Description for the splat in Resonite",
-                        "source": "user_input"
+                        "source": "user_input",
                     },
                     {
                         "name": "splat_tags",
@@ -1423,21 +1577,26 @@ class WorkflowManagementTool:
                         "required": False,
                         "default_value": "splat,gaussian,worldlabs",
                         "description": "Comma-separated tags for the splat",
-                        "source": "user_input"
-                    }
+                        "source": "user_input",
+                    },
                 ],
                 "error_handling": {
                     "on_error": "stop",
                     "retry_count": 3,
                     "retry_delay": 2.0,
                     "rollback_steps": ["step3", "step4"],
-                    "error_notification": True
+                    "error_notification": True,
                 },
                 "metadata": {
                     "estimated_duration": "25-30 minutes",
                     "complexity": "very_high",
-                    "requires": ["Unity3D", "Resonite SDK", "Web Scraper MCP", "File Operations MCP"],
-                    "notes": "Requires Gaussian Splat importer plugin for Unity3D and Resonite SDK"
-                }
+                    "requires": [
+                        "Unity3D",
+                        "Resonite SDK",
+                        "Web Scraper MCP",
+                        "File Operations MCP",
+                    ],
+                    "notes": "Requires Gaussian Splat importer plugin for Unity3D and Resonite SDK",
+                },
             },
         ]

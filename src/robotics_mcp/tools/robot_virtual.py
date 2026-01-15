@@ -9,6 +9,14 @@ import structlog
 from fastmcp import Client
 
 from ..utils.error_handler import format_error_response, format_success_response, handle_tool_error
+from ..utils.response_builders import (
+    build_success_response,
+    build_error_response,
+    build_hardware_error_response,
+    build_network_error_response,
+    build_configuration_error_response,
+    build_robotics_error_response,
+)
 from ..utils.mcp_client_helper import call_mounted_server_tool
 
 logger = structlog.get_logger(__name__)
@@ -179,7 +187,67 @@ class RobotVirtualTool:
                 else:
                     return format_error_response(f"Unknown operation: {operation}", error_type="validation_error")
             except Exception as e:
-                return handle_tool_error("robot_virtual", e, operation=operation, robot_type=robot_type, robot_id=robot_id)
+                logger.error(f"Error in robot virtual {operation}", robot_id=robot_id, robot_type=robot_type, error=str(e), exc_info=True)
+
+                # Intelligent error analysis for virtual robot issues
+                error_str = str(e).lower()
+                recovery_options = []
+
+                if operation in ["create", "spawn"] and ("unity" in error_str or "vrchat" in error_str):
+                    recovery_options = [
+                        f"Verify {platform} MCP server is running and mounted",
+                        f"Check {platform} project is open and accessible",
+                        f"Ensure {platform} VbotSpawner script is loaded",
+                        f"Verify {platform} network connectivity and firewall settings"
+                    ]
+                elif operation == "load_environment" and ("unity" in error_str or "environment" in error_str):
+                    recovery_options = [
+                        f"Check {platform} project contains the environment '{environment}'",
+                        f"Verify environment file path is correct: {environment_path}",
+                        f"Ensure {platform} project has proper permissions",
+                        f"Check {platform} Unity version compatibility"
+                    ]
+                elif operation == "get_lidar" and ("physics" in error_str or "raycast" in error_str):
+                    recovery_options = [
+                        f"Verify {robot_id} is spawned in {platform} scene",
+                        f"Check {platform} physics engine is enabled",
+                        f"Ensure {robot_id} LiDAR sensor is properly configured",
+                        f"Verify {platform} scene has collision objects"
+                    ]
+                elif "connection" in error_str or "network" in error_str or "timeout" in error_str:
+                    recovery_options = [
+                        f"Check {platform} MCP server connectivity",
+                        f"Verify {platform} project is running and accessible",
+                        f"Ensure firewall allows communication with {platform}",
+                        f"Try restarting the {platform} MCP server"
+                    ]
+                elif "file" in error_str or "path" in error_str:
+                    recovery_options = [
+                        "Verify model_path points to a valid 3D model file (.fbx, .glb, .vrm)",
+                        "Check file permissions and accessibility",
+                        "Ensure model file is not corrupted",
+                        "Verify supported model format for the platform"
+                    ]
+                else:
+                    recovery_options = [
+                        f"Check {platform} MCP server status and connectivity",
+                        f"Verify {robot_id or 'robot'} configuration and parameters",
+                        f"Try the {operation} operation again",
+                        f"Check Robotics MCP server logs for detailed error information"
+                    ]
+
+                robot_info = f" for {robot_type}" if robot_type else ""
+                return build_robotics_error_response(
+                    error=f"Virtual robot operation failed: {operation}{robot_info}",
+                    robot_type=robot_type or "virtual_robot",
+                    robot_id=robot_id or "unknown",
+                    recovery_options=recovery_options,
+                    suggestions=[
+                        f"Try the virtual robot {operation} operation again after applying recovery steps",
+                        f"Check {platform} MCP server status with 'robotics_system status'",
+                        f"Verify {platform} project configuration and connectivity"
+                    ]
+                )
 
     # CRUD handlers (from vbot_crud.py)
     async def _handle_create(
