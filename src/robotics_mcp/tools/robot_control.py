@@ -1,6 +1,6 @@
 """Robot control portmanteau tool - Unified bot + vbot control."""
 
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 import structlog
 
@@ -47,6 +47,22 @@ class RobotControlTool:
                 "arm_move",
                 "gripper_control",
                 "navigate_to",
+                # Dreame D20 Pro Plus specific actions
+                "start_auto_empty",
+                "stop_auto_empty",
+                "start_self_clean",
+                "stop_self_clean",
+                "set_suction_level",
+                "set_water_volume",
+                "set_mop_humidity",
+                "clean_zone",
+                "clean_spot",
+                "start_mapping",
+                "rename_room",
+                "set_cleaning_sequence",
+                "set_restricted_zones",
+                "get_cleaning_history",
+                "clear_error",
             ],
             linear: Optional[float] = None,
             angular: Optional[float] = None,
@@ -58,6 +74,17 @@ class RobotControlTool:
             joint_angles: Optional[Dict[str, float]] = None,
             gripper_action: Optional[Literal["open", "close", "stop"]] = None,
             patrol_route: Optional[str] = None,
+            # Dreame D20 Pro Plus specific parameters
+            suction_level: Optional[int] = None,
+            water_volume: Optional[int] = None,
+            mop_humidity: Optional[int] = None,
+            zones: Optional[List[List[int]]] = None,
+            spot_x: Optional[int] = None,
+            spot_y: Optional[int] = None,
+            room_id: Optional[int] = None,
+            room_name: Optional[str] = None,
+            cleaning_sequence: Optional[List[int]] = None,
+            restricted_zones: Optional[Dict[str, List[List[int]]]] = None,
         ) -> Dict[str, Any]:
             """Unified robot control (works for both physical bot and virtual bot).
 
@@ -81,6 +108,21 @@ class RobotControlTool:
                     - "arm_move": Move robotic arm joints (Yahboom with arm)
                     - "gripper_control": Control gripper open/close (Yahboom with arm)
                     - "navigate_to": Navigate to specific coordinates (Yahboom)
+                    - "start_auto_empty": Start automatic dust bin emptying (Dreame)
+                    - "stop_auto_empty": Stop automatic dust bin emptying (Dreame)
+                    - "start_self_clean": Start mop self-cleaning cycle (Dreame)
+                    - "stop_self_clean": Stop mop self-cleaning cycle (Dreame)
+                    - "set_suction_level": Set vacuum suction power level (Dreame)
+                    - "set_water_volume": Set mopping water volume (Dreame)
+                    - "set_mop_humidity": Set mop pad humidity level (Dreame)
+                    - "clean_zone": Clean specific rectangular zones (Dreame)
+                    - "clean_spot": Intensive spot cleaning at coordinates (Dreame)
+                    - "start_mapping": Start new map creation/mapping (Dreame)
+                    - "rename_room": Rename a detected room (Dreame)
+                    - "set_cleaning_sequence": Set room cleaning order (Dreame)
+                    - "set_restricted_zones": Create virtual walls/restricted zones (Dreame)
+                    - "get_cleaning_history": Retrieve cleaning history (Dreame)
+                    - "clear_error": Clear error conditions (Dreame)
                 linear: Linear velocity (m/s) for move action.
                 angular: Angular velocity (rad/s) for move action.
                 duration: Movement duration (seconds).
@@ -90,6 +132,16 @@ class RobotControlTool:
                 joint_angles: Dictionary of joint angles for arm control.
                 gripper_action: Gripper action ("open", "close", "stop").
                 patrol_route: Name of patrol route to execute.
+                suction_level: Suction power level (1-4) for Dreame vacuum.
+                water_volume: Water volume level (1-3) for Dreame mopping.
+                mop_humidity: Mop pad humidity level (1-3) for Dreame.
+                zones: List of zone coordinates [[x1,y1,x2,y2], ...] for zone cleaning.
+                spot_x: X coordinate for spot cleaning.
+                spot_y: Y coordinate for spot cleaning.
+                room_id: Room identifier for room-specific operations.
+                room_name: New name for room renaming.
+                cleaning_sequence: List of room IDs defining cleaning order.
+                restricted_zones: Dictionary with 'walls' and 'zones' keys for restricted areas.
                 **kwargs: Additional action-specific parameters.
 
             Returns:
@@ -153,6 +205,12 @@ class RobotControlTool:
                     return await self._handle_yahboom_robot(
                         robot, action, linear, angular, duration,
                         x, y, theta, joint_angles, gripper_action, patrol_route
+                    )
+                elif robot.robot_type == "dreame":
+                    return await self._handle_dreame_robot(
+                        robot, action, linear, angular, duration,
+                        x, y, theta, suction_level, water_volume, mop_humidity,
+                        zones, spot_x, spot_y, room_id, room_name, cleaning_sequence, restricted_zones
                     )
                 else:
                     return await self._handle_physical_robot(robot, action, linear, angular, duration)
@@ -368,6 +426,361 @@ class RobotControlTool:
         finally:
             if 'client' in locals():
                 await client.disconnect()
+
+    async def _handle_dreame_robot(
+        self,
+        robot: Any,
+        action: str,
+        linear: Optional[float],
+        angular: Optional[float],
+        duration: Optional[float],
+        x: Optional[float],
+        y: Optional[float],
+        theta: Optional[float],
+        suction_level: Optional[int],
+        water_volume: Optional[int],
+        mop_humidity: Optional[int],
+        zones: Optional[List[List[int]]],
+        spot_x: Optional[int],
+        spot_y: Optional[int],
+        room_id: Optional[int],
+        room_name: Optional[str],
+        cleaning_sequence: Optional[List[int]],
+        restricted_zones: Optional[Dict[str, List[List[int]]]],
+    ) -> Dict[str, Any]:
+        """Handle Dreame D20 Pro Plus vacuum commands.
+
+        Args:
+            robot: Robot state object.
+            action: Action to perform.
+            linear: Linear velocity for movement.
+            angular: Angular velocity for movement.
+            duration: Movement duration.
+            x: Target X coordinate for navigation.
+            y: Target Y coordinate for navigation.
+            theta: Target orientation for navigation.
+            suction_level: Suction power level (1-4).
+            water_volume: Water volume level (1-3).
+            mop_humidity: Mop pad humidity level (1-3).
+            zones: List of zone coordinates [[x1,y1,x2,y2], ...] for zone cleaning.
+            spot_x: X coordinate for spot cleaning.
+            spot_y: Y coordinate for spot cleaning.
+            room_id: Room identifier for room-specific operations.
+            room_name: New name for room renaming.
+            cleaning_sequence: List of room IDs defining cleaning order.
+            restricted_zones: Dictionary with 'walls' and 'zones' keys for restricted areas.
+
+        Returns:
+            Operation result.
+        """
+        try:
+            from .dreame_client import (
+                dreame_get_status,
+                dreame_start_cleaning,
+                dreame_stop_cleaning,
+                dreame_move,
+                dreame_get_map,
+                dreame_clean_room,
+                dreame_clean_zone,
+                dreame_clean_spot,
+                get_dreame_client,
+            )
+
+            # Handle different Dreame actions
+            if action == "get_status":
+                return await dreame_get_status(robot.robot_id)
+
+            elif action == "start_cleaning":
+                return await dreame_start_cleaning(robot.robot_id)
+
+            elif action == "stop_cleaning":
+                return await dreame_stop_cleaning(robot.robot_id)
+
+            elif action == "move":
+                # Convert velocities to Dreame format (rotation and velocity as integers)
+                rotation = int(angular * 100) if angular else 0
+                velocity = int(linear * 100) if linear else 50
+                return await dreame_move(robot.robot_id, rotation=rotation, velocity=velocity)
+
+            elif action == "go_to":
+                if x is not None and y is not None:
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.go_to_position(x, y)
+                    if success:
+                        return format_success_response(
+                            f"Dreame {robot.robot_id} navigating to ({x}, {y})",
+                            robot_id=robot.robot_id,
+                            action=action,
+                            data={"x": x, "y": y},
+                        )
+                    else:
+                        return format_error_response(
+                            "Failed to navigate Dreame to position",
+                            error_type="navigation_failed",
+                            robot_id=robot.robot_id,
+                        )
+                else:
+                    return format_error_response(
+                        "go_to action requires x and y coordinates",
+                        error_type="missing_coordinates",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "get_map":
+                return await dreame_get_map(robot.robot_id)
+
+            elif action == "clean_room":
+                if room_id is not None:
+                    return await dreame_clean_room(robot.robot_id, room_id)
+                else:
+                    return format_error_response(
+                        "clean_room action requires room_id",
+                        error_type="missing_room_id",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "clean_zone":
+                if zones:
+                    return await dreame_clean_zone(robot.robot_id, zones)
+                else:
+                    return format_error_response(
+                        "clean_zone action requires zones parameter",
+                        error_type="missing_zones",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "clean_spot":
+                if spot_x is not None and spot_y is not None:
+                    return await dreame_clean_spot(robot.robot_id, spot_x, spot_y)
+                else:
+                    return format_error_response(
+                        "clean_spot action requires spot_x and spot_y",
+                        error_type="missing_coordinates",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "return_to_dock":
+                client = get_dreame_client(robot.robot_id)
+                success = await client.return_to_dock()
+                if success:
+                    return format_success_response(
+                        f"Dreame {robot.robot_id} returning to dock",
+                        robot_id=robot.robot_id,
+                        action=action,
+                        data={"action": "dock"},
+                    )
+                else:
+                    return format_error_response(
+                        "Failed to send Dreame to dock",
+                        error_type="dock_failed",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "set_suction_level":
+                if suction_level is not None:
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.set_suction_level(suction_level)
+                    if success:
+                        return format_success_response(
+                            f"Dreame {robot.robot_id} suction level set to {suction_level}",
+                            robot_id=robot.robot_id,
+                            action=action,
+                            data={"suction_level": suction_level},
+                        )
+                    else:
+                        return format_error_response(
+                            "Failed to set Dreame suction level",
+                            error_type="suction_failed",
+                            robot_id=robot.robot_id,
+                        )
+                else:
+                    return format_error_response(
+                        "set_suction_level action requires suction_level parameter",
+                        error_type="missing_suction_level",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "set_water_volume":
+                if water_volume is not None:
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.set_water_volume(water_volume)
+                    if success:
+                        return format_success_response(
+                            f"Dreame {robot.robot_id} water volume set to {water_volume}",
+                            robot_id=robot.robot_id,
+                            action=action,
+                            data={"water_volume": water_volume},
+                        )
+                    else:
+                        return format_error_response(
+                            "Failed to set Dreame water volume",
+                            error_type="water_failed",
+                            robot_id=robot.robot_id,
+                        )
+                else:
+                    return format_error_response(
+                        "set_water_volume action requires water_volume parameter",
+                        error_type="missing_water_volume",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "set_mop_humidity":
+                if mop_humidity is not None:
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.set_mop_humidity(mop_humidity)
+                    if success:
+                        return format_success_response(
+                            f"Dreame {robot.robot_id} mop humidity set to {mop_humidity}",
+                            robot_id=robot.robot_id,
+                            action=action,
+                            data={"mop_humidity": mop_humidity},
+                        )
+                    else:
+                        return format_error_response(
+                            "Failed to set Dreame mop humidity",
+                            error_type="humidity_failed",
+                            robot_id=robot.robot_id,
+                        )
+                else:
+                    return format_error_response(
+                        "set_mop_humidity action requires mop_humidity parameter",
+                        error_type="missing_humidity",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "start_fast_mapping":
+                client = get_dreame_client(robot.robot_id)
+                success = await client.start_fast_mapping()
+                if success:
+                    return format_success_response(
+                        f"Dreame {robot.robot_id} starting fast mapping",
+                        robot_id=robot.robot_id,
+                        action=action,
+                        data={"mapping_type": "fast"},
+                    )
+                else:
+                    return format_error_response(
+                        "Failed to start Dreame fast mapping",
+                        error_type="mapping_failed",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "start_mapping":
+                client = get_dreame_client(robot.robot_id)
+                success = await client.start_mapping()
+                if success:
+                    return format_success_response(
+                        f"Dreame {robot.robot_id} starting mapping",
+                        robot_id=robot.robot_id,
+                        action=action,
+                        data={"mapping_type": "standard"},
+                    )
+                else:
+                    return format_error_response(
+                        "Failed to start Dreame mapping",
+                        error_type="mapping_failed",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "set_cleaning_sequence":
+                if cleaning_sequence:
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.set_cleaning_sequence(cleaning_sequence)
+                    if success:
+                        return format_success_response(
+                            f"Dreame {robot.robot_id} cleaning sequence updated",
+                            robot_id=robot.robot_id,
+                            action=action,
+                            data={"cleaning_sequence": cleaning_sequence},
+                        )
+                    else:
+                        return format_error_response(
+                            "Failed to set Dreame cleaning sequence",
+                            error_type="sequence_failed",
+                            robot_id=robot.robot_id,
+                        )
+                else:
+                    return format_error_response(
+                        "set_cleaning_sequence action requires cleaning_sequence parameter",
+                        error_type="missing_sequence",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "set_restricted_zones":
+                if restricted_zones:
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.set_restricted_zones(restricted_zones)
+                    if success:
+                        return format_success_response(
+                            f"Dreame {robot.robot_id} restricted zones updated",
+                            robot_id=robot.robot_id,
+                            action=action,
+                            data={"restricted_zones": restricted_zones},
+                        )
+                    else:
+                        return format_error_response(
+                            "Failed to set Dreame restricted zones",
+                            error_type="zones_failed",
+                            robot_id=robot.robot_id,
+                        )
+                else:
+                    return format_error_response(
+                        "set_restricted_zones action requires restricted_zones parameter",
+                        error_type="missing_zones",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "get_cleaning_history":
+                client = get_dreame_client(robot.robot_id)
+                history = await client.get_cleaning_history()
+                if history:
+                    return format_success_response(
+                        f"Dreame {robot.robot_id} cleaning history retrieved",
+                        robot_id=robot.robot_id,
+                        action=action,
+                        data={"cleaning_history": history},
+                    )
+                else:
+                    return format_error_response(
+                        "Failed to retrieve Dreame cleaning history",
+                        error_type="history_failed",
+                        robot_id=robot.robot_id,
+                    )
+
+            elif action == "clear_error":
+                client = get_dreame_client(robot.robot_id)
+                success = await client.clear_error()
+                if success:
+                    return format_success_response(
+                        f"Dreame {robot.robot_id} error cleared",
+                        robot_id=robot.robot_id,
+                        action=action,
+                        data={"error_cleared": True},
+                    )
+                else:
+                    return format_error_response(
+                        "Failed to clear Dreame error",
+                        error_type="clear_error_failed",
+                        robot_id=robot.robot_id,
+                    )
+
+            else:
+                return format_error_response(
+                    f"Unsupported action '{action}' for Dreame robot",
+                    error_type="unsupported_action",
+                    robot_id=robot.robot_id,
+                    action=action,
+                    supported_actions=[
+                        "get_status", "start_cleaning", "stop_cleaning", "move", "go_to",
+                        "get_map", "clean_room", "clean_zone", "clean_spot", "return_to_dock",
+                        "set_suction_level", "set_water_volume", "set_mop_humidity",
+                        "start_fast_mapping", "start_mapping", "set_cleaning_sequence",
+                        "set_restricted_zones", "get_cleaning_history", "clear_error"
+                    ],
+                )
+
+        except Exception as e:
+            return handle_tool_error("_handle_dreame_robot", e, robot_id=robot.robot_id, action=action)
 
     async def _handle_virtual_robot(
         self,

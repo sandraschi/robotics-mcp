@@ -163,6 +163,35 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 ### Prerequisites Check
 ⚠️ **BEFORE STARTING**: Complete all [Setup Prerequisites](docs/SETUP_PREREQUISITES.md) - Unity3D, VRChat, and MCP servers are REQUIRED.
 
+### Installation
+
+#### From PyPI (Recommended)
+
+```bash
+pip install robotics-mcp
+```
+
+#### From GitHub Releases
+
+```bash
+# Direct wheel download
+pip install https://github.com/sandraschi/robotics-mcp/releases/download/v1.0.1b2/robotics_mcp-1.0.1b2-py3-none-any.whl
+
+# Or from git
+pip install git+https://github.com/sandraschi/robotics-mcp.git
+```
+
+#### For Development
+
+```bash
+# Clone repository
+git clone https://github.com/sandraschi/robotics-mcp.git
+cd robotics-mcp
+
+# Install in development mode
+pip install -e ".[dev]"
+```
+
 ### Cursor MCP Integration
 
 ✅ **The robotics-mcp server now works in Cursor IDE!**

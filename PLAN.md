@@ -9,7 +9,7 @@
 
 ## 🎯 Executive Summary
 
-**Goal**: Create a unified MCP server for robotics control, supporting both **physical robots (ROS-based)** and **virtual robots (Unity/VRChat)**, with a focus on Moorebot Scout, Unitree robots, and virtual robotics testing.
+**Goal**: Create a unified MCP server for robotics control, supporting **physical robots (ROS-based)**, **virtual robots (Unity/VRChat)**, and **drones (PX4/ArduPilot)**, with a focus on Moorebot Scout, Unitree robots, virtual robotics testing, and open-source drone integration.
 
 **Architecture**: 
 - **Portmanteau pattern** to consolidate related operations, preventing tool explosion
@@ -20,13 +20,15 @@
 - **Physical Robot Control**: Moorebot Scout (ROS 1.4), Unitree Go2/G1
 - **YDLIDAR SuperLight (95g)** LiDAR integration for Scout
 - **Virtual Robot Control**: Unity3D/VRChat/Resonite integration via existing MCP servers
+- **Drone Control**: PX4/ArduPilot drones with MAVLink, video streaming, navigation
 - **ROS Bridge Integration**: ROS 1.4 (Melodic) via rosbridge_suite
-- **Multi-Robot Coordination**: Physical and virtual robots together
-- **Patrol Route Management**: Routes work for both bot and vbot
-- **Sensor Data Aggregation**: Real sensors (Scout) + virtual sensors (Unity)
-- **SLAM and Mapping**: Real SLAM (Scout) + virtual mapping (Unity)
-- **Obstacle Avoidance**: Real (LiDAR) + virtual (Unity physics)
+- **Multi-Robot Coordination**: Physical robots, virtual robots, and drones together
+- **Patrol Route Management**: Routes work for bot, vbot, and drone
+- **Sensor Data Aggregation**: Real sensors (Scout) + virtual sensors (Unity) + drone telemetry
+- **SLAM and Mapping**: Real SLAM (Scout) + virtual mapping (Unity) + aerial mapping (drone)
+- **Obstacle Avoidance**: Real (LiDAR) + virtual (Unity physics) + aerial (drone)
 - **Virtual-First Testing**: Test in Unity/VRChat before hardware arrives
+- **Drone Video Streaming**: RTSP/WebRTC streaming with OpenIPC integration
 
 **Integration Strategy**:
 - **Use existing MCP servers** via `mount()`: `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`
@@ -34,6 +36,8 @@
 - **Compose workflows**: Cross-server operations (e.g., spawn vbot in Unity, control via OSC)
 - **Virtual-first development**: Build vbot system first (efficient, no hardware needed)
 - **World Labs Marble/Chisel**: Use for environment generation (splats/meshes)
+- **Drone Integration**: Extend portmanteau tools for aerial robotics (flight control, streaming, navigation)
+- **Open-Source Drone Ecosystem**: Support Shenzhen manufacturers (Tdrone, OmniNxt) and PX4/ArduPilot firmware
 
 ---
 

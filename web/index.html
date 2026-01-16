@@ -96,6 +96,170 @@
                     </div>
                 </section>
 
+                <section class="vacuum-controls" id="vacuum-section" style="display: none;">
+                    <h2>Vacuum Control</h2>
+                    <div class="vacuum-controls-grid">
+                        <div class="cleaning-controls">
+                            <h3>Cleaning</h3>
+                            <div class="action-buttons">
+                                <button id="start-cleaning" class="action-btn vacuum" disabled>🧹 Start Cleaning</button>
+                                <button id="stop-cleaning" class="action-btn vacuum" disabled>⏹️ Stop Cleaning</button>
+                                <button id="return-to-dock" class="action-btn vacuum" disabled>🏠 Return to Dock</button>
+                            </div>
+                        </div>
+                        <div class="cleaning-settings">
+                            <h3>Cleaning Settings</h3>
+                            <div class="setting-controls">
+                                <div class="setting-item">
+                                    <label for="suction-level">Suction Level:</label>
+                                    <select id="suction-level" disabled>
+                                        <option value="1">Quiet (1)</option>
+                                        <option value="2">Standard (2)</option>
+                                        <option value="3">Turbo (3)</option>
+                                        <option value="4">Max (4)</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label for="water-volume">Water Volume:</label>
+                                    <select id="water-volume" disabled>
+                                        <option value="1">Low (1)</option>
+                                        <option value="2">Medium (2)</option>
+                                        <option value="3">High (3)</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label for="mop-humidity">Mop Humidity:</label>
+                                    <select id="mop-humidity" disabled>
+                                        <option value="1">Low (1)</option>
+                                        <option value="2">Medium (2)</option>
+                                        <option value="3">High (3)</option>
+                                    </select>
+                                </div>
+                                <button id="apply-settings" class="action-btn settings" disabled>⚙️ Apply Settings</button>
+                            </div>
+                        </div>
+                        <div class="cleaning-modes">
+                            <h3>Cleaning Modes</h3>
+                            <div class="mode-buttons">
+                                <button id="clean-room" class="action-btn mode" disabled>🏠 Room</button>
+                                <button id="clean-zone" class="action-btn mode" disabled>📐 Zone</button>
+                                <button id="clean-spot" class="action-btn mode" disabled>🎯 Spot</button>
+                                <button id="start-mapping" class="action-btn mode" disabled>🗺️ Map</button>
+                            </div>
+                            <div class="room-selection" id="room-selection" style="display: none;">
+                                <label for="room-id">Room ID:</label>
+                                <input type="number" id="room-id" min="1" max="10" value="1">
+                            </div>
+                            <div class="zone-input" id="zone-input" style="display: none;">
+                                <label>Zone Coordinates (x1,y1,x2,y2):</label>
+                                <input type="text" id="zone-coords" placeholder="0,0,100,100" pattern="\d+,\d+,\d+,\d+">
+                            </div>
+                            <div class="spot-input" id="spot-input" style="display: none;">
+                                <label>Spot Coordinates (x,y):</label>
+                                <input type="text" id="spot-coords" placeholder="50,50" pattern="\d+,\d+">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dreame-controls" id="dreame-section" style="display: none;">
+                    <h2>Dreame Vacuum Advanced Controls</h2>
+                    <div class="dreame-controls-grid">
+                        <div class="dreame-basic">
+                            <h3>Basic Controls</h3>
+                            <div class="action-buttons">
+                                <button id="dreame-start-cleaning" class="action-btn dreame" disabled>🧹 Start Cleaning</button>
+                                <button id="dreame-stop-cleaning" class="action-btn dreame" disabled>⏹️ Stop Cleaning</button>
+                                <button id="dreame-return-to-dock" class="action-btn dreame" disabled>🏠 Return to Dock</button>
+                            </div>
+                        </div>
+                        <div class="dreame-settings">
+                            <h3>Advanced Settings</h3>
+                            <div class="setting-controls">
+                                <div class="setting-item">
+                                    <label for="dreame-suction-level">Suction Level:</label>
+                                    <select id="dreame-suction-level" disabled>
+                                        <option value="1">Quiet (1)</option>
+                                        <option value="2">Standard (2)</option>
+                                        <option value="3">Turbo (3)</option>
+                                        <option value="4">Max (4)</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label for="dreame-water-volume">Water Volume:</label>
+                                    <select id="dreame-water-volume" disabled>
+                                        <option value="1">Low (1)</option>
+                                        <option value="2">Medium (2)</option>
+                                        <option value="3">High (3)</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label for="dreame-mop-humidity">Mop Humidity:</label>
+                                    <select id="dreame-mop-humidity" disabled>
+                                        <option value="1">Low (1)</option>
+                                        <option value="2">Medium (2)</option>
+                                        <option value="3">High (3)</option>
+                                    </select>
+                                </div>
+                                <button id="dreame-apply-settings" class="action-btn dreame-settings" disabled>⚙️ Apply Settings</button>
+                            </div>
+                        </div>
+                        <div class="dreame-modes">
+                            <h3>Cleaning Modes</h3>
+                            <div class="mode-buttons">
+                                <button id="dreame-clean-room" class="action-btn dreame-mode" disabled>🏠 Room</button>
+                                <button id="dreame-clean-zone" class="action-btn dreame-mode" disabled>📐 Zone</button>
+                                <button id="dreame-clean-spot" class="action-btn dreame-mode" disabled>🎯 Spot</button>
+                                <button id="dreame-start-mapping" class="action-btn dreame-mode" disabled>🗺️ Mapping</button>
+                            </div>
+                            <div class="dreame-room-selection" id="dreame-room-selection" style="display: none;">
+                                <label for="dreame-room-id">Room ID:</label>
+                                <input type="number" id="dreame-room-id" min="1" max="10" value="1">
+                                <label for="dreame-room-name">Room Name:</label>
+                                <input type="text" id="dreame-room-name" placeholder="Living Room">
+                            </div>
+                            <div class="dreame-zone-input" id="dreame-zone-input" style="display: none;">
+                                <label>Zone Coordinates (format: [[x1,y1,x2,y2]]):</label>
+                                <input type="text" id="dreame-zone-coords" placeholder="[[0,0,100,100]]" pattern="\[\[.*\]\]">
+                            </div>
+                            <div class="dreame-spot-input" id="dreame-spot-input" style="display: none;">
+                                <label>Spot Coordinates (x,y):</label>
+                                <input type="number" id="dreame-spot-x" placeholder="50" min="0" max="1000">
+                                <input type="number" id="dreame-spot-y" placeholder="50" min="0" max="1000">
+                            </div>
+                        </div>
+                        <div class="dreame-advanced">
+                            <h3>Advanced Features</h3>
+                            <div class="action-buttons">
+                                <button id="dreame-fast-mapping" class="action-btn dreame-advanced" disabled>⚡ Fast Mapping</button>
+                                <button id="dreame-set-sequence" class="action-btn dreame-advanced" disabled>🔄 Set Sequence</button>
+                                <button id="dreame-set-zones" class="action-btn dreame-advanced" disabled>🚫 Restricted Zones</button>
+                                <button id="dreame-get-history" class="action-btn dreame-advanced" disabled>📊 Get History</button>
+                                <button id="dreame-clear-error" class="action-btn dreame-advanced" disabled>🔧 Clear Error</button>
+                            </div>
+                            <div class="dreame-sequence-input" id="dreame-sequence-input" style="display: none;">
+                                <label>Cleaning Sequence (room IDs):</label>
+                                <input type="text" id="dreame-sequence" placeholder="[1,2,3]" pattern="\[\d+(,\d+)*\]">
+                            </div>
+                            <div class="dreame-restricted-input" id="dreame-restricted-input" style="display: none;">
+                                <label>Restricted Zones (JSON format):</label>
+                                <textarea id="dreame-restricted-zones" placeholder='{"no_go": [[0,0,50,50]], "no_mop": [[100,100,150,150]]}' rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="map-display" id="map-section" style="display: none;">
+                    <h2>Map Visualization</h2>
+                    <div class="map-container">
+                        <canvas id="map-canvas" width="400" height="400"></canvas>
+                        <div class="map-controls">
+                            <button id="get-map" class="action-btn map" disabled>📊 Get Map</button>
+                            <button id="clear-map" class="action-btn map" disabled>🗑️ Clear</button>
+                        </div>
+                    </div>
+                </section>
+
                 <section class="command-log">
                     <h2>Command Log</h2>
                     <div class="log-container" id="command-log">

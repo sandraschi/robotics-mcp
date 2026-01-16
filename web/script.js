@@ -40,6 +40,23 @@ class RoboticsControlPanel {
         document.getElementById('move-arm').addEventListener('click', () => this.sendArmCommand());
         document.getElementById('gripper-open').addEventListener('click', () => this.sendGripperCommand('open'));
         document.getElementById('gripper-close').addEventListener('click', () => this.sendGripperCommand('close'));
+
+        // Vacuum controls
+        document.getElementById('start-cleaning').addEventListener('click', () => this.sendVacuumCommand('start_cleaning'));
+        document.getElementById('stop-cleaning').addEventListener('click', () => this.sendVacuumCommand('stop_cleaning'));
+        document.getElementById('return-to-dock').addEventListener('click', () => this.sendVacuumCommand('return_to_dock'));
+        document.getElementById('apply-settings').addEventListener('click', () => this.sendVacuumSettings());
+        document.getElementById('clean-room').addEventListener('click', () => this.sendCleanRoomCommand());
+        document.getElementById('clean-zone').addEventListener('click', () => this.sendCleanZoneCommand());
+        document.getElementById('clean-spot').addEventListener('click', () => this.sendCleanSpotCommand());
+        document.getElementById('start-mapping').addEventListener('click', () => this.sendVacuumCommand('start_mapping'));
+        document.getElementById('get-map').addEventListener('click', () => this.sendGetMapCommand());
+        document.getElementById('clear-map').addEventListener('click', () => this.clearMap());
+
+        // Mode switching
+        document.getElementById('clean-room').addEventListener('click', () => this.showCleaningMode('room'));
+        document.getElementById('clean-zone').addEventListener('click', () => this.showCleaningMode('zone'));
+        document.getElementById('clean-spot').addEventListener('click', () => this.showCleaningMode('spot'));
     }
 
     async loadRobots() {
@@ -111,11 +128,23 @@ class RoboticsControlPanel {
 
         // Show arm controls if robot has arm capability
         const armSection = document.getElementById('arm-section');
-        // For now, assume Yahboom robots have arm capability when equipped
         armSection.style.display = robot.model.includes('Yahboom') ? 'block' : 'none';
+
+        // Show vacuum controls if robot is Dreame vacuum
+        const vacuumSection = document.getElementById('vacuum-section');
+        const isDreame = robot.model.includes('Dreame') || robot.robot_type === 'dreame';
+        vacuumSection.style.display = isDreame ? 'block' : 'none';
+
+        // Show map display if robot supports mapping
+        const mapSection = document.getElementById('map-section');
+        mapSection.style.display = isDreame ? 'block' : 'none';
 
         if (robot.model.includes('Yahboom')) {
             this.setupArmControls();
+        }
+
+        if (isDreame) {
+            this.setupVacuumControls();
         }
     }
 
@@ -297,6 +326,171 @@ class RoboticsControlPanel {
                 status.textContent = '🔴 Cannot connect to Robotics MCP';
                 status.className = 'status-disconnected';
             });
+    }
+
+    setupVacuumControls() {
+        // Setup any dynamic vacuum controls if needed
+        this.showCleaningMode('none');
+    }
+
+    showCleaningMode(mode) {
+        // Hide all mode inputs
+        document.getElementById('room-selection').style.display = 'none';
+        document.getElementById('zone-input').style.display = 'none';
+        document.getElementById('spot-input').style.display = 'none';
+
+        // Show selected mode input
+        if (mode === 'room') {
+            document.getElementById('room-selection').style.display = 'block';
+        } else if (mode === 'zone') {
+            document.getElementById('zone-input').style.display = 'block';
+        } else if (mode === 'spot') {
+            document.getElementById('spot-input').style.display = 'block';
+        }
+    }
+
+    async sendVacuumCommand(action, extraParams = {}) {
+        if (!this.selectedRobot) return;
+
+        await this.sendCommand({
+            action: action,
+            robot_id: this.selectedRobot.robot_id,
+            ...extraParams
+        });
+    }
+
+    async sendVacuumSettings() {
+        if (!this.selectedRobot) return;
+
+        const suctionLevel = parseInt(document.getElementById('suction-level').value);
+        const waterVolume = parseInt(document.getElementById('water-volume').value);
+        const mopHumidity = parseInt(document.getElementById('mop-humidity').value);
+
+        // Send settings in sequence
+        await this.sendVacuumCommand('set_suction_level', { suction_level: suctionLevel });
+        await this.sendVacuumCommand('set_water_volume', { water_volume: waterVolume });
+        await this.sendVacuumCommand('set_mop_humidity', { mop_humidity: mopHumidity });
+
+        this.addLogEntry('⚙️ Vacuum settings applied', 'success');
+    }
+
+    async sendCleanRoomCommand() {
+        if (!this.selectedRobot) return;
+
+        const roomId = parseInt(document.getElementById('room-id').value) || 1;
+        await this.sendVacuumCommand('clean_room', { room_id: roomId });
+    }
+
+    async sendCleanZoneCommand() {
+        if (!this.selectedRobot) return;
+
+        const zoneCoords = document.getElementById('zone-coords').value;
+        const coords = zoneCoords.split(',').map(c => parseInt(c.trim()));
+
+        if (coords.length !== 4) {
+            this.addLogEntry('❌ Invalid zone coordinates format (need x1,y1,x2,y2)', 'error');
+            return;
+        }
+
+        await this.sendVacuumCommand('clean_zone', { zones: [coords] });
+    }
+
+    async sendCleanSpotCommand() {
+        if (!this.selectedRobot) return;
+
+        const spotCoords = document.getElementById('spot-coords').value;
+        const coords = spotCoords.split(',').map(c => parseInt(c.trim()));
+
+        if (coords.length !== 2) {
+            this.addLogEntry('❌ Invalid spot coordinates format (need x,y)', 'error');
+            return;
+        }
+
+        await this.sendVacuumCommand('clean_spot', { spot_x: coords[0], spot_y: coords[1] });
+    }
+
+    async sendGetMapCommand() {
+        if (!this.selectedRobot) return;
+
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/api/v1/robots/${this.selectedRobot.robot_id}/control`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'get_map',
+                    robot_id: this.selectedRobot.robot_id
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data && result.data.map_data) {
+                    this.renderMap(result.data.map_data);
+                    this.addLogEntry('🗺️ Map data retrieved', 'success');
+                } else {
+                    this.addLogEntry('⚠️ No map data available', 'warning');
+                }
+            } else {
+                this.addLogEntry('❌ Failed to get map data', 'error');
+            }
+        } catch (error) {
+            console.error('Map retrieval failed:', error);
+            this.addLogEntry('❌ Map retrieval failed', 'error');
+        }
+    }
+
+    renderMap(mapData) {
+        const canvas = document.getElementById('map-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Set background
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Simple map rendering (placeholder - would need actual map format)
+        if (mapData.rooms) {
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+
+            mapData.rooms.forEach(room => {
+                if (room.coordinates) {
+                    ctx.beginPath();
+                    ctx.rect(room.coordinates[0], room.coordinates[1],
+                            room.coordinates[2] - room.coordinates[0],
+                            room.coordinates[3] - room.coordinates[1]);
+                    ctx.stroke();
+
+                    // Room label
+                    ctx.fillStyle = '#000';
+                    ctx.font = '12px Arial';
+                    ctx.fillText(room.name || `Room ${room.id}`,
+                               room.coordinates[0] + 5, room.coordinates[1] + 15);
+                }
+            });
+        }
+
+        // Draw robot position if available
+        if (this.selectedRobot && this.selectedRobot.position) {
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(this.selectedRobot.position.x * 10, this.selectedRobot.position.y * 10, 5, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
+
+    clearMap() {
+        const canvas = document.getElementById('map-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Reset to default background
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        this.addLogEntry('🗑️ Map cleared', 'info');
     }
 }
 

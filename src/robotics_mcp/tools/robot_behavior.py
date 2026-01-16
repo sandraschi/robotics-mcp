@@ -28,6 +28,8 @@ from .dreame_client import (
     dreame_stop_cleaning,
     dreame_get_map,
     dreame_clean_room,
+    dreame_clean_zone,
+    dreame_clean_spot,
 )
 
 logger = structlog.get_logger(__name__)
@@ -861,13 +863,213 @@ class RobotBehaviorTool:
                             robot_type="dreame",
                             robot_id=robot.robot_id
                         )
+                elif action == "clean_zone":
+                    # Clean specific zone(s)
+                    if goal_position and "zones" in goal_position:
+                        zones = goal_position["zones"]
+                        result = await dreame_clean_zone(robot.robot_id, zones)
+                        return result
+                    else:
+                        return build_error_response(
+                            error="clean_zone action requires goal_position with zones array",
+                            error_code="MISSING_ZONES"
+                        )
+                elif action == "clean_spot":
+                    # Clean specific spot
+                    if goal_position and "spot_x" in goal_position and "spot_y" in goal_position:
+                        spot_x = int(goal_position["spot_x"])
+                        spot_y = int(goal_position["spot_y"])
+                        result = await dreame_clean_spot(robot.robot_id, spot_x, spot_y)
+                        return result
+                    else:
+                        return build_error_response(
+                            error="clean_spot action requires goal_position with spot_x and spot_y",
+                            error_code="MISSING_COORDINATES"
+                        )
+                elif action == "set_suction_level":
+                    # Set suction power level
+                    if goal_position and "suction_level" in goal_position:
+                        level = int(goal_position["suction_level"])
+                        client = get_dreame_client(robot.robot_id)
+                        success = await client.set_suction_level(level)
+                        if success:
+                            return build_success_response(
+                                operation="dreame_set_suction",
+                                summary=f"Dreame {robot.robot_id} suction level set to {level}",
+                                result={"robot_id": robot.robot_id, "suction_level": level}
+                            )
+                        else:
+                            return build_robotics_error_response(
+                                error="Failed to set Dreame suction level",
+                                robot_type="dreame",
+                                robot_id=robot.robot_id
+                            )
+                    else:
+                        return build_error_response(
+                            error="set_suction_level action requires goal_position with suction_level",
+                            error_code="MISSING_SUCTION_LEVEL"
+                        )
+                elif action == "set_water_volume":
+                    # Set water volume for mopping
+                    if goal_position and "water_volume" in goal_position:
+                        volume = int(goal_position["water_volume"])
+                        client = get_dreame_client(robot.robot_id)
+                        success = await client.set_water_volume(volume)
+                        if success:
+                            return build_success_response(
+                                operation="dreame_set_water",
+                                summary=f"Dreame {robot.robot_id} water volume set to {volume}",
+                                result={"robot_id": robot.robot_id, "water_volume": volume}
+                            )
+                        else:
+                            return build_robotics_error_response(
+                                error="Failed to set Dreame water volume",
+                                robot_type="dreame",
+                                robot_id=robot.robot_id
+                            )
+                    else:
+                        return build_error_response(
+                            error="set_water_volume action requires goal_position with water_volume",
+                            error_code="MISSING_WATER_VOLUME"
+                        )
+                elif action == "set_mop_humidity":
+                    # Set mop pad humidity
+                    if goal_position and "mop_humidity" in goal_position:
+                        humidity = int(goal_position["mop_humidity"])
+                        client = get_dreame_client(robot.robot_id)
+                        success = await client.set_mop_humidity(humidity)
+                        if success:
+                            return build_success_response(
+                                operation="dreame_set_humidity",
+                                summary=f"Dreame {robot.robot_id} mop humidity set to {humidity}",
+                                result={"robot_id": robot.robot_id, "mop_humidity": humidity}
+                            )
+                        else:
+                            return build_robotics_error_response(
+                                error="Failed to set Dreame mop humidity",
+                                robot_type="dreame",
+                                robot_id=robot.robot_id
+                            )
+                    else:
+                        return build_error_response(
+                            error="set_mop_humidity action requires goal_position with mop_humidity",
+                            error_code="MISSING_HUMIDITY"
+                        )
+                elif action == "start_fast_mapping":
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.start_fast_mapping()
+                    if success:
+                        return build_success_response(
+                            operation="dreame_fast_mapping",
+                            summary=f"Dreame {robot.robot_id} starting fast mapping",
+                            result={"robot_id": robot.robot_id, "mapping_type": "fast"}
+                        )
+                    else:
+                        return build_robotics_error_response(
+                            error="Failed to start Dreame fast mapping",
+                            robot_type="dreame",
+                            robot_id=robot.robot_id
+                        )
+                elif action == "start_mapping":
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.start_mapping()
+                    if success:
+                        return build_success_response(
+                            operation="dreame_mapping",
+                            summary=f"Dreame {robot.robot_id} starting mapping",
+                            result={"robot_id": robot.robot_id, "mapping_type": "standard"}
+                        )
+                    else:
+                        return build_robotics_error_response(
+                            error="Failed to start Dreame mapping",
+                            robot_type="dreame",
+                            robot_id=robot.robot_id
+                        )
+                elif action == "set_cleaning_sequence":
+                    # Set room cleaning order
+                    if goal_position and "cleaning_sequence" in goal_position:
+                        sequence = goal_position["cleaning_sequence"]
+                        client = get_dreame_client(robot.robot_id)
+                        success = await client.set_cleaning_sequence(sequence)
+                        if success:
+                            return build_success_response(
+                                operation="dreame_set_sequence",
+                                summary=f"Dreame {robot.robot_id} cleaning sequence updated",
+                                result={"robot_id": robot.robot_id, "cleaning_sequence": sequence}
+                            )
+                        else:
+                            return build_robotics_error_response(
+                                error="Failed to set Dreame cleaning sequence",
+                                robot_type="dreame",
+                                robot_id=robot.robot_id
+                            )
+                    else:
+                        return build_error_response(
+                            error="set_cleaning_sequence action requires goal_position with cleaning_sequence",
+                            error_code="MISSING_SEQUENCE"
+                        )
+                elif action == "set_restricted_zones":
+                    # Set virtual walls and no-go zones
+                    if goal_position and "restricted_zones" in goal_position:
+                        zones = goal_position["restricted_zones"]
+                        client = get_dreame_client(robot.robot_id)
+                        success = await client.set_restricted_zones(zones)
+                        if success:
+                            return build_success_response(
+                                operation="dreame_set_zones",
+                                summary=f"Dreame {robot.robot_id} restricted zones updated",
+                                result={"robot_id": robot.robot_id, "restricted_zones": zones}
+                            )
+                        else:
+                            return build_robotics_error_response(
+                                error="Failed to set Dreame restricted zones",
+                                robot_type="dreame",
+                                robot_id=robot.robot_id
+                            )
+                    else:
+                        return build_error_response(
+                            error="set_restricted_zones action requires goal_position with restricted_zones",
+                            error_code="MISSING_ZONES"
+                        )
+                elif action == "get_cleaning_history":
+                    client = get_dreame_client(robot.robot_id)
+                    history = await client.get_cleaning_history()
+                    if history:
+                        return build_success_response(
+                            operation="dreame_history",
+                            summary=f"Dreame {robot.robot_id} cleaning history retrieved",
+                            result={"robot_id": robot.robot_id, "cleaning_history": history}
+                        )
+                    else:
+                        return build_robotics_error_response(
+                            error="Failed to retrieve Dreame cleaning history",
+                            robot_type="dreame",
+                            robot_id=robot.robot_id
+                        )
+                elif action == "clear_error":
+                    client = get_dreame_client(robot.robot_id)
+                    success = await client.clear_error()
+                    if success:
+                        return build_success_response(
+                            operation="dreame_clear_error",
+                            summary=f"Dreame {robot.robot_id} error cleared",
+                            result={"robot_id": robot.robot_id, "error_cleared": True}
+                        )
+                    else:
+                        return build_robotics_error_response(
+                            error="Failed to clear Dreame error",
+                            robot_type="dreame",
+                            robot_id=robot.robot_id
+                        )
                 else:
                     return build_error_response(
                         error=f"Unknown Dreame navigation action: {action}",
                         error_code="UNKNOWN_ACTION",
                         suggestions=[
-                            "Use start_cleaning, stop_cleaning, move, go_to, get_map, clean_room, or dock",
-                            "Check Dreame API documentation for supported actions"
+                            "Use start_cleaning, stop_cleaning, move, go_to, get_map, clean_room, dock,",
+                            "clean_zone, clean_spot, set_suction_level, set_water_volume, set_mop_humidity,",
+                            "start_fast_mapping, start_mapping, set_cleaning_sequence, set_restricted_zones,",
+                            "get_cleaning_history, clear_error"
                         ]
                     )
             except Exception as e:

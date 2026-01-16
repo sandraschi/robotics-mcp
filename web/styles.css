@@ -388,4 +388,501 @@ h2 {
     .arm-controls-grid {
         grid-template-columns: 1fr;
     }
+
+    .vacuum-controls-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .map-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #map-canvas {
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background-color: var(--bg-secondary);
+    }
+}
+
+/* Vacuum Control Styles */
+.vacuum-controls {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.vacuum-controls h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.vacuum-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.cleaning-controls,
+.cleaning-settings,
+.cleaning-modes {
+    background: var(--bg-primary);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.cleaning-controls h3,
+.cleaning-settings h3,
+.cleaning-modes h3 {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.action-btn.vacuum {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.action-btn.vacuum:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.action-btn.vacuum:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.setting-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.setting-item label {
+    min-width: 120px;
+    font-weight: 500;
+}
+
+.setting-item select {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.setting-item select:disabled {
+    opacity: 0.5;
+}
+
+.action-btn.settings {
+    align-self: flex-start;
+    margin-top: 10px;
+}
+
+.mode-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.action-btn.mode {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+
+.room-selection,
+.zone-input,
+.spot-input {
+    margin-top: 10px;
+}
+
+.room-selection label,
+.zone-input label,
+.spot-input label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.room-selection input,
+.zone-input input,
+.spot-input input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Map Display Styles */
+.map-display {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.map-display h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.map-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#map-canvas {
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-primary);
+    max-width: 100%;
+    height: auto;
+}
+
+.map-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn.map {
+    background: linear-gradient(135deg, var(--success-color), #28a745);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.action-btn.map:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.action-btn.map:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Dreame Vacuum Controls */
+.dreame-controls {
+    background: linear-gradient(135deg, #f0f8ff, #e6f3ff);
+    border: 2px solid #007bff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.dreame-controls h2 {
+    color: #007bff;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.dreame-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.dreame-basic,
+.dreame-settings,
+.dreame-modes,
+.dreame-advanced {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: var(--shadow);
+}
+
+.dreame-basic h3,
+.dreame-settings h3,
+.dreame-modes h3,
+.dreame-advanced h3 {
+    color: #007bff;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.dreame-basic .action-buttons,
+.dreame-advanced .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.action-btn.dreame {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.action-btn.dreame:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.action-btn.dreame:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.setting-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.setting-item label {
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.setting-item select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.setting-item select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.action-btn.dreame-settings {
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.action-btn.dreame-settings:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.action-btn.dreame-settings:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dreame-modes .mode-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.action-btn.dreame-mode {
+    background: linear-gradient(135deg, #6f42c1, #5a32a3);
+    color: white;
+    border: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.action-btn.dreame-mode:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+}
+
+.action-btn.dreame-mode:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dreame-room-selection,
+.dreame-zone-input,
+.dreame-spot-input,
+.dreame-sequence-input,
+.dreame-restricted-input {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.dreame-room-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dreame-room-selection input[type="number"],
+.dreame-room-selection input[type="text"] {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.dreame-zone-input,
+.dreame-spot-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dreame-zone-input input,
+.dreame-spot-input input {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.dreame-spot-input {
+    display: flex;
+    gap: 10px;
+}
+
+.dreame-spot-input input {
+    flex: 1;
+}
+
+.action-btn.dreame-advanced {
+    background: linear-gradient(135deg, #fd7e14, #e8680f);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.action-btn.dreame-advanced:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(253, 126, 20, 0.3);
+}
+
+.action-btn.dreame-advanced:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.dreame-sequence-input,
+.dreame-restricted-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dreame-sequence-input input,
+.dreame-restricted-input textarea {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: monospace;
+}
+
+.dreame-restricted-input textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* Dark theme support for Dreame controls */
+[data-theme="dark"] .dreame-controls {
+    background: linear-gradient(135deg, #1e3a5f, #2c4a6b);
+    border-color: #4dabf7;
+}
+
+[data-theme="dark"] .dreame-controls h2,
+[data-theme="dark"] .dreame-basic h3,
+[data-theme="dark"] .dreame-settings h3,
+[data-theme="dark"] .dreame-modes h3,
+[data-theme="dark"] .dreame-advanced h3 {
+    color: #4dabf7;
+}
+
+[data-theme="dark"] .dreame-basic,
+[data-theme="dark"] .dreame-settings,
+[data-theme="dark"] .dreame-modes,
+[data-theme="dark"] .dreame-advanced {
+    background: #2d3748;
+    border: 1px solid #4a5568;
+}
+
+[data-theme="dark"] .dreame-room-selection,
+[data-theme="dark"] .dreame-zone-input,
+[data-theme="dark"] .dreame-spot-input,
+[data-theme="dark"] .dreame-sequence-input,
+[data-theme="dark"] .dreame-restricted-input {
+    background: #1a202c;
+    border-color: #4a5568;
+}
+
+[data-theme="dark"] .dreame-room-selection input,
+[data-theme="dark"] .dreame-zone-input input,
+[data-theme="dark"] .dreame-spot-input input,
+[data-theme="dark"] .dreame-sequence-input input,
+[data-theme="dark"] .dreame-restricted-input textarea {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
 }

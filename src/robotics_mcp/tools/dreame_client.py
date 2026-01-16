@@ -5,7 +5,7 @@ and status monitoring via the dreame-vacuum library.
 """
 
 import asyncio
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import structlog
 
@@ -297,6 +297,185 @@ class DreameClient:
             logger.error("Failed to clean Dreame zone", robot_id=self.robot_id, zones=zones, error=str(e))
             return False
 
+    async def clean_spot(self, spot_x: int, spot_y: int) -> bool:
+        """Clean specific spot.
+
+        Args:
+            spot_x: X coordinate for spot cleaning
+            spot_y: Y coordinate for spot cleaning
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.clean_spot([spot_x, spot_y])
+            return True
+        except Exception as e:
+            logger.error("Failed to clean Dreame spot", robot_id=self.robot_id, spot_x=spot_x, spot_y=spot_y, error=str(e))
+            return False
+
+    async def set_suction_level(self, level: int) -> bool:
+        """Set suction power level.
+
+        Args:
+            level: Suction level (1-4)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.set_suction_level(level)
+            return True
+        except Exception as e:
+            logger.error("Failed to set Dreame suction level", robot_id=self.robot_id, level=level, error=str(e))
+            return False
+
+    async def set_water_volume(self, volume: int) -> bool:
+        """Set water volume level for mopping.
+
+        Args:
+            volume: Water volume level (1-3)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.set_water_volume(volume)
+            return True
+        except Exception as e:
+            logger.error("Failed to set Dreame water volume", robot_id=self.robot_id, volume=volume, error=str(e))
+            return False
+
+    async def set_mop_humidity(self, humidity: int) -> bool:
+        """Set mop pad humidity level.
+
+        Args:
+            humidity: Mop humidity level (1-3)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.set_mop_humidity(humidity)
+            return True
+        except Exception as e:
+            logger.error("Failed to set Dreame mop humidity", robot_id=self.robot_id, humidity=humidity, error=str(e))
+            return False
+
+    async def start_fast_mapping(self) -> bool:
+        """Start fast mapping mode.
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.start_fast_mapping()
+            return True
+        except Exception as e:
+            logger.error("Failed to start Dreame fast mapping", robot_id=self.robot_id, error=str(e))
+            return False
+
+    async def start_mapping(self) -> bool:
+        """Start standard mapping mode.
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.start_mapping()
+            return True
+        except Exception as e:
+            logger.error("Failed to start Dreame mapping", robot_id=self.robot_id, error=str(e))
+            return False
+
+    async def set_cleaning_sequence(self, sequence: List[int]) -> bool:
+        """Set room cleaning sequence.
+
+        Args:
+            sequence: List of room IDs in cleaning order
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.set_cleaning_sequence(sequence)
+            return True
+        except Exception as e:
+            logger.error("Failed to set Dreame cleaning sequence", robot_id=self.robot_id, sequence=sequence, error=str(e))
+            return False
+
+    async def set_restricted_zones(self, zones: Dict[str, List[List[int]]]) -> bool:
+        """Set restricted zones (virtual walls and no-go zones).
+
+        Args:
+            zones: Dictionary with 'walls' and 'zones' keys containing coordinates
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.set_restricted_zones(zones)
+            return True
+        except Exception as e:
+            logger.error("Failed to set Dreame restricted zones", robot_id=self.robot_id, zones=zones, error=str(e))
+            return False
+
+    async def get_cleaning_history(self) -> Optional[List[Dict[str, Any]]]:
+        """Get cleaning history.
+
+        Returns:
+            List of cleaning sessions or None if failed
+        """
+        if not self._connected or not self.device:
+            return None
+
+        try:
+            history = await self.device.get_cleaning_history()
+            return history
+        except Exception as e:
+            logger.error("Failed to get Dreame cleaning history", robot_id=self.robot_id, error=str(e))
+            return None
+
+    async def clear_error(self) -> bool:
+        """Clear error conditions.
+
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self._connected or not self.device:
+            return False
+
+        try:
+            await self.device.clear_error()
+            return True
+        except Exception as e:
+            logger.error("Failed to clear Dreame error", robot_id=self.robot_id, error=str(e))
+            return False
+
 
 # Global Dreame client instance
 _dreame_client: Optional[DreameClient] = None
@@ -441,6 +620,49 @@ async def dreame_clean_room(robot_id: str = "dreame_01", room_id: int = 1) -> Di
     else:
         return build_robotics_error_response(
             error="Failed to clean room with Dreame",
+            robot_type="dreame",
+            robot_id=robot_id
+        )
+
+
+async def dreame_clean_zone(robot_id: str = "dreame_01", zones: List[List[int]] = None) -> Dict[str, Any]:
+    """Clean specific zone(s) with Dreame."""
+    if not zones:
+        return build_robotics_error_response(
+            error="No zones specified for cleaning",
+            robot_type="dreame",
+            robot_id=robot_id
+        )
+
+    client = get_dreame_client(robot_id)
+    success = await client.clean_zone(zones)
+    if success:
+        return build_success_response(
+            operation="clean_dreame_zone",
+            summary=f"Dreame {robot_id} cleaning {len(zones)} zone(s)",
+            result={"robot_id": robot_id, "zones": zones}
+        )
+    else:
+        return build_robotics_error_response(
+            error="Failed to clean zone with Dreame",
+            robot_type="dreame",
+            robot_id=robot_id
+        )
+
+
+async def dreame_clean_spot(robot_id: str = "dreame_01", spot_x: int = 0, spot_y: int = 0) -> Dict[str, Any]:
+    """Clean specific spot with Dreame."""
+    client = get_dreame_client(robot_id)
+    success = await client.clean_spot(spot_x, spot_y)
+    if success:
+        return build_success_response(
+            operation="clean_dreame_spot",
+            summary=f"Dreame {robot_id} cleaning spot at ({spot_x}, {spot_y})",
+            result={"robot_id": robot_id, "spot_x": spot_x, "spot_y": spot_y}
+        )
+    else:
+        return build_robotics_error_response(
+            error="Failed to clean spot with Dreame",
             robot_type="dreame",
             robot_id=robot_id
         )

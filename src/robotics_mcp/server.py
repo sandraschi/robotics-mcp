@@ -81,6 +81,7 @@ from .tools.robot_control import RobotControlTool
 from .tools.robot_manufacturing import RobotManufacturingTool
 from .tools.robot_model_tools import RobotModelTools
 from .tools.vbot_crud import VbotCrudTool
+from .tools.drone_control import DroneControlTool
 
 # Configure structured logging
 structlog.configure(
@@ -308,8 +309,14 @@ class RoboticsMCP:
                 mcp_client_helper=lambda server, tool, args: call_mounted_server_tool(
                     self.mounted_servers, server, tool, args
                 ),
-                app_launcher=None,  # TODO: Add app launcher integration
             )
+
+            # Drone control tools
+            logger.debug("Creating drone_control tool instance")
+            self.drone_control = DroneControlTool(
+                self.mcp, self.state_manager, self.mounted_servers
+            )
+            logger.debug("Drone control tool instance created")
 
             # Register all tools
             self._register_tools()
@@ -704,6 +711,10 @@ class RoboticsMCP:
 
             self.workflow_management.register()  # Workflow management operations
             logger.debug("Registered workflow_management tool")
+
+            logger.debug("Calling drone_control.register()")
+            self.drone_control.register()  # Drone control operations
+            logger.debug("Registered drone_control tool - register() completed")
 
             tools = getattr(self.mcp, "_tools", {})
             logger.info(

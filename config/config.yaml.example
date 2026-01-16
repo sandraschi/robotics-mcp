@@ -70,6 +70,49 @@ robotics:
     arm_enabled: false  # Set true when arm/gripper addon installed
     mock_mode: true  # Set false for real hardware
 
+  # Dreame D20 Pro Plus Robot Vacuum
+  dreame_d20_pro_plus:
+    enabled: false  # Set true to enable Dreame vacuum integration
+    robot_id: "dreame_01"
+    robot_type: "dreame"
+    ip_address: "192.168.1.102"  # Dreame robot IP address
+    token: ""  # Dreame vacuum token (obtain via Mi Home app)
+    mock_mode: true  # Set false for real Dreame hardware
+
+    # Dreame-specific configuration
+    capabilities:
+      suction_levels: 4  # 1-4 (Quiet, Standard, Turbo, Max)
+      water_levels: 3     # 1-3 (Low, Medium, High)
+      mop_humidity_levels: 3  # 1-3 (Low, Medium, High)
+      ai_obstacle_detection: true
+      self_emptying: true
+      multi_floor_mapping: true
+
+    # Default cleaning settings
+    default_settings:
+      suction_level: 2  # Standard
+      water_volume: 2   # Medium
+      mop_humidity: 2   # Medium
+
+    # Room mapping (auto-discovered on first run)
+    rooms: {}  # Will be populated by robot discovery
+
+    # Restricted zones (virtual walls/no-go areas)
+    restricted_zones:
+      walls: []  # [[x1,y1,x2,y2], ...] for virtual walls
+      zones: []  # [[x1,y1,x2,y2], ...] for no-go zones
+
+    # Cleaning sequences (room cleaning order)
+    cleaning_sequences:
+      default: []  # Room IDs in cleaning order
+      quick: []    # Faster cleaning sequence
+
+    # Map configuration
+    map:
+      save_path: "maps/dreame/"
+      auto_update: true
+      multi_floor: false  # Set true for multi-floor homes
+
     # Camera configuration (1MP Raspberry Pi Camera)
     camera:
       resolution: "640x480"  # Upgrade to 1280x720 when possible
