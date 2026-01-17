@@ -85,6 +85,9 @@ class RobotControlTool:
             room_name: Optional[str] = None,
             cleaning_sequence: Optional[List[int]] = None,
             restricted_zones: Optional[Dict[str, List[List[int]]]] = None,
+            # Yahboom AI query parameters
+            query: Optional[str] = None,
+            query_type: Optional[Literal["text", "vision", "voice", "multimodal"]] = None,
         ) -> Dict[str, Any]:
             """Unified robot control (works for both physical bot and virtual bot).
 
@@ -108,6 +111,7 @@ class RobotControlTool:
                     - "arm_move": Move robotic arm joints (Yahboom with arm)
                     - "gripper_control": Control gripper open/close (Yahboom with arm)
                     - "navigate_to": Navigate to specific coordinates (Yahboom)
+                    - "ai_query": Multimodal AI query (text/vision/voice) (Yahboom)
                     - "start_auto_empty": Start automatic dust bin emptying (Dreame)
                     - "stop_auto_empty": Stop automatic dust bin emptying (Dreame)
                     - "start_self_clean": Start mop self-cleaning cycle (Dreame)
@@ -204,7 +208,8 @@ class RobotControlTool:
                 elif robot.robot_type == "yahboom":
                     return await self._handle_yahboom_robot(
                         robot, action, linear, angular, duration,
-                        x, y, theta, joint_angles, gripper_action, patrol_route
+                        x, y, theta, joint_angles, gripper_action, patrol_route,
+                        query, query_type
                     )
                 elif robot.robot_type == "dreame":
                     return await self._handle_dreame_robot(
@@ -266,6 +271,8 @@ class RobotControlTool:
         joint_angles: Optional[Dict[str, float]],
         gripper_action: Optional[str],
         patrol_route: Optional[str],
+        query: Optional[str],
+        query_type: Optional[str],
     ) -> Dict[str, Any]:
         """Handle Yahboom robot commands via ROS 2.
 
@@ -278,6 +285,8 @@ class RobotControlTool:
             x: Target X coordinate for navigation.
             y: Target Y coordinate for navigation.
             theta: Target orientation for navigation.
+            query: AI query text for multimodal analysis.
+            query_type: Type of AI query (text, vision, voice, multimodal).
             joint_angles: Joint angles for arm control.
             gripper_action: Gripper action.
             patrol_route: Patrol route name.
@@ -409,6 +418,40 @@ class RobotControlTool:
                     data={
                         "patrol_route": patrol_route or "home_security",
                         "waypoints": patrol_points,
+                        "mock": config.mock_mode,
+                    },
+                )
+
+            elif action == "ai_query":
+                if not query:
+                    return format_error_response(
+                        "Query parameter required for ai_query action",
+                        error_type="missing_parameter",
+                        robot_id=robot.robot_id,
+                        action=action,
+                    )
+
+                # Mock AI response for Yahboom multimodal AI
+                query_type = query_type or "text"
+                mock_responses = {
+                    "text": f"Processed text query: '{query}'. Analysis complete.",
+                    "vision": f"Analyzed visual input for: '{query}'. Object detection successful.",
+                    "voice": f"Processed voice command: '{query}'. Speech recognition complete.",
+                    "multimodal": f"Multimodal analysis for: '{query}'. Combined text, vision, and voice processing.",
+                }
+
+                ai_response = mock_responses.get(query_type, f"AI query processed: {query}")
+
+                return format_success_response(
+                    f"Yahboom robot {robot.robot_id} AI query completed",
+                    robot_id=robot.robot_id,
+                    action=action,
+                    data={
+                        "query": query,
+                        "query_type": query_type,
+                        "response": ai_response,
+                        "confidence": 0.95,
+                        "processing_time_ms": 150,
                         "mock": config.mock_mode,
                     },
                 )

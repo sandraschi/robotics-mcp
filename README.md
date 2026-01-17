@@ -29,6 +29,7 @@
 ### **🔴 PHYSICAL ROBOTS (RECOMMENDED)**
 **You SHOULD own one of these supported robots:**
 - **Moorebot Scout** (primary focus) - Mecanum wheeled robot with LiDAR
+- **Yahboom ROSMASTER Series** (ROS 2) - Multimodal AI robots with camera, navigation, optional arm/gripper
 - **Unitree Go2** - Advanced quadrupedal robot
 - **Unitree G1** - Humanoid robot with arms
 - **Unitree H1** - Humanoid robot platform
@@ -320,6 +321,12 @@ await robot_control(
 
 # Stop robot
 await robot_control(robot_id="scout_01", action="stop")
+
+# Yahboom robot control
+await robot_control(robot_id="yahboom_01", action="get_status")
+await robot_control(robot_id="yahboom_01", action="home_patrol")
+await robot_control(robot_id="yahboom_01", action="camera_capture")
+await robot_control(robot_id="yahboom_01", action="ai_query", query="What's in front of me?")
 ```
 
 #### Virtual Robotics

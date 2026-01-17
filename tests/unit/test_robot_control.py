@@ -240,3 +240,22 @@ async def test_yahboom_robot_control_camera_capture(robot_control_tool):
     assert result["robot_id"] == "yahboom_01"
     assert result["action"] == "camera_capture"
     assert "frame_size" in result
+
+
+async def test_yahboom_robot_control_ai_query(robot_control_tool):
+    """Test Yahboom robot ai_query action."""
+    # Register Yahboom robot
+    robot = robot_control_tool.state_manager.register_robot("yahboom_01", "yahboom")
+
+    robot_control_tool.register()
+    tool_func = robot_control_tool.mcp.tool.registered_func
+
+    result = await tool_func(robot_id="yahboom_01", action="ai_query", query="What's in front of me?")
+
+    assert result["status"] == "success"
+    assert result["robot_id"] == "yahboom_01"
+    assert result["action"] == "ai_query"
+    assert result["query"] == "What's in front of me?"
+    assert result["query_type"] == "text"
+    assert "response" in result
+    assert "confidence" in result
