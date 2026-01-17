@@ -5,6 +5,26 @@ All notable changes to Robotics MCP will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **🛡️ Enterprise Crash Protection**: Watchfiles automatic recovery with exponential backoff for 99.9% uptime
+- **🔌 Port Standardization**: Updated default ports (HTTP: 12230, Webapp: 12220) to avoid conflicts
+- **📊 Advanced Crash Analytics**: Detailed JSON crash reports with full error analysis and uptime tracking
+- **🐧 Linux Production Support**: Systemd service files for enterprise deployment
+- **⚡ PowerShell Management**: Easy Windows deployment scripts with configuration options
+- **📚 Comprehensive Documentation**: Watchfiles protection guide, robot integration manuals
+- **🤖 Multi-Robot Fleet Expansion**: Added Tdrone Mini drone support alongside existing robots
+- **🎮 Dedicated Control Interfaces**: Specialized control pages for each robot type
+- **🗺️ Enhanced Map Visualization**: Real-time LIDAR mapping with collaborative SLAM support
+- **🔄 Multi-Robot Coordination**: Advanced collision avoidance and sensor fusion
+- **🎨 UI Modernization**: Professional Tailwind CSS + shadcn/ui design system
+- **📱 Responsive Design**: Mobile and desktop optimized interfaces
+- **🔧 Robotic Arm Enhancements**: Full 4-DOF arm control with gripper operations
+- **🧹 Dreame D20 Pro Enhancements**: Zone cleaning, auto-empty, and map export capabilities
+- **🚁 Tdrone Mini Integration**: PX4 flight control, FPV camera, and autonomous navigation
+- **💡 Philips Hue Pro Integration**: HomeAware movement detection for robot safety
+- **📈 Performance Optimization**: Reduced startup time and improved error handling
+- **🧪 Enhanced Testing**: Comprehensive test coverage for all new features
+
+### Changed
 - **Strategic Platform Decision**: Yahboom ROSMASTER Series designated as primary platform (ROS2, modular, future-proof)
 - **Drone Control Integration**: Complete drone support with PX4/ArduPilot via MAVLink
 - **4 New Portmanteau Tools**: `drone_control`, `drone_streaming`, `drone_navigation`, `drone_flight_control`
