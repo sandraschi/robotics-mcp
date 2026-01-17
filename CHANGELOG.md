@@ -5,6 +5,15 @@ All notable changes to Robotics MCP will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Drone Control Integration**: Complete drone support with PX4/ArduPilot via MAVLink
+- **4 New Portmanteau Tools**: `drone_control`, `drone_streaming`, `drone_navigation`, `drone_flight_control`
+- **Drone Flight Operations**: Takeoff, landing, movement, RTL, arm/disarm, calibration
+- **Video Streaming**: FPV, RTSP, WebRTC streaming with OpenIPC integration
+- **GPS Navigation**: Waypoint following, geofencing, follow-me mode
+- **Advanced Flight Control**: Mission planning, parameter tuning, flight modes
+- **Type Safety Improvements**: Fixed Pydantic schema generation errors
+- **Union Type Annotations**: Proper `Type | None` syntax throughout codebase
+- **Enhanced Documentation**: Comprehensive parameter descriptions for all tools
 - **Yahboom Robot Integration**: Full ROS 2 support for Raspbot-V2 with camera, navigation, and arm control
 - **Yahboom ROS 2 Client**: Complete client implementation for Yahboom robot communication
 - **Web Control Interface**: Modern web-based control panel for robot management
@@ -20,6 +29,10 @@ All notable changes to Robotics MCP will be documented in this file.
 - **Software Installation Guide**: Step-by-step installation instructions
 
 ### Fixed
+- **Pydantic Schema Generation**: Resolved critical errors in MCP tool registration
+- **Type Annotations**: Corrected malformed `[Type] = None` syntax to `Type | None`
+- **Function Signatures**: Fixed missing closing parentheses in parameter definitions
+- **MCP Tool Registration**: Ensured all 11 portmanteau tools register correctly
 - **Unity Server Loading**: Added 30-second timeouts and 3 retry attempts with graceful fallbacks
 - **Webapp Component Errors**: Resolved @radix-ui/react-label build errors by removing shadcn/ui dependencies
 - **Cursor MCP Integration**: Fixed server startup issues preventing robotics-mcp from loading in Cursor IDE

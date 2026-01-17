@@ -2,12 +2,12 @@
 
 **By FlowEngineer sandraschi**
 
-**Unified robotics control via MCP - Physical and virtual robots (bot + vbot)**
+**Unified robotics control via MCP - Physical and virtual robots (bot + vbot + drones)**
 
 ## ⚠️ **CRITICAL REQUIREMENTS**
 
 ### **Hardware (Recommended)**
-- **Physical Robot**: Moorebot Scout, Unitree Go2/G1/H1
+- **Physical Robot**: Moorebot Scout, Unitree Go2/G1/H1, PX4/ArduPilot drones
 - **Without hardware**: Virtual robotics only (Unity3D + VRChat)
 
 ### **Software (MANDATORY)**
@@ -128,7 +128,7 @@ See [Cursor MCP Setup](#-cursor-mcp-setup) section for integration details.
 
 ## 🎯 Overview
 
-Robotics MCP Server provides unified control for both **physical robots** (ROS-based) and **virtual robots** (Unity/VRChat), with a focus on Moorebot Scout, Unitree robots, and virtual robotics testing.
+Robotics MCP Server provides unified control for **physical robots** (ROS-based), **virtual robots** (Unity/VRChat), and **drones** (PX4/ArduPilot), with a focus on Moorebot Scout, Unitree robots, open-source drones, and virtual robotics testing.
 
 **🚀 Project Stats**: ~9,200 lines of code, ~2,600 lines of tests, ~4,100 lines of documentation
 
@@ -138,16 +138,18 @@ Robotics MCP Server provides unified control for both **physical robots** (ROS-b
 
 - **Physical Robot Control**: Moorebot Scout (ROS 1.4), Unitree Go2/G1
 - **YDLIDAR SuperLight (95g)** LiDAR integration for Scout
+- **Drone Control**: PX4/ArduPilot drones with MAVLink, video streaming, navigation
 - **Virtual Robot Control**: Unity3D/VRChat/Resonite integration via existing MCP servers
 - **ROS Bridge Integration**: [Robot Operating System](docs/ROS_FUNDAMENTALS.md) 1.4 (Melodic) via rosbridge_suite
 - **LiDAR Sensing**: [Affordable 3D LiDAR Guide](docs/LIDAR_GUIDE.md) - Livox Mid-360 ($399), RPLIDAR ($99), and more
 - **Tiny Controllers**: [Pico & Micro Boards](docs/TINY_CONTROLLERS_GUIDE.md) - Raspberry Pi Pico, ESP32, Arduino Nano for small robots
 - **Motion Detection**: [Pyroelectric Sensors Guide](docs/PYROELECTRIC_SENSORS_GUIDE.md) - AM312, HC-SR501 ultra-small PIR sensors ($1-5)
-- **Multi-Robot Coordination**: Physical and virtual robots together
+- **Multi-Robot Coordination**: Physical robots, virtual robots, and drones together
 - **World Labs Marble/Chisel**: Environment generation and import
+- **Drone Video Streaming**: RTSP/WebRTC streaming with OpenIPC integration
 - **Dual Transport**: stdio (MCP) + HTTP (FastAPI) endpoints
 - **MCP Server Composition**: Ready for integration with `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp` (temporarily disabled)
-- **7 Portmanteau Tools**: `robotics_system`, `robot_control`, `robot_behavior`, `robot_manufacturing`, `robot_virtual`, `robot_model_tools`, `vbot_crud`
+- **11 Portmanteau Tools**: `robotics_system`, `robot_control`, `robot_behavior`, `robot_manufacturing`, `robot_virtual`, `robot_model_tools`, `vbot_crud`, `drone_control`, `drone_streaming`, `drone_navigation`, `drone_flight_control`
 - **Robot Model Creation**: Framework ready for automated 3D model creation
 
 ## 📚 Documentation
@@ -210,6 +212,10 @@ pip install -e ".[dev]"
 - `robot_virtual` - Virtual robotics operations
 - `robot_model_tools` - Model creation and conversion
 - `vbot_crud` - Virtual robot lifecycle management
+- `drone_control` - Core drone flight operations (takeoff, land, move, status)
+- `drone_streaming` - Video streaming and recording (FPV, RTSP, WebRTC)
+- `drone_navigation` - GPS navigation and waypoints (follow_me, geofencing)
+- `drone_flight_control` - Advanced flight modes (missions, parameter tuning)
 
 ### MCP Server Integration
 
@@ -364,7 +370,164 @@ await robot_model_convert(
     target_format="glb",
     target_path="D:/Models/scout.glb"
 )
+```
 
+#### Drone Control
+
+```python
+# Get drone status
+await drone_control(
+    operation="get_status",
+    drone_id="px4_quad_01"
+)
+
+# Take off to 5m altitude
+await drone_control(
+    operation="takeoff",
+    drone_id="px4_quad_01",
+    altitude=5.0
+)
+
+# Move drone with velocity control
+await drone_control(
+    operation="move",
+    drone_id="px4_quad_01",
+    velocity_x=1.0,  # 1 m/s forward
+    velocity_y=0.0,  # no lateral movement
+    velocity_z=0.0,  # no vertical movement
+    yaw_rate=0.1    # slight rotation
+)
+
+# Arm drone motors
+await drone_control(
+    operation="arm",
+    drone_id="px4_quad_01"
+)
+
+# Return to launch position
+await drone_control(
+    operation="return_home",
+    drone_id="px4_quad_01"
+)
+```
+
+#### Drone Streaming
+
+```python
+# Start FPV video stream
+await drone_streaming(
+    operation="start_fpv",
+    drone_id="px4_quad_01",
+    quality="720p"
+)
+
+# Get stream URL for external viewing
+stream_info = await drone_streaming(
+    operation="get_stream_url",
+    drone_id="px4_quad_01",
+    protocol="rtsp"
+)
+print(f"Stream URL: {stream_info['url']}")
+
+# Start recording video
+await drone_streaming(
+    operation="start_recording",
+    drone_id="px4_quad_01",
+    filename="flight_2025-01-17.mp4"
+)
+
+# Take a snapshot
+await drone_streaming(
+    operation="take_snapshot",
+    drone_id="px4_quad_01",
+    filename="aerial_view.jpg"
+)
+```
+
+#### Drone Navigation
+
+```python
+# Get current GPS position
+position = await drone_navigation(
+    operation="get_position",
+    drone_id="px4_quad_01"
+)
+print(f"Lat: {position['latitude']}, Lon: {position['longitude']}, Alt: {position['altitude']}")
+
+# Set a waypoint for navigation
+await drone_navigation(
+    operation="set_waypoint",
+    drone_id="px4_quad_01",
+    latitude=37.7749,
+    longitude=-122.4194,
+    altitude=10.0
+)
+
+# Enable follow-me mode
+await drone_navigation(
+    operation="enable_follow_me",
+    drone_id="px4_quad_01",
+    target_id="operator_gps"
+)
+
+# Set geofence boundaries
+await drone_navigation(
+    operation="set_geofence",
+    drone_id="px4_quad_01",
+    fence_points=[
+        {"lat": 37.7740, "lon": -122.4200},
+        {"lat": 37.7750, "lon": -122.4200},
+        {"lat": 37.7750, "lon": -122.4180},
+        {"lat": 37.7740, "lon": -122.4180}
+    ],
+    max_altitude=30.0
+)
+```
+
+#### Drone Flight Control
+
+```python
+# Set flight mode to AUTO
+await drone_flight_control(
+    operation="set_flight_mode",
+    drone_id="px4_quad_01",
+    mode="AUTO"
+)
+
+# Get available flight modes
+modes = await drone_flight_control(
+    operation="get_flight_modes",
+    drone_id="px4_quad_01"
+)
+print(f"Available modes: {modes['modes']}")
+
+# Upload a mission plan
+await drone_flight_control(
+    operation="upload_mission",
+    drone_id="px4_quad_01",
+    mission_plan={
+        "waypoints": [
+            {"lat": 37.7749, "lon": -122.4194, "alt": 10.0},
+            {"lat": 37.7750, "lon": -122.4200, "alt": 15.0}
+        ],
+        "commands": ["takeoff", "waypoint", "land"]
+    }
+)
+
+# Start mission execution
+await drone_flight_control(
+    operation="start_mission",
+    drone_id="px4_quad_01",
+    mission_id="recon_mission_01"
+)
+
+# Tune drone parameters
+await drone_flight_control(
+    operation="set_parameter",
+    drone_id="px4_quad_01",
+    param_name="WPNAV_SPEED",
+    param_value=500  # cm/s
+)
 ```
 
 ### Web Interface
