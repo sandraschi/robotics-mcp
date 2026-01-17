@@ -11,11 +11,15 @@ All notable changes to Robotics MCP will be documented in this file.
 - **Video Streaming**: FPV, RTSP, WebRTC streaming with OpenIPC integration
 - **GPS Navigation**: Waypoint following, geofencing, follow-me mode
 - **Advanced Flight Control**: Mission planning, parameter tuning, flight modes
+- **Yahboom Robot Integration**: Full ROS 2 support for Raspbot-V2 with camera, navigation, and arm control
+- **Yahboom ROS 2 Client**: Complete client implementation for Yahboom robot communication
+- **Yahboom Virtual Robot Support**: Added Yahboom robots to vbot_crud for virtual testing
+- **Drone Virtual Robot Support**: Added PX4/ArduPilot drones to vbot_crud for virtual testing
+- **Manufacturing AI Query Support**: Added multimodal AI queries to robot_manufacturing tool
 - **Type Safety Improvements**: Fixed Pydantic schema generation errors
 - **Union Type Annotations**: Proper `Type | None` syntax throughout codebase
 - **Enhanced Documentation**: Comprehensive parameter descriptions for all tools
-- **Yahboom Robot Integration**: Full ROS 2 support for Raspbot-V2 with camera, navigation, and arm control
-- **Yahboom ROS 2 Client**: Complete client implementation for Yahboom robot communication
+- **Conversational Docstrings**: Updated all tool docstrings to FastMCP 2.13+ standards
 - **Web Control Interface**: Modern web-based control panel for robot management
 - **Robot Auto-Loading**: Automatic robot registration from YAML configuration
 - **Home Patrol Features**: Pre-configured patrol routes for home security

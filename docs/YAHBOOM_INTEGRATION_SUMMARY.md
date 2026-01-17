@@ -10,18 +10,21 @@ Yahboom Robotics platforms have been integrated into the robotics-mcp server and
 
 #### Core Components Added:
 - **ROS2 Bridge Pattern**: Seamless integration with existing ROS1 infrastructure
-- **MCP Tools**: 8 new tools for Yahboom robot control
-- **Multimodal AI Support**: Vision, voice, and text processing
+- **Unified Robot Control**: Yahboom support integrated into `robot_control` portmanteau tool
+- **Virtual Yahboom Support**: Yahboom robots added to `vbot_crud` for virtual testing
+- **Multimodal AI Support**: Vision, voice, and text processing via AI queries
 - **Sensor Integration**: Camera, LiDAR, IMU data handling
 - **Navigation System**: SLAM and autonomous navigation
 
-#### New Tools Available:
+#### Integrated Operations Available:
 ```python
-yahboom_status()          # Get robot status
-yahboom_move()           # Basic movement commands
-yahboom_ai_query()       # Multimodal AI queries
-yahboom_navigate()       # Autonomous navigation
-yahboom_analyze_scene()  # Environmental analysis
+# Physical Yahboom control via robot_control tool
+await robot_control(robot_id="yahboom_01", action="get_status")
+await robot_control(robot_id="yahboom_01", action="home_patrol")
+await robot_control(robot_id="yahboom_01", action="ai_query", query="What's in front of me?")
+
+# Virtual Yahboom creation via vbot_crud tool
+await vbot_crud(operation="create", robot_type="yahboom", platform="unity")
 ```
 
 #### ROS2 Launch Integration:
@@ -201,9 +204,11 @@ CMD ["python", "-m", "robotics_mcp.server"]
 
 The Yahboom integration significantly expands the robotics ecosystem from a single Moorebot Scout to a comprehensive multi-platform robotics framework. Key achievements:
 
-- ✅ **8 new MCP tools** for Yahboom robot control
-- ✅ **Complete webapp integration** with real-time interfaces
-- ✅ **ROS2 architecture** for modern robotics development
+- ✅ **Unified robot control** - Yahboom integrated into existing `robot_control` portmanteau tool
+- ✅ **Virtual Yahboom support** - Yahboom robots added to `vbot_crud` for virtual testing
+- ✅ **Multimodal AI capabilities** - Vision, voice, and text processing via AI queries
+- ✅ **Complete ROS2 client** - Full ROS2 bridge with navigation, camera, and arm control
+- ✅ **Modern conversational AI** - Rich response formats with safety warnings and recommendations
 - ✅ **Multimodal AI** capabilities beyond basic robot control
 - ✅ **Research-grade platform** suitable for academic and industrial applications
 

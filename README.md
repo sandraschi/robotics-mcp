@@ -150,7 +150,7 @@ Robotics MCP Server provides unified control for **physical robots** (ROS-based)
 - **Drone Video Streaming**: RTSP/WebRTC streaming with OpenIPC integration
 - **Dual Transport**: stdio (MCP) + HTTP (FastAPI) endpoints
 - **MCP Server Composition**: Ready for integration with `osc-mcp`, `unity3d-mcp`, `vrchat-mcp`, `avatar-mcp`, `blender-mcp`, `gimp-mcp` (temporarily disabled)
-- **11 Portmanteau Tools**: `robotics_system`, `robot_control`, `robot_behavior`, `robot_manufacturing`, `robot_virtual`, `robot_model_tools`, `vbot_crud`, `drone_control`, `drone_streaming`, `drone_navigation`, `drone_flight_control`
+- **14 Portmanteau Tools**: `robotics_system`, `robot_control`, `robot_behavior`, `robot_manufacturing`, `robot_virtual`, `robot_model_tools`, `vbot_crud`, `drone_control`, `drone_streaming`, `drone_navigation`, `drone_flight_control`, `workflow_management`, `robot_navigation`, `robot_camera`, `robot_animation`
 - **Robot Model Creation**: Framework ready for automated 3D model creation
 
 ## 📚 Documentation
@@ -207,16 +207,20 @@ pip install -e ".[dev]"
 
 **Available Tools:**
 - `robotics_system` - System management (help, status, list_robots)
-- `robot_control` - Physical robot control (ready for hardware)
-- `robot_behavior` - Robot behavior and animation
-- `robot_manufacturing` - 3D printing and CNC control
-- `robot_virtual` - Virtual robotics operations
-- `robot_model_tools` - Model creation and conversion
-- `vbot_crud` - Virtual robot lifecycle management
+- `robot_control` - Unified physical & virtual robot control (Scout, Unitree, Yahboom, Dreame)
+- `robot_behavior` - Advanced robot behavior, animation, and manipulation
+- `robot_manufacturing` - 3D printing, CNC, laser cutting operations
+- `robot_virtual` - Virtual robotics environments and testing
+- `robot_model_tools` - 3D model creation, conversion, and optimization
+- `vbot_crud` - Virtual robot lifecycle management (create, read, update, delete)
 - `drone_control` - Core drone flight operations (takeoff, land, move, status)
 - `drone_streaming` - Video streaming and recording (FPV, RTSP, WebRTC)
 - `drone_navigation` - GPS navigation and waypoints (follow_me, geofencing)
 - `drone_flight_control` - Advanced flight modes (missions, parameter tuning)
+- `workflow_management` - Robotics workflow orchestration and automation
+- `robot_navigation` - Path planning, obstacle avoidance, SLAM
+- `robot_camera` - Camera control, computer vision, object detection
+- `robot_animation` - Animation sequences, motion planning, kinematics
 
 ### MCP Server Integration
 
