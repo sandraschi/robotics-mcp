@@ -1,14 +1,13 @@
 """Virtual Robot CRUD tool - Create, Read, Update, Delete for virtual robots."""
 
 import json
-from typing import Any, Dict, Literal, Optional
-
-from ..utils.mcp_client_helper import call_mounted_server_tool
+from typing import Any, Literal
 
 import structlog
 from fastmcp import Client
 
 from ..utils.error_handler import format_error_response, format_success_response, handle_tool_error
+from ..utils.mcp_client_helper import call_mounted_server_tool
 
 logger = structlog.get_logger(__name__)
 
@@ -26,12 +25,12 @@ def extract_result_data(result):
             if hasattr(first_content, 'text'):
                 try:
                     return json.loads(first_content.text)
-                except:
+                except (json.JSONDecodeError, ValueError):
                     return {"status": "success", "message": first_content.text}
         elif hasattr(result.content, 'text'):
             try:
                 return json.loads(result.content.text)
-            except:
+            except (json.JSONDecodeError, ValueError):
                 return {"status": "success", "message": result.content.text}
 
     # Fallback
@@ -44,6 +43,10 @@ SUPPORTED_ROBOT_TYPES = [
     "scout_e",  # Moorebot Scout E (tracked, waterproof)
     "go2",  # Unitree Go2
     "g1",  # Unitree G1
+    "yahboom",  # Yahboom ROSMASTER series
+    "drone",  # PX4/ArduPilot drones
+    "px4_quad",  # PX4 quadcopter drone
+    "ardupilot",  # ArduPilot-based drones
     "robbie",  # Robbie from Forbidden Planet
     "custom",  # Custom robot type
 ]
@@ -52,7 +55,7 @@ SUPPORTED_ROBOT_TYPES = [
 class VbotCrudTool:
     """CRUD operations for virtual robots (vbots)."""
 
-    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: Optional[Dict[str, Any]] = None, unity_available: bool = False):
+    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: dict[str, Any] | None = None, unity_available: bool = False):
         """Initialize vbot CRUD tool.
 
         Args:
@@ -72,14 +75,14 @@ class VbotCrudTool:
         @self.mcp.tool()
         async def vbot_crud(
             operation: Literal["create", "read", "update", "delete", "list"],
-            robot_type: Optional[str] = None,
-            robot_id: Optional[str] = None,
+            robot_type: str | None = None,
+            robot_id: str | None = None,
             platform: Literal["unity", "vrchat"] = "unity",
-            position: Optional[Dict[str, float]] = None,
-            scale: Optional[float] = None,
-            metadata: Optional[Dict[str, Any]] = None,
-            model_path: Optional[str] = None,
-        ) -> Dict[str, Any]:
+            position: dict[str, float] | None = None,
+            scale: float | None = None,
+            metadata: dict[str, Any] | None = None,
+            model_path: str | None = None,
+        ) -> dict[str, Any]:
             """CRUD operations for virtual robots (vbots).
 
             This tool provides complete lifecycle management for virtual robots:
@@ -94,6 +97,10 @@ class VbotCrudTool:
             - "scout_e": Moorebot Scout E (tracked, waterproof, outdoor)
             - "go2": Unitree Go2 (quadruped)
             - "g1": Unitree G1 (humanoid with arms)
+            - "yahboom": Yahboom ROSMASTER series (AI-enabled wheeled robots)
+            - "drone": Generic PX4/ArduPilot drones
+            - "px4_quad": PX4 quadcopter drones
+            - "ardupilot": ArduPilot-based drones
             - "robbie": Robbie from Forbidden Planet (classic sci-fi robot)
             - "custom": Custom robot type (requires model_path)
 
@@ -105,7 +112,7 @@ class VbotCrudTool:
                     - "delete": Delete/remove a virtual robot
                     - "list": List all virtual robots (optionally filtered)
                 robot_type: Type of robot (required for "create", optional for "list").
-                    Must be one of: "scout", "scout_e", "go2", "g1", "robbie", "custom".
+                    Must be one of: "scout", "scout_e", "go2", "g1", "yahboom", "drone", "px4_quad", "ardupilot", "robbie", "custom".
                 robot_id: Virtual robot identifier (required for "read", "update", "delete").
                     Auto-generated for "create" if not provided.
                 platform: Target platform ("unity" or "vrchat"). Default: "unity".
@@ -125,6 +132,24 @@ class VbotCrudTool:
                         platform="unity",
                         position={"x": 0.0, "y": 0.0, "z": 0.0},
                         scale=1.0
+                    )
+
+                Create Yahboom ROSMASTER robot:
+                    result = await vbot_crud(
+                        operation="create",
+                        robot_type="yahboom",
+                        platform="unity",
+                        position={"x": 0.0, "y": 0.0, "z": 0.0},
+                        scale=1.0
+                    )
+
+                Create PX4 quadcopter drone:
+                    result = await vbot_crud(
+                        operation="create",
+                        robot_type="px4_quad",
+                        platform="unity",
+                        position={"x": 0.0, "y": 5.0, "z": 0.0},
+                        scale=0.5
                     )
 
                 Create Robbie from Forbidden Planet:
@@ -164,6 +189,18 @@ class VbotCrudTool:
                         operation="list",
                         robot_type="scout"
                     )
+
+                List only Yahboom robots:
+                    result = await vbot_crud(
+                        operation="list",
+                        robot_type="yahboom"
+                    )
+
+                List only drones:
+                    result = await vbot_crud(
+                        operation="list",
+                        robot_type="drone"
+                    )
             """
             try:
                 if operation == "create":
@@ -183,14 +220,14 @@ class VbotCrudTool:
 
     async def _create_vbot(
         self,
-        robot_type: Optional[str],
-        robot_id: Optional[str],
+        robot_type: str | None,
+        robot_id: str | None,
         platform: str,
-        position: Optional[Dict[str, float]],
-        scale: Optional[float],
-        metadata: Optional[Dict[str, Any]],
-        model_path: Optional[str],
-    ) -> Dict[str, Any]:
+        position: dict[str, float] | None,
+        scale: float | None,
+        metadata: dict[str, Any] | None,
+        model_path: str | None,
+    ) -> dict[str, Any]:
         """Create/spawn a new virtual robot."""
         if not robot_type:
             return format_error_response("robot_type is required for create operation", error_type="validation_error")
@@ -234,7 +271,7 @@ class VbotCrudTool:
 
         # Register robot in state manager
         try:
-            robot = self.state_manager.register_robot(robot_id, robot_type, platform=platform, metadata=vbot_metadata)
+            self.state_manager.register_robot(robot_id, robot_type, platform=platform, metadata=vbot_metadata)
         except ValueError as e:
             return format_error_response(str(e), error_type="validation_error")
 
@@ -260,7 +297,7 @@ class VbotCrudTool:
             robot_id=robot_id,
         )
 
-    async def _read_vbot(self, robot_id: Optional[str]) -> Dict[str, Any]:
+    async def _read_vbot(self, robot_id: str | None) -> dict[str, Any]:
         """Read/get details of an existing virtual robot."""
         if not robot_id:
             return format_error_response("robot_id is required for read operation", error_type="validation_error")
@@ -280,11 +317,11 @@ class VbotCrudTool:
 
     async def _update_vbot(
         self,
-        robot_id: Optional[str],
-        position: Optional[Dict[str, float]],
-        scale: Optional[float],
-        metadata: Optional[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        robot_id: str | None,
+        position: dict[str, float] | None,
+        scale: float | None,
+        metadata: dict[str, Any] | None,
+    ) -> dict[str, Any]:
         """Update properties of an existing virtual robot."""
         if not robot_id:
             return format_error_response("robot_id is required for update operation", error_type="validation_error")
@@ -322,7 +359,7 @@ class VbotCrudTool:
             robot_id=robot_id,
         )
 
-    async def _delete_vbot(self, robot_id: Optional[str]) -> Dict[str, Any]:
+    async def _delete_vbot(self, robot_id: str | None) -> dict[str, Any]:
         """Delete/remove a virtual robot."""
         if not robot_id:
             return format_error_response("robot_id is required for delete operation", error_type="validation_error")
@@ -348,7 +385,7 @@ class VbotCrudTool:
             robot_id=robot_id,
         )
 
-    async def _list_vbots(self, robot_type: Optional[str], platform: Optional[str]) -> Dict[str, Any]:
+    async def _list_vbots(self, robot_type: str | None, platform: str | None) -> dict[str, Any]:
         """List all virtual robots with optional filtering."""
         robots = self.state_manager.list_robots(is_virtual=True)
 
@@ -370,10 +407,10 @@ class VbotCrudTool:
         )
 
     async def _spawn_in_platform(
-        self, robot_id: str, robot_type: str, platform: str, position: Dict[str, float], scale: float, model_path: Optional[str]
-    ) -> Dict[str, Any]:
+        self, robot_id: str, robot_type: str, platform: str, position: dict[str, float], scale: float, model_path: str | None
+    ) -> dict[str, Any]:
         """Spawn robot in Unity or VRChat.
-        
+
         For Unity, this uses execute_unity_method to call a VbotSpawner script
         that instantiates the robot prefab in the scene.
         """
@@ -448,7 +485,7 @@ class VbotCrudTool:
                         {
                             "host": "127.0.0.1",
                             "port": 9000,
-                            "address": f"/avatar/parameters/SpawnRobot",
+                            "address": "/avatar/parameters/SpawnRobot",
                             "values": [robot_id, robot_type],
                         },
                     )
@@ -463,8 +500,8 @@ class VbotCrudTool:
             return format_error_response(f"Failed to spawn in {platform}: {str(e)}", error_type="connection_error")
 
     async def _update_in_platform(
-        self, robot_id: str, platform: str, position: Optional[Dict[str, float]], scale: Optional[float]
-    ) -> Dict[str, Any]:
+        self, robot_id: str, platform: str, position: dict[str, float] | None, scale: float | None
+    ) -> dict[str, Any]:
         """Update robot in Unity or VRChat."""
         try:
             if platform == "unity":
@@ -525,7 +562,7 @@ class VbotCrudTool:
                                 {
                                     "host": "127.0.0.1",
                                     "port": 9000,
-                                    "address": f"/avatar/parameters/UpdateRobot",
+                                    "address": "/avatar/parameters/UpdateRobot",
                                     "values": [robot_id, position or {}, scale or 1.0],
                                 },
                             ),
@@ -547,7 +584,7 @@ class VbotCrudTool:
             logger.error("Failed to update in platform", robot_id=robot_id, platform=platform, error=str(e))
             return format_error_response(f"Failed to update in {platform}: {str(e)}", error_type="connection_error")
 
-    async def _delete_from_platform(self, robot_id: str, platform: str) -> Dict[str, Any]:
+    async def _delete_from_platform(self, robot_id: str, platform: str) -> dict[str, Any]:
         """Delete robot from Unity or VRChat."""
         try:
             if platform == "unity":
@@ -602,7 +639,7 @@ class VbotCrudTool:
                                 {
                                     "host": "127.0.0.1",
                                     "port": 9000,
-                                    "address": f"/avatar/parameters/DeleteRobot",
+                                    "address": "/avatar/parameters/DeleteRobot",
                                     "values": [robot_id],
                                 },
                             ),
