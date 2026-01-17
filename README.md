@@ -2,7 +2,7 @@
 
 **By FlowEngineer sandraschi**
 
-**Unified robotics control via MCP - Physical and virtual robots (bot + vbot + drones)**
+**Unified robotics control via MCP - Yahboom ROSMASTER + virtual robots (bot + vbot + drones)**
 
 ## ⚠️ **CRITICAL REQUIREMENTS**
 
@@ -27,14 +27,19 @@
 ## ⚠️ **REQUIRED: Prerequisites & Dependencies**
 
 ### **🔴 PHYSICAL ROBOTS (RECOMMENDED)**
-**You SHOULD own one of these supported robots:**
-- **Moorebot Scout** (primary focus) - Mecanum wheeled robot with LiDAR
-- **Yahboom ROSMASTER Series** (ROS 2) - Multimodal AI robots with camera, navigation, optional arm/gripper
+**PRIMARY PLATFORM - Yahboom ROSMASTER Series (ROS 2):**
+- **Yahboom ROSMASTER M1/X3/X3 Plus** - Multimodal AI robots with camera, navigation, optional arm/gripper
+- LiDAR easily addable for mapping/SLAM applications
+- Multiple sizes and extensive add-on ecosystem
+- Modern ROS2 platform with active community support
+
+**ALTERNATIVE PLATFORMS:**
+- **Moorebot Scout** (legacy ROS1) - Mecanum wheeled robot with LiDAR
 - **Unitree Go2** - Advanced quadrupedal robot
 - **Unitree G1** - Humanoid robot with arms
 - **Unitree H1** - Humanoid robot platform
 
-*Physical robots provide the complete robotics experience. Virtual robots are for testing/simulation.*
+*Yahboom ROSMASTER is the primary recommended platform. Legacy ROS1 robots supported but ROS2 recommended for new deployments.*
 
 ### **🟡 REQUIRED SOFTWARE**
 **You MUST install these applications:**
@@ -129,7 +134,7 @@ See [Cursor MCP Setup](#-cursor-mcp-setup) section for integration details.
 
 ## 🎯 Overview
 
-Robotics MCP Server provides unified control for **physical robots** (ROS-based), **virtual robots** (Unity/VRChat), and **drones** (PX4/ArduPilot), with a focus on Moorebot Scout, Unitree robots, open-source drones, and virtual robotics testing.
+Robotics MCP Server provides unified control for **physical robots** (ROS2-based), **virtual robots** (Unity/VRChat), and **drones** (PX4/ArduPilot), with a primary focus on **Yahboom ROSMASTER Series** and virtual robotics testing. Legacy ROS1 robots (Moorebot Scout, etc.) supported for compatibility.
 
 **🚀 Project Stats**: ~9,200 lines of code, ~2,600 lines of tests, ~4,100 lines of documentation
 
@@ -207,7 +212,7 @@ pip install -e ".[dev]"
 
 **Available Tools:**
 - `robotics_system` - System management (help, status, list_robots)
-- `robot_control` - Unified physical & virtual robot control (Scout, Unitree, Yahboom, Dreame)
+- `robot_control` - Unified physical & virtual robot control (Yahboom primary, Scout/Unitree legacy, Dreame vacuums)
 - `robot_behavior` - Advanced robot behavior, animation, and manipulation
 - `robot_manufacturing` - 3D printing, CNC, laser cutting operations
 - `robot_virtual` - Virtual robotics environments and testing

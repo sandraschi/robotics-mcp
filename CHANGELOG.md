@@ -5,13 +5,14 @@ All notable changes to Robotics MCP will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Strategic Platform Decision**: Yahboom ROSMASTER Series designated as primary platform (ROS2, modular, future-proof)
 - **Drone Control Integration**: Complete drone support with PX4/ArduPilot via MAVLink
 - **4 New Portmanteau Tools**: `drone_control`, `drone_streaming`, `drone_navigation`, `drone_flight_control`
 - **Drone Flight Operations**: Takeoff, landing, movement, RTL, arm/disarm, calibration
 - **Video Streaming**: FPV, RTSP, WebRTC streaming with OpenIPC integration
 - **GPS Navigation**: Waypoint following, geofencing, follow-me mode
 - **Advanced Flight Control**: Mission planning, parameter tuning, flight modes
-- **Yahboom Robot Integration**: Full ROS 2 support for Raspbot-V2 with camera, navigation, and arm control
+- **Yahboom Robot Integration**: Full ROS 2 support for ROSMASTER series with camera, navigation, and arm control
 - **Yahboom ROS 2 Client**: Complete client implementation for Yahboom robot communication
 - **Yahboom Virtual Robot Support**: Added Yahboom robots to vbot_crud for virtual testing
 - **Drone Virtual Robot Support**: Added PX4/ArduPilot drones to vbot_crud for virtual testing

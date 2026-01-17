@@ -65,8 +65,8 @@ A modern web-based control panel for managing and controlling robots through the
 
 The web interface works with all robots supported by the Robotics MCP server:
 
-- **Yahboom Raspbot-V2** (primary focus): Full ROS 2 integration, camera, navigation, optional arm/gripper
-- **Moorebot Scout**: Mecanum wheeled robot with LiDAR
+- **Yahboom ROSMASTER Series** (primary focus): Full ROS2 integration, multiple sizes (M1/X3/X3 Plus), camera, navigation, optional arm/gripper, LiDAR add-on available
+- **Moorebot Scout** (legacy ROS1): Mecanum wheeled robot with LiDAR
 - **Unitree Go2/G1**: Advanced quadrupedal and humanoid robots
 - **Virtual Robots**: Unity3D and VRChat-based virtual robots
 
