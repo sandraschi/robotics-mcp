@@ -109,6 +109,7 @@ class RobotControlTool:
             - Virtual Robots: Unity3D/VRChat robots (simulation and social VR platforms)
             - Yahboom Robots: ROSMASTER series with AI, navigation, and optional robotic arms
             - Dreame Vacuums: Smart vacuum cleaners with mapping and zone cleaning
+    - Hue HomeAware: Philips Hue Bridge Pro with RF-based movement detection
 
             SUPPORTED OPERATIONS:
             - Universal: "get_status", "move", "stop"
@@ -118,10 +119,12 @@ class RobotControlTool:
                      "set_suction_level", "set_water_volume", "set_mop_humidity", "clean_zone",
                      "clean_spot", "start_mapping", "rename_room", "set_cleaning_sequence",
                      "set_restricted_zones", "get_cleaning_history", "clear_error"
+            - Hue HomeAware: "hue_get_movement_events", "hue_get_sensor_status", "hue_get_movement_zones"
+            - Hue HomeAware: "hue_get_movement_events", "hue_get_sensor_status", "hue_get_movement_zones"
 
             Args:
                 robot_id: Unique robot identifier. MUST follow naming convention:
-                    - Physical: "scout_01", "go2_01", "g1_01", "yahboom_01", "dreame_01"
+                    - Physical: "scout_01", "go2_01", "g1_01", "yahboom_01", "dreame_01", "hue_01"
                     - Virtual: "vbot_scout_01", "unity_bot_01", "vrchat_bot_01"
 
                 action: Operation to perform. MUST be one of the supported operations above:
@@ -264,6 +267,8 @@ class RobotControlTool:
                         x, y, theta, suction_level, water_volume, mop_humidity,
                         zones, spot_x, spot_y, room_id, room_name, cleaning_sequence, restricted_zones
                     )
+                elif robot.robot_type == "hue":
+                    return await self._handle_hue_robot(robot, action)
                 else:
                     return await self._handle_physical_robot(robot, action, linear, angular, duration)
             except Exception as e:
@@ -349,7 +354,7 @@ class RobotControlTool:
                 port=getattr(robot, 'port', 9090),
                 camera_enabled=getattr(robot, 'camera_enabled', True),
                 navigation_enabled=getattr(robot, 'navigation_enabled', True),
-                arm_enabled=getattr(robot, 'arm_enabled', False),
+                arm_enabled=True,  # Enable arm support for Yahboom robots
                 mock_mode=getattr(robot, 'mock_mode', True),
             )
 
@@ -574,6 +579,12 @@ class RobotControlTool:
                 dreame_start_cleaning,
                 dreame_stop_cleaning,
                 get_dreame_client,
+            )
+
+            from .hue_client import (
+                hue_get_movement_events,
+                hue_get_sensor_status,
+                hue_get_movement_zones,
             )
 
             # Handle different Dreame actions
@@ -871,6 +882,42 @@ class RobotControlTool:
 
         except Exception as e:
             return handle_tool_error("_handle_dreame_robot", e, robot_id=robot.robot_id, action=action)
+
+    async def _handle_hue_robot(
+        self,
+        robot: Any,
+        action: str,
+    ) -> dict[str, Any]:
+        """Handle Philips Hue Bridge Pro HomeAware commands.
+
+        Args:
+            robot: Robot state object.
+            action: Action to perform.
+
+        Returns:
+            Operation result.
+        """
+        try:
+            # Route to appropriate Hue HomeAware handler
+            if action == "hue_get_movement_events":
+                return await hue_get_movement_events(robot.robot_id)
+
+            elif action == "hue_get_sensor_status":
+                return await hue_get_sensor_status(robot.robot_id)
+
+            elif action == "hue_get_movement_zones":
+                return await hue_get_movement_zones(robot.robot_id)
+
+            else:
+                return format_error_response(
+                    f"Unsupported Hue action: {action}",
+                    error_type="unsupported_action",
+                    robot_id=robot.robot_id,
+                    action=action,
+                )
+
+        except Exception as e:
+            return handle_tool_error("_handle_hue_robot", e, robot_id=robot.robot_id, action=action)
 
     async def _handle_virtual_robot(
         self,

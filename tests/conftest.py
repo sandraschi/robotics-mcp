@@ -27,7 +27,7 @@ def mock_config(tmp_path: Path) -> Dict[str, Any]:
         },
         "server": {
             "enable_http": True,
-            "http_port": 8080,
+            "http_port": 12230,
         },
     }
 

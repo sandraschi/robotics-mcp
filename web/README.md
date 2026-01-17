@@ -16,19 +16,19 @@ A modern web-based control panel for managing and controlling robots through the
 
 ### Prerequisites
 
-- Robotics MCP server running with HTTP API enabled (default port 8080)
+- Robotics MCP server running with HTTP API enabled (default port 12230)
 - At least one robot configured (physical or virtual)
 
 ### Accessing the Interface
 
 1. Start the Robotics MCP server:
    ```bash
-   python -m robotics_mcp --mode http --port 8081
+   python -m robotics_mcp --mode http --port 12230
    ```
 
 2. Open your web browser and navigate to:
    ```
-   http://localhost:8081
+   http://localhost:12230
    ```
 
 3. The web interface will automatically detect available robots and display them for selection.
@@ -78,6 +78,14 @@ The web interface communicates with the Robotics MCP server via HTTP REST API:
 - `GET /api/v1/robots/{robot_id}/status` - Get robot status
 - `POST /api/v1/robots/{robot_id}/control` - Send control commands
 
+## Dreame D20 Pro Setup
+
+For Dreame robot vacuum control, see the **[Dreame Setup Guide](../docs/DREAME_SETUP_GUIDE.md)** for complete setup instructions including:
+- Getting your robot's IP address and authentication token
+- Installing required libraries (`python-miio`)
+- Configuring the robot in the MCP server
+- Testing the connection
+
 ## Configuration
 
 Robots are configured through the Robotics MCP server's YAML configuration file:
@@ -89,6 +97,7 @@ robotics:
     robot_id: "yahboom_01"
     ip_address: "192.168.1.101"
     mock_mode: true  # Set false for real hardware
+    # Arm support is automatically enabled for Yahboom robots
 ```
 
 ## Troubleshooting
@@ -96,7 +105,7 @@ robotics:
 ### No Robots Found
 - Ensure the Robotics MCP server is running
 - Check that robots are properly configured in the YAML config
-- Verify HTTP API is enabled (default port 8080)
+- Verify HTTP API is enabled (default port 12230)
 
 ### Robot Not Responding
 - Check robot connection status in the interface

@@ -81,7 +81,7 @@ class ConfigLoader:
             },
             "server": {
                 "enable_http": True,
-                "http_port": 8080,
+                "http_port": 12230,
                 "log_level": "INFO",
             },
         }

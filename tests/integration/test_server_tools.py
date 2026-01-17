@@ -149,7 +149,7 @@ async def test_tool_error_handling(server):
 @pytest.mark.asyncio
 async def test_server_with_http_enabled():
     """Test server with HTTP enabled."""
-    config = RoboticsConfig(enable_http=True, http_port=8081)
+    config = RoboticsConfig(enable_http=True, http_port=12231)
     server = RoboticsMCP(config)
     
     assert server.http_app is not None

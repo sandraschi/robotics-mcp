@@ -50,11 +50,11 @@ class DreameClient:
                 logger.error("Missing Dreame configuration", robot_id=self.robot_id)
                 return False
 
-            # Import dreame vacuum library
-            from dreame import DreameVacuum
+            # Import python-miio for Dreame vacuum control
+            from miio import DreameVacuumMiot
 
             # Create device instance
-            self.device = DreameVacuum(self.ip_address, self.token)
+            self.device = DreameVacuumMiot(self.ip_address, self.token)
 
             # Connect and get status
             await self.device.connect()

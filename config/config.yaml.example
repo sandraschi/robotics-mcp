@@ -206,7 +206,7 @@ robotics:
 # Server Configuration
 server:
   enable_http: true
-  http_port: 8080
+  http_port: 12230
   http_host: "0.0.0.0"
   log_level: "INFO"
 

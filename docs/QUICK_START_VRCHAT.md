@@ -14,7 +14,7 @@
 
 ```bash
 cd robotics-mcp
-python -m robotics_mcp.server --mode dual --port 8080
+python -m robotics_mcp.server --mode dual --port 12230
 ```
 
 ## Step 2: Spawn Scout in VRChat
@@ -36,7 +36,7 @@ await virtual_robotics(
 ### Option B: Using HTTP API
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/tools/virtual_robotics \
+curl -X POST http://localhost:12230/api/v1/tools/virtual_robotics \
   -H "Content-Type: application/json" \
   -d '{
     "robot_type": "scout",

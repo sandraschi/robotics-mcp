@@ -13,6 +13,9 @@ All notable changes to Robotics MCP will be documented in this file.
 - **GPS Navigation**: Waypoint following, geofencing, follow-me mode
 - **Advanced Flight Control**: Mission planning, parameter tuning, flight modes
 - **Yahboom Robot Integration**: Full ROS 2 support for ROSMASTER series with camera, navigation, and arm control
+- **Robotic Arm Integration**: Enabled arm and gripper control for Yahboom ROSMASTER robots by default. Full support for 4-DOF arm movement and gripper operations.
+- **Dreame D20 Pro Integration**: Complete vacuum robot control via python-miio library. Full cleaning, mapping, and status monitoring support. Export LIDAR maps for use by other robots (ROS, Unity, etc.).
+- **Philips Hue Bridge Pro Integration**: HomeAware RF-based movement detection for privacy-preserving occupancy sensing. Real-time movement events integrated with multi-robot safety systems.
 - **Yahboom ROS 2 Client**: Complete client implementation for Yahboom robot communication
 - **Yahboom Virtual Robot Support**: Added Yahboom robots to vbot_crud for virtual testing
 - **Drone Virtual Robot Support**: Added PX4/ArduPilot drones to vbot_crud for virtual testing

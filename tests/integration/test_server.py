@@ -18,7 +18,7 @@ def test_server_initialization():
 @pytest.mark.integration
 def test_server_with_http():
     """Test server with HTTP enabled."""
-    config = RoboticsConfig(enable_http=True, http_port=8081)
+    config = RoboticsConfig(enable_http=True, http_port=12231)
     server = RoboticsMCP(config)
     
     assert server.http_app is not None

@@ -424,9 +424,15 @@ class RoboticsControlPanel {
 
             if (response.ok) {
                 const result = await response.json();
-                if (result.success && result.data && result.data.map_data) {
-                    this.renderMap(result.data.map_data);
-                    this.addLogEntry('🗺️ Map data retrieved', 'success');
+                if (result.success && result.data) {
+                    // Handle different map data formats (Dreame vs others)
+                    const mapData = result.data.map_data || result.data.map;
+                    if (mapData) {
+                        this.renderMap(mapData);
+                        this.addLogEntry('🗺️ Map data retrieved', 'success');
+                    } else {
+                        this.addLogEntry('⚠️ No map data available', 'warning');
+                    }
                 } else {
                     this.addLogEntry('⚠️ No map data available', 'warning');
                 }
@@ -446,39 +452,138 @@ class RoboticsControlPanel {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Set background
-        ctx.fillStyle = '#f0f0f0';
+        // Set background (floor)
+        ctx.fillStyle = '#e8f5e8'; // Light green for floor
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Simple map rendering (placeholder - would need actual map format)
-        if (mapData.rooms) {
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
+        // Scale factor for map coordinates (Dreame maps are usually in mm)
+        const scale = canvas.width / 8000; // Assume 8m x 8m room, adjust as needed
 
-            mapData.rooms.forEach(room => {
-                if (room.coordinates) {
-                    ctx.beginPath();
-                    ctx.rect(room.coordinates[0], room.coordinates[1],
-                            room.coordinates[2] - room.coordinates[0],
-                            room.coordinates[3] - room.coordinates[1]);
-                    ctx.stroke();
+        // Draw rooms (if available)
+        if (mapData.rooms && Array.isArray(mapData.rooms)) {
+            mapData.rooms.forEach((room, index) => {
+                ctx.strokeStyle = '#2563eb'; // Blue for room boundaries
+                ctx.lineWidth = 2;
+                ctx.fillStyle = `hsl(${index * 60}, 70%, 90%)`; // Different colors for rooms
 
-                    // Room label
-                    ctx.fillStyle = '#000';
-                    ctx.font = '12px Arial';
-                    ctx.fillText(room.name || `Room ${room.id}`,
-                               room.coordinates[0] + 5, room.coordinates[1] + 15);
+                if (room.coordinates && Array.isArray(room.coordinates)) {
+                    // Draw room as polygon or rectangle
+                    if (room.coordinates.length >= 4) {
+                        ctx.beginPath();
+                        ctx.moveTo(room.coordinates[0] * scale, room.coordinates[1] * scale);
+
+                        for (let i = 2; i < room.coordinates.length; i += 2) {
+                            ctx.lineTo(room.coordinates[i] * scale, room.coordinates[i + 1] * scale);
+                        }
+
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+
+                        // Room label
+                        if (room.name) {
+                            ctx.fillStyle = '#000';
+                            ctx.font = '12px Arial';
+                            ctx.fillText(room.name, room.coordinates[0] * scale + 5, room.coordinates[1] * scale + 15);
+                        }
+                    }
                 }
             });
         }
 
+        // Draw obstacles (if available)
+        if (mapData.obstacles && Array.isArray(mapData.obstacles)) {
+            ctx.fillStyle = '#dc2626'; // Red for obstacles
+
+            mapData.obstacles.forEach(obstacle => {
+                if (obstacle.x !== undefined && obstacle.y !== undefined) {
+                    const size = obstacle.size || 50; // Default 5cm obstacle
+                    ctx.beginPath();
+                    ctx.arc(obstacle.x * scale, obstacle.y * scale, size * scale, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            });
+        }
+
+        // Draw charging station (if available)
+        if (mapData.charging_station) {
+            const station = mapData.charging_station;
+            if (station.x !== undefined && station.y !== undefined) {
+                ctx.fillStyle = '#16a34a'; // Green for charging station
+                ctx.strokeStyle = '#166534';
+                ctx.lineWidth = 2;
+
+                // Draw charging station icon
+                const x = station.x * scale;
+                const y = station.y * scale;
+                const size = 30;
+
+                // Draw a simple charging station symbol
+                ctx.beginPath();
+                ctx.rect(x - size/2, y - size/2, size, size);
+                ctx.fill();
+                ctx.stroke();
+
+                // Charging symbol
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, y - 8);
+                ctx.lineTo(x, y + 8);
+                ctx.moveTo(x - 4, y - 4);
+                ctx.lineTo(x, y);
+                ctx.lineTo(x + 4, y - 4);
+                ctx.stroke();
+            }
+        }
+
         // Draw robot position if available
         if (this.selectedRobot && this.selectedRobot.position) {
-            ctx.fillStyle = '#ff0000';
+            ctx.fillStyle = '#ff0000'; // Red for robot
+            ctx.strokeStyle = '#cc0000';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(this.selectedRobot.position.x * 10, this.selectedRobot.position.y * 10, 5, 0, 2 * Math.PI);
+            ctx.arc(this.selectedRobot.position.x * scale, this.selectedRobot.position.y * scale, 8, 0, 2 * Math.PI);
             ctx.fill();
+            ctx.stroke();
         }
+
+        // Draw map info
+        ctx.fillStyle = '#000';
+        ctx.font = '10px Arial';
+        let yPos = 15;
+        ctx.fillText(`Map ID: ${mapData.map_id || 'Unknown'}`, 5, yPos);
+        yPos += 12;
+        ctx.fillText(`Rooms: ${mapData.rooms ? mapData.rooms.length : 0}`, 5, yPos);
+        yPos += 12;
+        ctx.fillText(`Obstacles: ${mapData.obstacles ? mapData.obstacles.length : 0}`, 5, yPos);
+
+        // Legend
+        const legendX = canvas.width - 80;
+        let legendY = 15;
+
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(legendX, legendY, 10, 10);
+        ctx.fillStyle = '#000';
+        ctx.fillText('Rooms', legendX + 15, legendY + 8);
+        legendY += 15;
+
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(legendX, legendY, 10, 10);
+        ctx.fillStyle = '#000';
+        ctx.fillText('Obstacles', legendX + 15, legendY + 8);
+        legendY += 15;
+
+        ctx.fillStyle = '#16a34a';
+        ctx.fillRect(legendX, legendY, 10, 10);
+        ctx.fillStyle = '#000';
+        ctx.fillText('Charger', legendX + 15, legendY + 8);
+        legendY += 15;
+
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(legendX, legendY, 10, 10);
+        ctx.fillStyle = '#000';
+        ctx.fillText('Robot', legendX + 15, legendY + 8);
     }
 
     clearMap() {

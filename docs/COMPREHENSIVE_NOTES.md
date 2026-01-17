@@ -183,7 +183,7 @@ robotics:
     avatar_mcp: {enabled: true, prefix: "avatar"}
 server:
   enable_http: true
-  http_port: 8080
+  http_port: 12230
   log_level: "INFO"
 ```
 
@@ -521,7 +521,7 @@ If config file doesn't exist, uses sensible defaults:
 - Mock mode enabled
 - Virtual robots enabled
 - All MCP servers enabled
-- HTTP on port 8080
+- HTTP on port 12230
 
 ---
 
@@ -548,7 +548,7 @@ python -m robotics_mcp.server --mode stdio
 
 **Purpose**: Web dashboards, REST API access
 
-**Port**: 8080 (configurable)
+**Port**: 12230 (configurable)
 
 **Endpoints**:
 
@@ -569,7 +569,7 @@ python -m robotics_mcp.server --mode stdio
 
 **Usage**:
 ```bash
-python -m robotics_mcp.server --mode http --port 8080
+python -m robotics_mcp.server --mode http --port 12230
 ```
 
 ### 3. Dual Transport
@@ -578,7 +578,7 @@ python -m robotics_mcp.server --mode http --port 8080
 
 **Usage**:
 ```bash
-python -m robotics_mcp.server --mode dual --port 8080
+python -m robotics_mcp.server --mode dual --port 12230
 ```
 
 **Implementation**: HTTP server runs in background thread, stdio in main thread
@@ -876,7 +876,7 @@ docker-compose -f docker/docker-compose.ros1.yml up -d
 **Symptoms**: HTTP endpoints unavailable
 
 **Solutions**:
-- Check port 8080 not in use
+- Check port 12230 not in use
 - Verify `enable_http: true` in config
 - Check firewall settings
 - Review server logs

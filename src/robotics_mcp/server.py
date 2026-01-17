@@ -118,7 +118,7 @@ class RoboticsConfig(BaseModel):
     enable_http: bool = Field(
         default=True, description="Enable HTTP interface alongside stdio"
     )
-    http_port: int = Field(default=8080, description="HTTP server port")
+    http_port: int = Field(default=12230, description="HTTP server port")
     http_host: str = Field(default="0.0.0.0", description="HTTP server host")
     log_level: str = Field(default="INFO", description="Logging level")
     config_path: Optional[str] = Field(
@@ -785,7 +785,7 @@ def main():
         help="Server mode (default: stdio)",
     )
     parser.add_argument("--host", default="0.0.0.0", help="HTTP server host")
-    parser.add_argument("--port", type=int, default=8080, help="HTTP server port")
+    parser.add_argument("--port", type=int, default=12230, help="HTTP server port")
     parser.add_argument("--config", help="Path to config YAML file")
     args = parser.parse_args()
 

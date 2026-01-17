@@ -9,10 +9,9 @@ Integrates with:
 """
 
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 import structlog
-from fastmcp import Client
 
 from ..utils.error_handler import (
     format_error_response,
@@ -41,7 +40,7 @@ class RobotModelTools:
         self,
         mcp: Any,
         state_manager: Any,
-        mounted_servers: Optional[Dict[str, Any]] = None,
+        mounted_servers: dict[str, Any] | None = None,
     ):
         """Initialize robot model tools.
 
@@ -69,28 +68,26 @@ class RobotModelTools:
                 "spz_extract",
                 "spz_install",
             ],
-            robot_type: Optional[str] = None,
-            model_path: Optional[str] = None,
-            output_path: Optional[str] = None,
+            robot_type: str | None = None,
+            model_path: str | None = None,
+            output_path: str | None = None,
             format: Literal["fbx", "glb", "obj", "vrm", "blend"] = "fbx",
             platform: Literal["unity", "vrchat", "resonite"] = "unity",
-            dimensions: Optional[Dict[str, float]] = None,
+            dimensions: dict[str, float] | None = None,
             create_textures: bool = True,
             texture_style: Literal["realistic", "stylized", "simple"] = "realistic",
-            robot_id: Optional[str] = None,
+            robot_id: str | None = None,
             include_animations: bool = True,
-            project_path: Optional[str] = None,
+            project_path: str | None = None,
             create_prefab: bool = True,
-            source_path: Optional[str] = None,
-            source_format: Optional[
-                Literal["fbx", "glb", "obj", "blend", "vrm"]
-            ] = None,
-            target_format: Optional[Literal["fbx", "glb", "obj", "vrm"]] = None,
-            target_path: Optional[str] = None,
-            spz_path: Optional[str] = None,
-            output_format: Optional[str] = None,
-            unity_project_path: Optional[str] = None,
-        ) -> Dict[str, Any]:
+            source_path: str | None = None,
+            source_format: Literal["fbx", "glb", "obj", "blend", "vrm"] | None = None,
+            target_format: Literal["fbx", "glb", "obj", "vrm"] | None = None,
+            target_path: str | None = None,
+            spz_path: str | None = None,
+            output_format: str | None = None,
+            unity_project_path: str | None = None,
+        ) -> dict[str, Any]:
             """Robot model management portmanteau for Robotics MCP.
 
             PORTMANTEAU PATTERN RATIONALE:
@@ -141,9 +138,20 @@ class RobotModelTools:
                 source_format: Source file format (required for convert).
                 target_format: Target file format (required for convert).
                 target_path: Output file path (optional for convert).
+                spz_path: Path to .spz file (required for spz_* operations).
+                output_format: Output format for spz_convert (ply, obj, glb).
+                unity_project_path: Unity project path for spz_install.
 
             Returns:
-                Dictionary containing operation-specific results.
+                Rich conversational response with:
+                - success: Boolean operation status
+                - message: Natural language description of result
+                - model_data: 3D model metadata and file information
+                - safety_warnings: Any file system or compatibility warnings
+                - next_commands: Suggested follow-up operations
+                - estimated_completion: Time estimates for long operations
+                - error_recovery: Intelligent error handling with resolution steps
+                - platform_integration: Unity/VRChat/Resonite integration status
 
             Examples:
                 Create Scout model:
@@ -151,31 +159,60 @@ class RobotModelTools:
                         operation="create",
                         robot_type="scout",
                         output_path="D:/Models/scout_model.fbx",
-                        format="fbx"
+                        format="fbx",
+                        dimensions={"length": 0.5, "width": 0.4, "height": 0.3}
                     )
+                    # Returns: {"success": true, "message": "Scout model created successfully", "model_data": {"format": "fbx", "vertices": 8500}}
 
                 Import model to Unity:
                     result = await robot_model(
                         operation="import",
                         robot_type="scout",
                         model_path="D:/Models/scout_model.fbx",
-                        platform="unity"
+                        platform="unity",
+                        project_path="D:/UnityProjects/Robotics"
                     )
+                    # Returns: {"success": true, "message": "Model imported to Unity", "platform_integration": {"unity": true, "prefab_created": true}}
 
                 Export robot from Unity:
                     result = await robot_model(
                         operation="export",
                         robot_id="vbot_scout_01",
-                        format="fbx"
+                        format="fbx",
+                        output_path="D:/Exports/scout_export.fbx",
+                        include_animations=true
                     )
+                    # Returns: {"success": true, "message": "Robot exported from Unity", "model_data": {"animations": 5, "format": "fbx"}}
 
                 Convert FBX to GLB:
                     result = await robot_model(
                         operation="convert",
                         source_path="D:/Models/scout.fbx",
                         source_format="fbx",
-                        target_format="glb"
+                        target_format="glb",
+                        target_path="D:/Models/scout_converted.glb"
                     )
+                    # Returns: {"success": true, "message": "Model converted successfully", "model_data": {"format": "glb", "vertices": 12500}}
+
+                Check SPZ tool availability:
+                    result = await robot_model(operation="spz_check")
+                    # Returns: {"success": true, "message": "SPZ tools available", "platform_integration": {"unity": true, "gaussian_splatting": true}}
+
+                Convert SPZ to PLY:
+                    result = await robot_model(
+                        operation="spz_convert",
+                        spz_path="D:/Models/scene.spz",
+                        output_format="ply",
+                        target_path="D:/Models/scene_converted.ply"
+                    )
+                    # Returns: {"success": true, "message": "SPZ converted to PLY", "model_data": {"format": "ply", "points": 500000}}
+
+                Install Unity Gaussian Splatting:
+                    result = await robot_model(
+                        operation="spz_install",
+                        unity_project_path="D:/UnityProjects/Robotics"
+                    )
+                    # Returns: {"success": true, "message": "Gaussian Splatting plugin installed", "platform_integration": {"unity": true}}
             """
             try:
                 if operation == "create":
@@ -265,10 +302,10 @@ class RobotModelTools:
         robot_type: str,
         output_path: str,
         format: str,
-        dimensions: Optional[Dict[str, float]],
+        dimensions: dict[str, float] | None,
         create_textures: bool,
         texture_style: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Handle create operation."""
         try:
             if "blender" not in self.mounted_servers:
@@ -298,9 +335,9 @@ class RobotModelTools:
         model_path: str,
         format: str,
         platform: str,
-        project_path: Optional[str],
+        project_path: str | None,
         create_prefab: bool,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Handle import operation."""
         try:
             if format == "vrm" and robot_type in NON_HUMANOID_ROBOT_TYPES:
@@ -332,9 +369,9 @@ class RobotModelTools:
         self,
         robot_id: str,
         format: str,
-        output_path: Optional[str],
+        output_path: str | None,
         include_animations: bool,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Handle export operation."""
         try:
             robot = self.state_manager.get_robot(robot_id)
@@ -370,9 +407,9 @@ class RobotModelTools:
         source_path: str,
         source_format: str,
         target_format: str,
-        target_path: Optional[str],
-        robot_type: Optional[str],
-    ) -> Dict[str, Any]:
+        target_path: str | None,
+        robot_type: str | None,
+    ) -> dict[str, Any]:
         """Handle convert operation."""
         try:
             if (
@@ -406,9 +443,9 @@ class RobotModelTools:
             model_path: str,
             format: Literal["fbx", "glb", "obj", "vrm"] = "fbx",
             platform: Literal["unity", "vrchat", "resonite"] = "unity",
-            project_path: Optional[str] = None,
+            project_path: str | None = None,
             create_prefab: bool = True,
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             """Import robot 3D model into Unity/VRChat/Resonite project.
 
             Imports a robot 3D model file (FBX, GLB, OBJ, or VRM) into the specified
@@ -503,9 +540,9 @@ class RobotModelTools:
         async def robot_model_export(
             robot_id: str,
             format: Literal["fbx", "glb", "obj"] = "fbx",
-            output_path: Optional[str] = None,
+            output_path: str | None = None,
             include_animations: bool = True,
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             """Export robot model from Unity to file format.
 
             Exports a robot model from Unity scene to FBX, GLB, or OBJ format.
@@ -569,10 +606,10 @@ class RobotModelTools:
             robot_type: str,
             output_path: str,
             format: Literal["fbx", "glb", "obj"] = "fbx",
-            dimensions: Optional[Dict[str, float]] = None,
+            dimensions: dict[str, float] | None = None,
             create_textures: bool = True,
             texture_style: Literal["realistic", "stylized", "simple"] = "realistic",
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             """Create robot 3D model from scratch using Blender MCP.
 
             Creates a robot 3D model using blender-mcp tools. Supports creating
@@ -648,9 +685,9 @@ class RobotModelTools:
             source_path: str,
             source_format: Literal["fbx", "glb", "obj", "blend", "vrm"],
             target_format: Literal["fbx", "glb", "obj", "vrm"],
-            target_path: Optional[str] = None,
-            robot_type: Optional[str] = None,
-        ) -> Dict[str, Any]:
+            target_path: str | None = None,
+            robot_type: str | None = None,
+        ) -> dict[str, Any]:
             """Convert robot model between formats.
 
             Converts a robot 3D model from one format to another. Uses Blender MCP
@@ -725,9 +762,9 @@ class RobotModelTools:
         robot_type: str,
         model_path: str,
         format: str,
-        project_path: Optional[str],
+        project_path: str | None,
         create_prefab: bool,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Import model to Unity."""
         try:
             if "unity" in self.mounted_servers:
@@ -775,8 +812,8 @@ class RobotModelTools:
             )
 
     async def _import_to_vrchat(
-        self, robot_type: str, model_path: str, format: str, project_path: Optional[str]
-    ) -> Dict[str, Any]:
+        self, robot_type: str, model_path: str, format: str, project_path: str | None
+    ) -> dict[str, Any]:
         """Import model to VRChat."""
         # VRChat uses Unity, so similar to Unity import
         return await self._import_to_unity(
@@ -785,7 +822,7 @@ class RobotModelTools:
 
     async def _import_to_resonite(
         self, robot_type: str, model_path: str, format: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Import model to Resonite."""
         # Resonite imports VRM/GLB directly
         return format_success_response(
@@ -801,9 +838,9 @@ class RobotModelTools:
         self,
         robot_id: str,
         format: str,
-        output_path: Optional[str],
+        output_path: str | None,
         include_animations: bool,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Export model from Unity."""
         try:
             if "unity" not in self.mounted_servers:
@@ -915,7 +952,7 @@ class RobotModelTools:
                 format=format,
             )
 
-    def _get_default_dimensions(self, robot_type: str) -> Dict[str, float]:
+    def _get_default_dimensions(self, robot_type: str) -> dict[str, float]:
         """Get default dimensions for robot type (in meters)."""
         defaults = {
             "scout": {"length": 0.115, "width": 0.10, "height": 0.08},  # 11.5x10x8 cm
@@ -937,10 +974,10 @@ class RobotModelTools:
         robot_type: str,
         output_path: str,
         format: str,
-        dimensions: Dict[str, float],
+        dimensions: dict[str, float],
         create_textures: bool,
         texture_style: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create robot model using blender-mcp."""
         try:
             # Access blender-mcp directly from mounted servers
@@ -960,7 +997,6 @@ class RobotModelTools:
 
             # Calculate wheel positions in Python (before script generation)
             wheel_radius = 0.025
-            wheel_thickness = 0.015
             wheel_positions = [
                 (
                     -dimensions["length"] / 2 - wheel_radius,
@@ -1195,7 +1231,7 @@ except Exception as save_error:
                     elif "TBBmalloc" in error_str:
                         # TBBmalloc warning - check if file exists and is recent
                         logger.warning(
-                            f"TBBmalloc warning detected, but continuing if file exists"
+                            "TBBmalloc warning detected, but continuing if file exists"
                         )
                     else:
                         raise
@@ -1227,7 +1263,7 @@ except Exception as save_error:
             # Step 4: Apply materials/textures (if created)
             if texture_paths and "blender" in self.mounted_servers:
                 # Apply textures using blender-mcp material tools
-                for texture_path in texture_paths:
+                for _texture_path in texture_paths:
                     await call_mounted_server_tool(
                         self.mounted_servers,
                         "blender",
@@ -1288,7 +1324,6 @@ except Exception as save_error:
             # Create output directory
             texture_dir = Path("D:/Textures")
             texture_dir.mkdir(parents=True, exist_ok=True)
-            texture_path = texture_dir / f"{robot_type}_texture.png"
 
             # For now, create a simple texture by:
             # 1. Creating a base image (we'll use gimp_file with a temporary file)
@@ -1299,7 +1334,6 @@ except Exception as save_error:
             import tempfile
 
             temp_base = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-            temp_base_path = temp_base.name
             temp_base.close()
 
             # Create base image using gimp_file (we'll need to create it first)
@@ -1335,8 +1369,8 @@ except Exception as save_error:
         source_path: str,
         source_format: str,
         target_format: str,
-        target_path: Optional[str],
-    ) -> Dict[str, Any]:
+        target_path: str | None,
+    ) -> dict[str, Any]:
         """Convert model using Blender MCP."""
         try:
             # Import source
@@ -1355,7 +1389,7 @@ except Exception as save_error:
                     {"filepath": source_path, "file_format": "obj"},
                 )
             elif source_format == "blend":
-                result = await call_mounted_server_tool(
+                await call_mounted_server_tool(
                     self.mounted_servers,
                     "blender",
                     "blender_open",
@@ -1369,21 +1403,21 @@ except Exception as save_error:
 
             # Export target
             if target_format == "fbx":
-                result = await call_mounted_server_tool(
+                await call_mounted_server_tool(
                     self.mounted_servers,
                     "blender",
                     "blender_export",
                     {"filepath": target_path, "file_format": "fbx"},
                 )
             elif target_format == "glb":
-                result = await call_mounted_server_tool(
+                await call_mounted_server_tool(
                     self.mounted_servers,
                     "blender",
                     "blender_export",
                     {"filepath": target_path, "file_format": "gltf"},
                 )
             elif target_format == "vrm":
-                result = await call_mounted_server_tool(
+                await call_mounted_server_tool(
                     self.mounted_servers,
                     "blender",
                     "blender_export",
@@ -1410,7 +1444,7 @@ except Exception as save_error:
                 f"Blender conversion failed: {str(e)}", error_type="conversion_error"
             )
 
-    async def _handle_spz_check(self) -> Dict[str, Any]:
+    async def _handle_spz_check(self) -> dict[str, Any]:
         """Check available .spz conversion tools (from spz_converter.py)."""
         import subprocess
 
@@ -1427,9 +1461,8 @@ except Exception as save_error:
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
         try:
-            import spz  # type: ignore
-
-            tools_available["python_spz_lib"] = True
+            import importlib.util
+            tools_available["python_spz_lib"] = importlib.util.find_spec("spz") is not None
         except ImportError:
             pass
         recommendations = []
@@ -1450,11 +1483,11 @@ except Exception as save_error:
         )
 
     async def _handle_spz_convert(
-        self, spz_path: str, output_path: Optional[str], output_format: str
-    ) -> Dict[str, Any]:
+        self, spz_path: str, output_path: str | None, output_format: str
+    ) -> dict[str, Any]:
         """Convert .spz file to .ply or other format (from spz_converter.py)."""
-        from pathlib import Path
         import subprocess
+        from pathlib import Path
 
         spz_file = Path(spz_path)
         if not spz_file.exists():
@@ -1498,7 +1531,7 @@ except Exception as save_error:
             },
         )
 
-    async def _handle_spz_extract(self, spz_path: str) -> Dict[str, Any]:
+    async def _handle_spz_extract(self, spz_path: str) -> dict[str, Any]:
         """Extract metadata from .spz file (from spz_converter.py)."""
         from pathlib import Path
 
@@ -1532,10 +1565,10 @@ except Exception as save_error:
             },
         )
 
-    async def _handle_spz_install(self, unity_project_path: str) -> Dict[str, Any]:
+    async def _handle_spz_install(self, unity_project_path: str) -> dict[str, Any]:
         """Install Unity Gaussian Splatting plugin (from spz_converter.py)."""
-        from pathlib import Path
         import json
+        from pathlib import Path
 
         project_path = Path(unity_project_path)
         manifest_path = project_path / "Packages" / "manifest.json"
@@ -1545,7 +1578,7 @@ except Exception as save_error:
                 error_type="invalid_project",
             )
         try:
-            with open(manifest_path, "r") as f:
+            with open(manifest_path) as f:
                 manifest = json.load(f)
             dependencies = manifest.get("dependencies", {})
             gs_package = "com.aras-p.gaussian-splatting"

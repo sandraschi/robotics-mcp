@@ -128,10 +128,10 @@ pip install -e ".[dev]"
 python -m robotics_mcp.server --mode stdio
 
 # HTTP mode
-python -m robotics_mcp.server --mode http --port 8080
+python -m robotics_mcp.server --mode http --port 12230
 
 # Dual mode
-python -m robotics_mcp.server --mode dual --port 8080
+python -m robotics_mcp.server --mode dual --port 12230
 ```
 
 ## 🧪 Testing

@@ -12,6 +12,9 @@ python-osc>=1.8.0
 # Dreame vacuum integration
 python-miio>=0.5.12
 
+# Watchfiles crashproofing
+watchfiles>=0.24.0
+
 # ROS integration (optional)
 rosbridge-library>=0.11.0
 

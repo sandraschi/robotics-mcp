@@ -2,12 +2,15 @@
 
 **By FlowEngineer sandraschi**
 
-**Unified robotics control via MCP - Yahboom ROSMASTER + virtual robots (bot + vbot + drones)**
+**Revolutionary Multi-Robot Coordination: Yahboom ROSMASTER, Dreame D20 Pro, Unitree Go2/G1, and Philips Hue Bridge Pro collaborate through shared LIDAR maps, collaborative SLAM, RF-based movement detection, and real-time collision avoidance. Physical + virtual robots working as one super-intelligent system.**
+
+*Standing on the shoulders of giants: Leveraging the remarkable auto-mapping innovation from Dreame engineers, ROS2 integration from Yahboom, and the global robotics ecosystem.*
 
 ## ⚠️ **CRITICAL REQUIREMENTS**
 
 ### **Hardware (Recommended)**
 - **Physical Robot**: Moorebot Scout, Unitree Go2/G1/H1, PX4/ArduPilot drones
+- **Philips Hue Bridge Pro**: For HomeAware RF-based movement detection (optional but recommended)
 - **Without hardware**: Virtual robotics only (Unity3D + VRChat)
 
 ### **Software (MANDATORY)**
@@ -40,6 +43,45 @@
 - **Unitree H1** - Humanoid robot platform
 
 *Yahboom ROSMASTER is the primary recommended platform. Legacy ROS1 robots supported but ROS2 recommended for new deployments.*
+
+## 🍺 Beer Can Manipulation Demo
+
+**Perfect use case for Yahboom ROSMASTER with arm addon:**
+
+```python
+# Pick up beer can from table
+await robot_control(
+    robot_id="yahboom_01",
+    action="arm_move",
+    joint_angles={"joint1": 0.0, "joint2": 0.5, "joint3": -0.3, "joint4": 0.0}
+)
+
+# Open gripper
+await robot_control(robot_id="yahboom_01", action="gripper_control", gripper_action="open")
+
+# Move arm to can position
+await robot_control(
+    robot_id="yahboom_01",
+    action="arm_move",
+    joint_angles={"joint1": 0.2, "joint2": 0.7, "joint3": -0.1, "joint4": 0.1}
+)
+
+# Close gripper on can
+await robot_control(robot_id="yahboom_01", action="gripper_control", gripper_action="close")
+
+# Lift can up
+await robot_control(
+    robot_id="yahboom_01",
+    action="arm_move",
+    joint_angles={"joint1": 0.2, "joint2": 0.9, "joint3": 0.1, "joint4": 0.1}
+)
+```
+
+**Hardware Requirements:**
+- Yahboom ROSMASTER X3 or X3 Plus (~$500-800)
+- Yahboom Robotic Arm Kit (~$150-200)
+- Parallel jaw gripper (~$30-50)
+- **Total cost: ~$680-1050** for full beer can manipulation robot
 
 ### **🟡 REQUIRED SOFTWARE**
 **You MUST install these applications:**
@@ -110,6 +152,21 @@ pip install -e .
 ```
 
 #### **5. Avatar-MCP** (Avatar management)
+
+#### **6. Dreame D20 Pro Setup** (Robot vacuum control - NO Android device required!)
+```bash
+# Install python-miio for Dreame vacuum control
+pip install python-miio
+
+# NO Android device needed! Use automated discovery:
+cd scripts
+python discover_dreame.py     # Find your robot's IP address
+python get_dreame_token.py    # Extract authentication token
+
+# Alternative manual methods:
+pip install "python-miio[cli]"
+miiocli discover              # Discover all Xiaomi devices on network
+```
 ```bash
 # Clone and install:
 git clone https://github.com/sandraschi/avatar-mcp.git
@@ -142,15 +199,20 @@ Robotics MCP Server provides unified control for **physical robots** (ROS2-based
 
 ### Key Features
 
-- **Physical Robot Control**: Moorebot Scout (ROS 1.4), Unitree Go2/G1
-- **YDLIDAR SuperLight (95g)** LiDAR integration for Scout
-- **Drone Control**: PX4/ArduPilot drones with MAVLink, video streaming, navigation
-- **Virtual Robot Control**: Unity3D/VRChat/Resonite integration via existing MCP servers
-- **ROS Bridge Integration**: [Robot Operating System](docs/ROS_FUNDAMENTALS.md) 1.4 (Melodic) via rosbridge_suite
-- **LiDAR Sensing**: [Affordable 3D LiDAR Guide](docs/LIDAR_GUIDE.md) - Livox Mid-360 ($399), RPLIDAR ($99), and more
-- **Tiny Controllers**: [Pico & Micro Boards](docs/TINY_CONTROLLERS_GUIDE.md) - Raspberry Pi Pico, ESP32, Arduino Nano for small robots
-- **Motion Detection**: [Pyroelectric Sensors Guide](docs/PYROELECTRIC_SENSORS_GUIDE.md) - AM312, HC-SR501 ultra-small PIR sensors ($1-5)
-- **Multi-Robot Coordination**: Physical robots, virtual robots, and drones together
+- **🤝 REVOLUTIONARY Multi-Robot Coordination**: Yahboom manipulators + Dreame LIDAR mappers + virtual robots collaborate through shared maps, collaborative SLAM, and real-time collision avoidance - [Complete Guide](docs/MULTI_ROBOT_COORDINATION.md)
+- **🗺️ LIDAR Map Sharing**: Dreame vacuum maps exported for Yahboom navigation, Unity simulation, and ROS autonomy
+- **🔄 Collaborative SLAM**: Multi-perspective mapping with ground-level + elevated + aerial viewpoints
+- **🛡️ Real-Time Collision Avoidance**: Predictive safety system coordinating multiple robots simultaneously
+- **🔄 Physical + Virtual Integration**: Test behaviors in Unity/VRChat, deploy to physical robots seamlessly
+- **📊 Sensor Fusion**: Combine LIDAR, cameras, IMUs, and depth sensors across different robot types
+- **🎯 Task Allocation**: Intelligent distribution of tasks based on robot capabilities and environment
+- **⚡ Live Coordination**: Sub-100ms decision making for multi-robot safety and efficiency
+
+#### **Robot Support**
+- **Physical Robots**: Yahboom ROSMASTER (ROS2), Moorebot Scout (ROS1), Unitree Go2/G1/H1, Dreame D20 Pro vacuum
+- **Virtual Robots**: Unity3D, VRChat, Resonite with full physics simulation
+- **Drone Integration**: PX4/ArduPilot with MAVLink, video streaming, autonomous flight
+- **Legacy Support**: ROS Bridge integration for existing ROS1/ROS2 robots
 - **World Labs Marble/Chisel**: Environment generation and import
 - **Drone Video Streaming**: RTSP/WebRTC streaming with OpenIPC integration
 - **Dual Transport**: stdio (MCP) + HTTP (FastAPI) endpoints
@@ -164,6 +226,9 @@ Robotics MCP Server provides unified control for **physical robots** (ROS2-based
 - **[AI Research Workflow](docs/AI_RESEARCH_WORKFLOW.md)** 🧠 **Architect first: AI-powered research methodology for all development**
 - **[Vienna Technical Museum Makerspace](docs/VIENNA_TECHNICAL_MUSEUM_MAKERSPACE.md)** 🛠️ **Fantastic makerspace - free equipment, pay only consumables!**
 - **[Progress Report](docs/PROGRESS_REPORT.md)** 🎉 **Comprehensive project status and achievements!**
+- **[Dreame Setup Guide](docs/DREAME_SETUP_GUIDE.md)** 🤖 **Complete guide for Dreame D20 Pro vacuum integration**
+- **[Hue Bridge Pro Setup](docs/HUE_BRIDGE_PRO_SETUP.md)** 💡 **Philips Hue Bridge Pro + HomeAware RF movement detection**
+- **[Multi-Robot Coordination](docs/MULTI_ROBOT_COORDINATION.md)** 🤝 **Advanced collaborative robotics intelligence - the future is here!**
 - **[Unity Vbot Instantiation Guide](docs/UNITY_VBOT_INSTANTIATION.md)** - Complete guide for instantiating virtual robots in Unity3D with proper terminology
 
 ## 🚀 Quick Start
@@ -266,7 +331,7 @@ robotics:
     platform: "unity"
 server:
   enable_http: true
-  http_port: 8080
+  http_port: 12230
   log_level: "INFO"
 ```
 
@@ -304,10 +369,10 @@ mcp_integration:
 python -m robotics_mcp --mode stdio
 
 # HTTP API mode
-python -m robotics_mcp --mode http --port 8080
+python -m robotics_mcp --mode http --port 12230
 
 # Dual mode (stdio + HTTP)
-python -m robotics_mcp --mode dual --port 8080
+python -m robotics_mcp --mode dual --port 12230
 ```
 
 ## 🛠️ Usage
@@ -568,19 +633,19 @@ See [Web Interface Documentation](web/README.md) for detailed usage instructions
 #### Health Check
 
 ```bash
-curl http://localhost:8080/api/v1/health
+curl http://localhost:12230/api/v1/health
 ```
 
 #### List Robots
 
 ```bash
-curl http://localhost:8080/api/v1/robots
+curl http://localhost:12230/api/v1/robots
 ```
 
 #### Control Robot
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/robots/scout_01/control \
+curl -X POST http://localhost:12230/api/v1/robots/scout_01/control \
   -H "Content-Type: application/json" \
   -d '{"action": "move", "linear": 0.2, "angular": 0.0}'
 ```
@@ -588,13 +653,13 @@ curl -X POST http://localhost:8080/api/v1/robots/scout_01/control \
 #### List Tools
 
 ```bash
-curl http://localhost:8080/api/v1/tools
+curl http://localhost:12230/api/v1/tools
 ```
 
 #### Call Tool
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/tools/robot_control \
+curl -X POST http://localhost:12230/api/v1/tools/robot_control \
   -H "Content-Type: application/json" \
   -d '{"robot_id": "scout_01", "action": "get_status"}'
 ```

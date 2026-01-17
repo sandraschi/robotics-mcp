@@ -1,0 +1,36 @@
+[Unit]
+Description=Robotics MCP WebApp with Watchfiles Crashproofing
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=your-username
+Group=your-group
+WorkingDirectory=/path/to/robotics-mcp
+Environment=PYTHONPATH=/path/to/robotics-mcp/src
+Environment=ROBOTICS_MCP_HOST=0.0.0.0
+Environment=ROBOTICS_MCP_PORT=12230
+Environment=ROBOTICS_MCP_DEBUG=false
+Environment=WATCHFILES_MAX_RESTARTS=10
+Environment=WATCHFILES_RESTART_DELAY=1.0
+Environment=WATCHFILES_BACKOFF_MULTIPLIER=1.5
+Environment=WATCHFILES_HEALTH_CHECK_INTERVAL=30
+Environment=WATCHFILES_NOTIFY_ON_CRASH=true
+ExecStart=/usr/bin/python3 scripts/watchfiles_runner.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=robotics-mcp-watchfiles
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/path/to/robotics-mcp/logs
+ReadWritePaths=/path/to/robotics-mcp/config
+
+[Install]
+WantedBy=multi-user.target
