@@ -1,6 +1,6 @@
 """Robot control portmanteau tool - Unified bot + vbot control."""
 
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 import structlog
 
@@ -14,7 +14,7 @@ logger = structlog.get_logger(__name__)
 class RobotControlTool:
     """Portmanteau tool for unified robot control (bot + vbot)."""
 
-    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: Optional[Dict[str, Any]] = None):
+    def __init__(self, mcp: Any, state_manager: Any, mounted_servers: dict[str, Any] | None = None):
         """Initialize robot control tool.
 
         Args:
@@ -64,133 +64,180 @@ class RobotControlTool:
                 "get_cleaning_history",
                 "clear_error",
             ],
-            linear: Optional[float] = None,
-            angular: Optional[float] = None,
-            duration: Optional[float] = None,
+            linear: float | None = None,
+            angular: float | None = None,
+            duration: float | None = None,
             # Yahboom-specific parameters
-            x: Optional[float] = None,
-            y: Optional[float] = None,
-            theta: Optional[float] = None,
-            joint_angles: Optional[Dict[str, float]] = None,
-            gripper_action: Optional[Literal["open", "close", "stop"]] = None,
-            patrol_route: Optional[str] = None,
+            x: float | None = None,
+            y: float | None = None,
+            theta: float | None = None,
+            joint_angles: dict[str, float] | None = None,
+            gripper_action: Literal["open", "close", "stop"] | None = None,
+            patrol_route: str | None = None,
             # Dreame D20 Pro Plus specific parameters
-            suction_level: Optional[int] = None,
-            water_volume: Optional[int] = None,
-            mop_humidity: Optional[int] = None,
-            zones: Optional[List[List[int]]] = None,
-            spot_x: Optional[int] = None,
-            spot_y: Optional[int] = None,
-            room_id: Optional[int] = None,
-            room_name: Optional[str] = None,
-            cleaning_sequence: Optional[List[int]] = None,
-            restricted_zones: Optional[Dict[str, List[List[int]]]] = None,
+            suction_level: int | None = None,
+            water_volume: int | None = None,
+            mop_humidity: int | None = None,
+            zones: list[list[int]] | None = None,
+            spot_x: int | None = None,
+            spot_y: int | None = None,
+            room_id: int | None = None,
+            room_name: str | None = None,
+            cleaning_sequence: list[int] | None = None,
+            restricted_zones: dict[str, list[list[int]]] | None = None,
             # Yahboom AI query parameters
-            query: Optional[str] = None,
-            query_type: Optional[Literal["text", "vision", "voice", "multimodal"]] = None,
-        ) -> Dict[str, Any]:
-            """Unified robot control (works for both physical bot and virtual bot).
+            query: str | None = None,
+            query_type: Literal["text", "vision", "voice", "multimodal"] | None = None,
+        ) -> dict[str, Any]:
+            """Unified robot control with conversational responses.
 
-            This portmanteau tool provides a unified interface for controlling both
-            physical robots (via ROS) and virtual robots (via Unity/VRChat). The tool
-            automatically routes commands to the appropriate handler based on robot type.
+            Provides a single interface for controlling physical robots, virtual robots, and specialized devices
+            with intelligent routing and rich conversational responses. Supports Moorebot Scout, Unitree robots,
+            Yahboom ROS platforms, Dreame vacuums, and virtual robots in Unity/VRChat.
+
+            PORTMANTEAU PATTERN RATIONALE:
+            Instead of creating separate tools for each robot type and operation, this tool
+            consolidates all robot control operations into a single interface. This design:
+            - Prevents tool explosion (15+ tools -> 1 tool) while maintaining full functionality
+            - Enables seamless switching between physical and virtual robots
+            - Provides consistent error handling and safety protocols across all robot types
+            - Supports conversational AI interaction with context-aware responses
+            - Follows FastMCP 2.13+ best practices for feature-rich MCP servers
+
+            SUPPORTED ROBOT TYPES:
+            - Physical Robots: Moorebot Scout, Unitree Go2/G1/H1 (ROS-based wheeled/legged robots)
+            - Virtual Robots: Unity3D/VRChat robots (simulation and social VR platforms)
+            - Yahboom Robots: ROSMASTER series with AI, navigation, and optional robotic arms
+            - Dreame Vacuums: Smart vacuum cleaners with mapping and zone cleaning
+
+            SUPPORTED OPERATIONS:
+            - Universal: "get_status", "move", "stop"
+            - Physical Robots: "return_to_dock", "stand", "sit", "walk", "sync_vbot"
+            - Yahboom: "home_patrol", "camera_capture", "arm_move", "gripper_control", "navigate_to", "ai_query"
+            - Dreame: "start_auto_empty", "stop_auto_empty", "start_self_clean", "stop_self_clean",
+                     "set_suction_level", "set_water_volume", "set_mop_humidity", "clean_zone",
+                     "clean_spot", "start_mapping", "rename_room", "set_cleaning_sequence",
+                     "set_restricted_zones", "get_cleaning_history", "clear_error"
 
             Args:
-                robot_id: Robot identifier (e.g., "scout_01", "vbot_scout_01", "yahboom_01").
-                action: Operation to perform:
-                    - "get_status": Get robot status (battery, position, state)
-                    - "move": Control movement (linear/angular velocity)
-                    - "stop": Emergency stop
-                    - "return_to_dock": Return to charging dock (physical bot only)
-                    - "stand": Stand up (Unitree G1, physical bot only)
-                    - "sit": Sit down (Unitree G1, physical bot only)
-                    - "walk": Walking gait (Unitree, physical bot only)
-                    - "sync_vbot": Sync virtual bot with physical bot state
-                    - "home_patrol": Start autonomous home patrol (Yahboom)
-                    - "camera_capture": Capture camera image (Yahboom)
-                    - "arm_move": Move robotic arm joints (Yahboom with arm)
-                    - "gripper_control": Control gripper open/close (Yahboom with arm)
-                    - "navigate_to": Navigate to specific coordinates (Yahboom)
-                    - "ai_query": Multimodal AI query (text/vision/voice) (Yahboom)
-                    - "start_auto_empty": Start automatic dust bin emptying (Dreame)
-                    - "stop_auto_empty": Stop automatic dust bin emptying (Dreame)
-                    - "start_self_clean": Start mop self-cleaning cycle (Dreame)
-                    - "stop_self_clean": Stop mop self-cleaning cycle (Dreame)
-                    - "set_suction_level": Set vacuum suction power level (Dreame)
-                    - "set_water_volume": Set mopping water volume (Dreame)
-                    - "set_mop_humidity": Set mop pad humidity level (Dreame)
-                    - "clean_zone": Clean specific rectangular zones (Dreame)
-                    - "clean_spot": Intensive spot cleaning at coordinates (Dreame)
-                    - "start_mapping": Start new map creation/mapping (Dreame)
-                    - "rename_room": Rename a detected room (Dreame)
-                    - "set_cleaning_sequence": Set room cleaning order (Dreame)
-                    - "set_restricted_zones": Create virtual walls/restricted zones (Dreame)
-                    - "get_cleaning_history": Retrieve cleaning history (Dreame)
-                    - "clear_error": Clear error conditions (Dreame)
-                linear: Linear velocity (m/s) for move action.
-                angular: Angular velocity (rad/s) for move action.
-                duration: Movement duration (seconds).
-                x: Target X coordinate for navigation.
-                y: Target Y coordinate for navigation.
-                theta: Target orientation for navigation.
-                joint_angles: Dictionary of joint angles for arm control.
-                gripper_action: Gripper action ("open", "close", "stop").
-                patrol_route: Name of patrol route to execute.
-                suction_level: Suction power level (1-4) for Dreame vacuum.
-                water_volume: Water volume level (1-3) for Dreame mopping.
-                mop_humidity: Mop pad humidity level (1-3) for Dreame.
-                zones: List of zone coordinates [[x1,y1,x2,y2], ...] for zone cleaning.
-                spot_x: X coordinate for spot cleaning.
-                spot_y: Y coordinate for spot cleaning.
-                room_id: Room identifier for room-specific operations.
-                room_name: New name for room renaming.
-                cleaning_sequence: List of room IDs defining cleaning order.
-                restricted_zones: Dictionary with 'walls' and 'zones' keys for restricted areas.
-                **kwargs: Additional action-specific parameters.
+                robot_id: Unique robot identifier. MUST follow naming convention:
+                    - Physical: "scout_01", "go2_01", "g1_01", "yahboom_01", "dreame_01"
+                    - Virtual: "vbot_scout_01", "unity_bot_01", "vrchat_bot_01"
+
+                action: Operation to perform. MUST be one of the supported operations above:
+                    Universal Operations:
+                    - "get_status": Get comprehensive robot status (battery, position, sensors, capabilities)
+                    - "move": Control movement with linear/angular velocities (all mobile robots)
+                    - "stop": Emergency stop all movement (all robots)
+
+                    Physical Robot Operations:
+                    - "return_to_dock": Return to charging dock (vacuums only)
+                    - "stand": Stand up from sitting position (legged robots)
+                    - "sit": Sit down (legged robots)
+                    - "walk": Start walking gait (legged robots)
+                    - "sync_vbot": Synchronize virtual robot with physical robot state
+
+                    Yahboom Robot Operations:
+                    - "home_patrol": Start autonomous home security patrol
+                    - "camera_capture": Capture image from robot camera
+                    - "arm_move": Move robotic arm to specified joint angles
+                    - "gripper_control": Control gripper open/close/stop
+                    - "navigate_to": Navigate to specific coordinates
+                    - "ai_query": Multimodal AI query (text/vision/voice/multimodal)
+
+                    Dreame Vacuum Operations:
+                    - "start_auto_empty": Start automatic dust bin emptying
+                    - "stop_auto_empty": Stop automatic dust bin emptying
+                    - "start_self_clean": Start mop self-cleaning cycle
+                    - "stop_self_clean": Stop mop self-cleaning cycle
+                    - "set_suction_level": Set vacuum suction power (1-4)
+                    - "set_water_volume": Set mopping water volume (1-3)
+                    - "set_mop_humidity": Set mop pad humidity (1-3)
+                    - "clean_zone": Clean specific rectangular zones
+                    - "clean_spot": Intensive spot cleaning at coordinates
+                    - "start_mapping": Start new map creation/mapping
+                    - "rename_room": Rename a detected room
+                    - "set_cleaning_sequence": Set room cleaning order
+                    - "set_restricted_zones": Create virtual walls/restricted zones
+                    - "get_cleaning_history": Retrieve cleaning history
+                    - "clear_error": Clear error conditions
+
+                linear: Linear velocity (m/s) for move operations. Range: -2.0 to 2.0 m/s
+                angular: Angular velocity (rad/s) for rotation. Range: -3.14 to 3.14 rad/s
+                duration: Movement duration in seconds. Default: continuous until stopped
+                x: Target X coordinate (meters) for navigation operations
+                y: Target Y coordinate (meters) for navigation operations
+                theta: Target orientation (radians) for navigation operations
+                joint_angles: Dictionary of joint names to target angles (degrees) for arm control
+                gripper_action: Gripper action. MUST be "open", "close", or "stop"
+                patrol_route: Name of predefined patrol route for autonomous navigation
+                suction_level: Vacuum suction power level (1-4, where 4 is maximum)
+                water_volume: Mopping water volume level (1-3, where 3 is maximum)
+                mop_humidity: Mop pad humidity level (1-3, where 3 is maximum humidity)
+                zones: List of zone coordinates [[x1,y1,x2,y2], ...] for zone cleaning
+                spot_x: X coordinate for intensive spot cleaning
+                spot_y: Y coordinate for intensive spot cleaning
+                room_id: Room identifier for room-specific operations
+                room_name: New name for room renaming operations
+                cleaning_sequence: List of room IDs defining cleaning order [room1, room2, ...]
+                restricted_zones: Dictionary with 'walls' and 'zones' keys for virtual barriers
+                query: AI query text for multimodal analysis (Yahboom robots)
+                query_type: AI query type. MUST be "text", "vision", "voice", or "multimodal"
 
             Returns:
-                Dictionary containing operation result.
+                Rich conversational response with:
+                - success: Boolean operation status
+                - message: Natural language description of result
+                - robot_data: Current robot status and telemetry
+                - safety_warnings: Any safety concerns or recommendations
+                - next_commands: Suggested follow-up operations
+                - estimated_completion: Time estimates for long operations
+                - error_recovery: Intelligent error handling with resolution steps
+                - operation_metadata: Device-specific operation details
 
             Examples:
-                Get robot status (any robot type):
+                Get robot status (universal):
                     result = await robot_control(robot_id="scout_01", action="get_status")
-                    result = await robot_control(robot_id="yahboom_01", action="get_status")
+                    # Returns: {"success": true, "message": "Robot status retrieved", "robot_data": {...}}
 
                 Move robot forward:
                     result = await robot_control(
                         robot_id="scout_01",
                         action="move",
-                        linear=0.2,
-                        angular=0.0
+                        linear=0.5,
+                        angular=0.0,
+                        duration=5.0
                     )
+                    # Returns: {"success": true, "message": "Moving forward at 0.5 m/s"}
 
-                Stop robot:
-                    result = await robot_control(robot_id="scout_01", action="stop")
+                Emergency stop:
+                    result = await robot_control(robot_id="yahboom_01", action="stop")
+                    # Returns: {"success": true, "message": "Emergency stop activated", "safety_warnings": ["Verify robot stopped"]}
 
-                Yahboom-specific actions:
-                    # Start home patrol
-                    result = await robot_control(robot_id="yahboom_01", action="home_patrol")
-
-                    # Navigate to coordinates
+                Yahboom AI query:
                     result = await robot_control(
                         robot_id="yahboom_01",
-                        action="navigate_to",
-                        x=2.0, y=1.5, theta=0.0
+                        action="ai_query",
+                        query="What's in front of me?",
+                        query_type="vision"
                     )
+                    # Returns: {"success": true, "message": "AI analysis complete", "response": "I detect a clear pathway"}
 
-                    # Control arm (when equipped)
+                Dreame zone cleaning:
                     result = await robot_control(
-                        robot_id="yahboom_01",
-                        action="arm_move",
-                        joint_angles={"joint1": 0.5, "joint2": 0.3}
+                        robot_id="dreame_01",
+                        action="clean_zone",
+                        zones=[[0,0,200,200], [300,100,500,300]]
                     )
+                    # Returns: {"success": true, "message": "Zone cleaning started", "estimated_completion": "45 minutes"}
 
-                    # Control gripper
-                    result = await robot_control(
-                        robot_id="yahboom_01",
-                        action="gripper_control",
-                        gripper_action="open"
-                    )
+                Unitree stand command:
+                    result = await robot_control(robot_id="g1_01", action="stand")
+                    # Returns: {"success": true, "message": "Robot standing up", "estimated_completion": "3 seconds"}
+
+                Sync virtual with physical:
+                    result = await robot_control(robot_id="scout_01", action="sync_vbot")
+                    # Returns: {"success": true, "message": "Virtual robot synchronized", "next_commands": ["robot_behavior get_status"]}
             """
             try:
                 robot = self.state_manager.get_robot(robot_id)
@@ -226,10 +273,10 @@ class RobotControlTool:
         self,
         robot: Any,
         action: str,
-        linear: Optional[float],
-        angular: Optional[float],
-        duration: Optional[float],
-    ) -> Dict[str, Any]:
+        linear: float | None,
+        angular: float | None,
+        duration: float | None,
+    ) -> dict[str, Any]:
         """Handle physical robot commands.
 
         Args:
@@ -262,18 +309,18 @@ class RobotControlTool:
         self,
         robot: Any,
         action: str,
-        linear: Optional[float],
-        angular: Optional[float],
-        duration: Optional[float],
-        x: Optional[float],
-        y: Optional[float],
-        theta: Optional[float],
-        joint_angles: Optional[Dict[str, float]],
-        gripper_action: Optional[str],
-        patrol_route: Optional[str],
-        query: Optional[str],
-        query_type: Optional[str],
-    ) -> Dict[str, Any]:
+        linear: float | None,
+        angular: float | None,
+        duration: float | None,
+        x: float | None,
+        y: float | None,
+        theta: float | None,
+        joint_angles: dict[str, float] | None,
+        gripper_action: str | None,
+        patrol_route: str | None,
+        query: str | None,
+        query_type: str | None,
+    ) -> dict[str, Any]:
         """Handle Yahboom robot commands via ROS 2.
 
         Args:
@@ -474,23 +521,23 @@ class RobotControlTool:
         self,
         robot: Any,
         action: str,
-        linear: Optional[float],
-        angular: Optional[float],
-        duration: Optional[float],
-        x: Optional[float],
-        y: Optional[float],
-        theta: Optional[float],
-        suction_level: Optional[int],
-        water_volume: Optional[int],
-        mop_humidity: Optional[int],
-        zones: Optional[List[List[int]]],
-        spot_x: Optional[int],
-        spot_y: Optional[int],
-        room_id: Optional[int],
-        room_name: Optional[str],
-        cleaning_sequence: Optional[List[int]],
-        restricted_zones: Optional[Dict[str, List[List[int]]]],
-    ) -> Dict[str, Any]:
+        linear: float | None,
+        angular: float | None,
+        duration: float | None,
+        x: float | None,
+        y: float | None,
+        theta: float | None,
+        suction_level: int | None,
+        water_volume: int | None,
+        mop_humidity: int | None,
+        zones: list[list[int]] | None,
+        spot_x: int | None,
+        spot_y: int | None,
+        room_id: int | None,
+        room_name: str | None,
+        cleaning_sequence: list[int] | None,
+        restricted_zones: dict[str, list[list[int]]] | None,
+    ) -> dict[str, Any]:
         """Handle Dreame D20 Pro Plus vacuum commands.
 
         Args:
@@ -518,14 +565,14 @@ class RobotControlTool:
         """
         try:
             from .dreame_client import (
+                dreame_clean_room,
+                dreame_clean_spot,
+                dreame_clean_zone,
+                dreame_get_map,
                 dreame_get_status,
+                dreame_move,
                 dreame_start_cleaning,
                 dreame_stop_cleaning,
-                dreame_move,
-                dreame_get_map,
-                dreame_clean_room,
-                dreame_clean_zone,
-                dreame_clean_spot,
                 get_dreame_client,
             )
 
@@ -829,10 +876,10 @@ class RobotControlTool:
         self,
         robot: Any,
         action: str,
-        linear: Optional[float],
-        angular: Optional[float],
-        duration: Optional[float],
-    ) -> Dict[str, Any]:
+        linear: float | None,
+        angular: float | None,
+        duration: float | None,
+    ) -> dict[str, Any]:
         """Handle virtual robot commands.
 
         Args:
@@ -846,7 +893,6 @@ class RobotControlTool:
         Returns:
             Operation result.
         """
-        from fastmcp import Client
 
         logger.info("Virtual robot command", robot_id=robot.robot_id, action=action, platform=robot.platform)
 
@@ -872,7 +918,7 @@ class RobotControlTool:
                                 )
                             return {
                                 "status": "success",
-                                "message": f"Virtual robot moved via avatar-mcp",
+                                "message": "Virtual robot moved via avatar-mcp",
                                 "robot_id": robot.robot_id,
                                 "action": action,
                                 "linear": linear,
@@ -897,13 +943,12 @@ class RobotControlTool:
                             )
                             return {
                                 "status": "success",
-                                "message": f"Virtual robot moved via Unity",
+                                "message": "Virtual robot moved via Unity",
                                 "robot_id": robot.robot_id,
                                 "action": action,
                             }
-                elif robot.platform == "vrchat":
+                elif robot.platform == "vrchat" and "vrchat" in self.mounted_servers:
                     # Use VRChat OSC for movement
-                    if "vrchat" in self.mounted_servers:
                         await call_mounted_server_tool(
                             self.mounted_servers,
                             "vrchat",
@@ -912,7 +957,7 @@ class RobotControlTool:
                         )
                         return {
                             "status": "success",
-                            "message": f"Virtual robot moved via VRChat OSC",
+                            "message": "Virtual robot moved via VRChat OSC",
                             "robot_id": robot.robot_id,
                             "action": action,
                         }
@@ -934,7 +979,7 @@ class RobotControlTool:
                     )
                     return {
                         "status": "success",
-                        "message": f"Virtual robot stopped",
+                        "message": "Virtual robot stopped",
                         "robot_id": robot.robot_id,
                         "action": action,
                     }
@@ -957,7 +1002,7 @@ class RobotControlTool:
         except Exception as e:
             return handle_tool_error("_handle_virtual_robot", e, robot_id=robot.robot_id, action=action)
 
-    async def handle_action(self, robot_id: str, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_action(self, robot_id: str, action: str, params: dict[str, Any]) -> dict[str, Any]:
         """Handle robot action (for HTTP API).
 
         Args:
