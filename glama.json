@@ -1,0 +1,72 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": [
+    "sandraschi"
+  ],
+  "name": "robotics-mcp",
+  "description": "Unified robotics control via MCP - Physical (Dreame/Yahboom) and virtual (Unity/VRChat) robots. Collaborative SLAM, collision avoidance, and 3D export. Web interface included.",
+  "type": "mcp_server",
+  "status": "alpha",
+  "framework": "FastMCP 2.13+",
+  "version": "0.2.0",
+  "icon": "robot",
+  "homeUrl": "https://github.com/sandraschi/robotics-mcp",
+  "tools": 13,
+  "transport": [
+    "stdio",
+    "http"
+  ],
+  "dependencies": {
+    "required_mcp_servers": [
+      "osc-mcp",
+      "unity3d-mcp",
+      "vrchat-mcp",
+      "avatar-mcp",
+      "blender-mcp",
+      "gimp-mcp"
+    ],
+    "note": "This server composes 6+ MCP servers - all must be properly configured and running for full functionality"
+  },
+  "keywords": [
+    "robotics",
+    "mcp-server",
+    "ros",
+    "unity",
+    "vrchat",
+    "virtual-robotics",
+    "fastmcp",
+    "moorebot",
+    "unitree",
+    "dreame",
+    "lidar",
+    "alpha",
+    "mcp-composition"
+  ],
+  "features": {
+    "physical_robots": {
+      "enabled": true,
+      "note": "Dreame D20 Pro (LIDAR) + Yahboom ROSMASTER (ROS2)"
+    },
+    "virtual_robots": {
+      "enabled": true,
+      "prioritized": true,
+      "platforms": [
+        "unity",
+        "vrchat",
+        "resonite"
+      ]
+    },
+    "mcp_composition": {
+      "enabled": true,
+      "composed_servers": 6
+    },
+    "webapp": {
+      "enabled": true,
+      "url": "http://localhost:8081"
+    },
+    "ai_features": {
+      "enabled": true,
+      "notes": "SLAM/Navigation requires discrete GPU (RTX 3060+). Local LLM (70B) requires RTX 3090/4090. Auto-detects running Ollama/LM Studio."
+    }
+  }
+}

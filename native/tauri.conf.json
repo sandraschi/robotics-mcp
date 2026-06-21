@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Robotics MCP",
+  "version": "0.1.0",
+  "identifier": "ai.fleet.robotics-mcp",
+  "build": {
+    "frontendDist": "../web_sota/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Robotics MCP",
+        "width": 1280,
+        "height": 860,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      "resources/robotics-mcp-backend.exe",
+      "../scripts/install-mcp-clients.ps1"
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "skip"
+      },
+      "nsis": {}
+    }
+  },
+  "plugins": {}
+}

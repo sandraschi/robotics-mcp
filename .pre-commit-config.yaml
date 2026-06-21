@@ -1,0 +1,29 @@
+# https://pre-commit.com/
+# Install: uv sync --extra dev && uv run pre-commit install
+# Run all:  uv run pre-commit run --all-files
+
+default_install_hook_types: [pre-commit]
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  - repo: local
+    hooks:
+      - id: biome-ci-web-sota
+        name: biome ci (web_sota)
+        language: node
+        additional_dependencies:
+          - "@biomejs/biome@2.4.12"
+        entry: biome ci
+        files: ^web_sota/
+        exclude: ^web_sota/(node_modules|dist)/
+        types_or: [javascript, jsx, ts, tsx, json, css, html]

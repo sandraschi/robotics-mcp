@@ -1,0 +1,227 @@
+# Robotics MCP Server Configuration Example
+# Copy this file to ~/.robotics-mcp/config.yaml and customize
+
+robotics:
+  # Moorebot Scout Configuration
+  moorebot_scout:
+    enabled: false
+    robot_id: "scout_01"
+    ip_address: "192.168.1.100"
+    port: 9090
+    mock_mode: true  # Set false when hardware available
+    
+    # YDLIDAR SuperLight (95g) Configuration
+    lidar:
+      enabled: false
+      type: "ydlidar_superlight"
+      weight: 95  # grams
+      ros_topic: "/scan"
+      scan_rate: 10  # Hz
+      range_min: 0.1  # meters
+      range_max: 12.0  # meters (indoor)
+      mounting:
+        position: "top"
+        height_offset: 0.08  # 8cm above Scout body
+        rotation_offset: 0  # degrees
+      power:
+        voltage: 5  # V
+        current: 0.48  # A (480mA)
+    
+    location:
+      home_base: {x: 0.0, y: 0.0}
+      rooms:
+        living_room: {x_min: 0, x_max: 5, y_min: 0, y_max: 4}
+        bedroom: {x_min: 5, x_max: 8, y_min: 0, y_max: 3}
+    
+    patrols:
+      default:
+        - {x: 2.0, y: 2.0, room: "living_room"}
+        - {x: 6.0, y: 1.5, room: "bedroom"}
+    
+    # Navigation and SLAM
+    navigation:
+      slam_enabled: true
+      obstacle_avoidance: true
+      safety_distance: 0.3  # meters (30cm minimum clearance)
+      map_resolution: 0.05  # 5cm per pixel
+      maps_directory: "maps/"
+  
+  # Unitree Go2
+  unitree_go2:
+    enabled: false
+    robot_id: "go2_01"
+    mock_mode: true
+  
+  # Unitree G1
+  unitree_g1:
+    enabled: false
+    robot_id: "g1_01"
+    mock_mode: true
+
+  # Yahboom Raspbot-V2 (ROS 2)
+  yahboom_raspbot_v2:
+    enabled: true
+    robot_id: "yahboom_01"
+    ip_address: "192.168.1.101"  # Configure for your network
+    port: 9090  # ROS bridge WebSocket port
+    ros_domain_id: 0
+    camera_enabled: true
+    navigation_enabled: true
+    arm_enabled: false  # Set true when arm/gripper addon installed
+    mock_mode: true  # Set false for real hardware
+
+  # Gazebo Simulation (rosbridge WebSocket)
+  gazebo:
+    enabled: false
+    robot_id: "gazebo_01"
+    host: "localhost"
+    port: 9090
+    model: "turtlebot3"
+    cmd_vel_topic: "/cmd_vel"
+    odom_topic: "/odom"
+    scan_topic: "/scan"
+    camera_enabled: true
+    camera_topic: "/camera/image_raw"
+    mock_mode: true  # Set false when Gazebo + rosbridge running
+
+  # Dreame D20 Pro / D20 Pro Plus Robot Vacuum
+  # Config key dreame_d20_pro or dreame_d20_pro_plus - both map to robot_type dreame
+  dreame_d20_pro_plus:
+    enabled: false  # Set true to enable Dreame vacuum integration
+    robot_id: "dreame_01"
+    robot_type: "dreame"
+    ip_address: "192.168.1.102"  # Run scripts/discover_dreame.py to find
+    token: ""  # Run scripts/get_dreame_token.py to obtain
+    mock_mode: true  # Set false for real hardware
+
+    # Dreame-specific configuration
+    capabilities:
+      suction_levels: 4  # 1-4 (Quiet, Standard, Turbo, Max)
+      water_levels: 3     # 1-3 (Low, Medium, High)
+      mop_humidity_levels: 3  # 1-3 (Low, Medium, High)
+      ai_obstacle_detection: true
+      self_emptying: true
+      multi_floor_mapping: true
+
+    # Default cleaning settings
+    default_settings:
+      suction_level: 2  # Standard
+      water_volume: 2   # Medium
+      mop_humidity: 2   # Medium
+
+    # Room mapping (auto-discovered on first run)
+    rooms: {}  # Will be populated by robot discovery
+
+    # Restricted zones (virtual walls/no-go areas)
+    restricted_zones:
+      walls: []  # [[x1,y1,x2,y2], ...] for virtual walls
+      zones: []  # [[x1,y1,x2,y2], ...] for no-go zones
+
+    # Cleaning sequences (room cleaning order)
+    cleaning_sequences:
+      default: []  # Room IDs in cleaning order
+      quick: []    # Faster cleaning sequence
+
+    # Map configuration
+    map:
+      save_path: "maps/dreame/"
+      auto_update: true
+      multi_floor: false  # Set true for multi-floor homes
+
+    # Camera configuration (1MP Raspberry Pi Camera)
+    camera:
+      resolution: "640x480"  # Upgrade to 1280x720 when possible
+      fps: 30
+      format: "MJPEG"
+      ros_topic: "/camera/image_raw"
+
+    # Navigation parameters
+    navigation:
+      max_linear_velocity: 0.3  # m/s (conservative for indoor)
+      max_angular_velocity: 1.0  # rad/s
+      obstacle_avoidance: true
+      safety_distance: 0.2  # meters (20cm clearance)
+      map_resolution: 0.05  # 5cm per pixel
+
+    # Home patrol configuration
+    patrols:
+      home_security:
+        - {x: 0.0, y: 0.0, description: "living room"}
+        - {x: 3.0, y: 0.0, description: "kitchen"}
+        - {x: 3.0, y: 2.0, description: "bedroom"}
+        - {x: 0.0, y: 2.0, description: "return to base"}
+
+    # Arm/gripper configuration (when addon purchased)
+    arm:
+      enabled: false  # Set true when installed
+      joints: 4  # DOF (degrees of freedom)
+      gripper: true
+      reach: 0.3  # meters
+      payload: 0.5  # kg
+  
+  # Virtual Robotics (Vbot)
+  virtual:
+    enabled: true
+    platform: "unity"  # "unity" or "vrchat"
+    unity:
+      host: "localhost"
+      port: 8080
+      use_unity3d_mcp: true
+    vrchat:
+      enabled: false
+      use_vrchat_mcp: true
+      osc_port: 9000
+    environments:
+      stroheckgasse_apartment:
+        path: "environments/stroheckgasse.ply"
+        type: "marble_export"
+    # Virtual robot instances
+    robots:
+      vbot_scout_01:
+        type: "scout"
+        platform: "unity"
+        model_path: "assets/models/scout/scout_base.fbx"
+        scale: 1.0  # 1× = 11.5cm (actual Scout size)
+        position: {x: 0.0, y: 0.0, z: 0.0}
+      vbot_scout_go2_size:
+        type: "scout"
+        platform: "unity"
+        model_path: "assets/models/scout/scout_base.fbx"
+        scale: 6.1  # Scaled to Unitree Go2 size (70cm) for testing
+        position: {x: 0.0, y: 0.0, z: 0.0}
+  
+  # Multi-robot coordination (bot + vbot)
+  coordination:
+    enabled: false
+    strategy: "zone_based"  # or "time_based", "priority_based"
+    zones:
+      zone_1:
+        robots: ["scout_01", "vbot_scout_01"]  # Physical + virtual
+        area: {x_min: 0, x_max: 5, y_min: 0, y_max: 4}
+  
+  # MCP Server Integration
+  mcp_integration:
+    osc_mcp:
+      enabled: true
+      prefix: "osc"
+      use_proxy: true
+    unity3d_mcp:
+      enabled: true
+      prefix: "unity"
+      use_proxy: true
+    vrchat_mcp:
+      enabled: true
+      prefix: "vrchat"
+      use_proxy: true
+    avatar_mcp:
+      enabled: true
+      prefix: "avatar"
+      use_proxy: true
+
+# Server Configuration
+server:
+  enable_http: true
+  http_port: 12230
+  http_host: "0.0.0.0"
+  log_level: "INFO"
+

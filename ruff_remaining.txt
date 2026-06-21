@@ -1,0 +1,964 @@
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> mcpb\server\server.py:159:17
+    |
+157 |                 return result
+158 |             except Exception as e:
+159 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+160 |
+161 |         @router.get("/tools")
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> mcpb\server\server.py:186:17
+    |
+184 |                 return {"result": result}
+185 |             except Exception as e:
+186 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+187 |
+188 |         @router.get("/status")
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> mcpb\server\server.py:217:17
+    |
+215 |                 return robot.to_dict()
+216 |             except ValueError as e:
+217 |                 raise HTTPException(status_code=400, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+218 |             except Exception as e:
+219 |                 raise HTTPException(status_code=500, detail=str(e))
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> mcpb\server\server.py:219:17
+    |
+217 |                 raise HTTPException(status_code=400, detail=str(e))
+218 |             except Exception as e:
+219 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+220 |
+221 |         @router.delete("/robots/{robot_id}")
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> mcpb\server\server.py:228:17
+    |
+226 |                 return {"status": "success", "message": f"Robot {robot_id} unregistered"}
+227 |             except Exception as e:
+228 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+229 |
+230 |         self.http_app.include_router(router)
+    |
+
+F821 Undefined name `random`
+  --> scripts\architecture\fallingwater_house.py:64:65
+   |
+62 |         for j in range(num_stones_height):
+63 |             # Vary stone positions slightly for natural look
+64 |             stone_x = mid_x + (i - num_stones_length/2) * 0.4 + random.uniform(-0.05, 0.05)
+   |                                                                 ^^^^^^
+65 |             stone_y = mid_y + random.uniform(-0.02, 0.02)
+66 |             stone_z = j * stone_height + stone_height/2
+   |
+
+F821 Undefined name `random`
+  --> scripts\architecture\fallingwater_house.py:65:31
+   |
+63 |             # Vary stone positions slightly for natural look
+64 |             stone_x = mid_x + (i - num_stones_length/2) * 0.4 + random.uniform(-0.05, 0.05)
+65 |             stone_y = mid_y + random.uniform(-0.02, 0.02)
+   |                               ^^^^^^
+66 |             stone_z = j * stone_height + stone_height/2
+   |
+
+F821 Undefined name `random`
+  --> scripts\architecture\fallingwater_house.py:84:24
+   |
+82 |             stone = bpy.context.active_object
+83 |             stone.dimensions = (
+84 |                 0.35 + random.uniform(-0.05, 0.05),
+   |                        ^^^^^^
+85 |                 thickness + random.uniform(-0.02, 0.02),
+86 |                 stone_height + random.uniform(-0.02, 0.02)
+   |
+
+F821 Undefined name `random`
+  --> scripts\architecture\fallingwater_house.py:85:29
+   |
+83 |             stone.dimensions = (
+84 |                 0.35 + random.uniform(-0.05, 0.05),
+85 |                 thickness + random.uniform(-0.02, 0.02),
+   |                             ^^^^^^
+86 |                 stone_height + random.uniform(-0.02, 0.02)
+87 |             )
+   |
+
+F821 Undefined name `random`
+  --> scripts\architecture\fallingwater_house.py:86:32
+   |
+84 |                 0.35 + random.uniform(-0.05, 0.05),
+85 |                 thickness + random.uniform(-0.02, 0.02),
+86 |                 stone_height + random.uniform(-0.02, 0.02)
+   |                                ^^^^^^
+87 |             )
+88 |             stone.rotation_euler[2] = angle + random.uniform(-0.1, 0.1)
+   |
+
+F821 Undefined name `random`
+  --> scripts\architecture\fallingwater_house.py:88:47
+   |
+86 |                 stone_height + random.uniform(-0.02, 0.02)
+87 |             )
+88 |             stone.rotation_euler[2] = angle + random.uniform(-0.1, 0.1)
+   |                                               ^^^^^^
+89 |             stone.name = f"{name}_Stone_{i}_{j}"
+   |
+
+F821 Undefined name `create_stone_wall`
+   --> scripts\architecture\white_heron_castle.py:190:5
+    |
+188 | for i, (start, end) in enumerate(wall_segments):
+189 |     wall_type = "Inner" if i < 4 else "Outer"
+190 |     create_stone_wall(f"{wall_type}_Wall_{i+1}", start, end, height=8, stone_height=0.4)
+    |     ^^^^^^^^^^^^^^^^^
+191 |
+192 | # 6. GATES
+    |
+
+E402 Module level import not at top of file
+  --> scripts\check_blend_file.py:14:1
+   |
+12 |     sys.exit(1)
+13 |
+14 | import bpy
+   | ^^^^^^^^^^
+15 |
+16 | # Clear existing scene
+   |
+
+SIM108 Use ternary operator `roller_angle = 45.0 if name in ["front_left", "back_right"] else -45.0` instead of `if`-`else`-block
+   --> scripts\create_mecanum_wheel.py:152:9
+    |
+150 |           # Front-left and back-right should have rollers angled one way
+151 |           # Front-right and back-left should have rollers angled the opposite way
+152 | /         if name in ["front_left", "back_right"]:
+153 | |             roller_angle = 45.0  # Positive angle
+154 | |         else:
+155 | |             roller_angle = -45.0  # Negative angle
+    | |________________________________^
+156 |
+157 |           # Update roller rotations (this is simplified - in a full implementation,
+    |
+help: Replace `if`-`else`-block with `roller_angle = 45.0 if name in ["front_left", "back_right"] else -45.0`
+
+SIM105 Use `contextlib.suppress(BaseException)` instead of `try`-`except`-`pass`
+   --> scripts\create_mecanum_wheel.py:215:5
+    |
+213 |       # Frame view
+214 |       bpy.ops.object.select_all(action='SELECT')
+215 | /     try:
+216 | |         bpy.ops.view3d.view_all()
+217 | |     except:
+218 | |         pass  # Skip if in background mode
+    | |____________^
+219 |
+220 |       print(f"Created Scout model with {len(wheels)} proper mecanum wheels")
+    |
+help: Replace `try`-`except`-`pass` with `with contextlib.suppress(BaseException): ...`
+
+E722 Do not use bare `except`
+   --> scripts\create_mecanum_wheel.py:217:5
+    |
+215 |     try:
+216 |         bpy.ops.view3d.view_all()
+217 |     except:
+    |     ^^^^^^
+218 |         pass  # Skip if in background mode
+    |
+
+invalid-syntax: Expected `,`, found name
+   --> scripts\discover_hue_bridge.py:188:13
+    |
+186 |         else:
+187 |             print("  Status: Connection failed"
+188 |             print(f"  Error: {bridge.get('error', 'Unknown')}")
+    |             ^^^^^
+189 |
+190 |     print(f"\n{'='*40}")
+    |
+
+invalid-syntax: Expected `,`, found name
+   --> scripts\discover_hue_bridge.py:190:5
+    |
+188 |             print(f"  Error: {bridge.get('error', 'Unknown')}")
+189 |
+190 |     print(f"\n{'='*40}")
+    |     ^^^^^
+191 |     print("NEXT STEPS:")
+192 |     print("1. Add the configuration above to your Robotics MCP config.yaml")
+    |
+
+invalid-syntax: Expected `,`, found name
+   --> scripts\discover_hue_bridge.py:191:5
+    |
+190 |     print(f"\n{'='*40}")
+191 |     print("NEXT STEPS:")
+    |     ^^^^^
+192 |     print("1. Add the configuration above to your Robotics MCP config.yaml")
+193 |     print("2. Run the MCP server")
+    |
+
+invalid-syntax: Expected `,`, found name
+   --> scripts\discover_hue_bridge.py:192:5
+    |
+190 |     print(f"\n{'='*40}")
+191 |     print("NEXT STEPS:")
+192 |     print("1. Add the configuration above to your Robotics MCP config.yaml")
+    |     ^^^^^
+193 |     print("2. Run the MCP server")
+194 |     print("3. Test with: python -c \"from robotics_mcp.tools.robot_control import robot_control; import asyncio; asyncio.run(robot_co…
+    |
+
+invalid-syntax: Expected `,`, found name
+   --> scripts\discover_hue_bridge.py:193:5
+    |
+191 |     print("NEXT STEPS:")
+192 |     print("1. Add the configuration above to your Robotics MCP config.yaml")
+193 |     print("2. Run the MCP server")
+    |     ^^^^^
+194 |     print("3. Test with: python -c \"from robotics_mcp.tools.robot_control import robot_control; import asyncio; asyncio.run(robot_co…
+195 |     print("4. Enable HomeAware in the Philips Hue app and wait 24-48 hours for calibration")
+    |
+
+invalid-syntax: Expected `,`, found name
+   --> scripts\discover_hue_bridge.py:194:5
+    |
+192 |     print("1. Add the configuration above to your Robotics MCP config.yaml")
+193 |     print("2. Run the MCP server")
+194 |     print("3. Test with: python -c \"from robotics_mcp.tools.robot_control import robot_control; import asyncio; asyncio.run(robot_co…
+    |     ^^^^^
+195 |     print("4. Enable HomeAware in the Philips Hue app and wait 24-48 hours for calibration")
+    |
+
+invalid-syntax: Expected `,`, found name
+   --> scripts\discover_hue_bridge.py:195:5
+    |
+193 |     print("2. Run the MCP server")
+194 |     print("3. Test with: python -c \"from robotics_mcp.tools.robot_control import robot_control; import asyncio; asyncio.run(robot_co…
+195 |     print("4. Enable HomeAware in the Philips Hue app and wait 24-48 hours for calibration")
+    |     ^^^^^
+196 |
+197 | if __name__ == "__main__":
+    |
+
+invalid-syntax: Expected `else`, found `:`
+   --> scripts\discover_hue_bridge.py:197:26
+    |
+195 |     print("4. Enable HomeAware in the Philips Hue app and wait 24-48 hours for calibration")
+196 |
+197 | if __name__ == "__main__":
+    |                          ^
+198 |     main()
+    |
+
+invalid-syntax: unexpected EOF while parsing
+   --> scripts\discover_hue_bridge.py:198:11
+    |
+197 | if __name__ == "__main__":
+198 |     main()
+    |           ^
+    |
+
+W292 No newline at end of file
+   --> scripts\discover_hue_bridge.py:198:11
+    |
+197 | if __name__ == "__main__":
+198 |     main()
+    |           ^
+    |
+help: Add trailing newline
+
+E722 Do not use bare `except`
+   --> scripts\import_living_room.py:190:17
+    |
+188 |                 try:
+189 |                     return json.loads(first_content.text)
+190 |                 except:
+    |                 ^^^^^^
+191 |                     return {"status": "success", "message": first_content.text}
+192 |         elif hasattr(result.content, 'text'):
+    |
+
+E722 Do not use bare `except`
+   --> scripts\import_living_room.py:195:13
+    |
+193 |             try:
+194 |                 return json.loads(result.content.text)
+195 |             except:
+    |             ^^^^^^
+196 |                 return {"status": "success", "message": result.content.text}
+    |
+
+SIM108 Use ternary operator `UNITY_PROJECT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("C:/Users/sandr/My project")` instead of `if`-`else`-block
+  --> scripts\import_scout_to_unity.py:21:1
+   |
+20 |   # Get Unity project path from command line or use default
+21 | / if len(sys.argv) > 1:
+22 | |     UNITY_PROJECT = Path(sys.argv[1])
+23 | | else:
+24 | |     UNITY_PROJECT = Path("C:/Users/sandr/My project")  # Default Unity project path
+   | |_____________________________________________________^
+25 |
+26 |   UNITY_ASSETS = UNITY_PROJECT / "Assets" / "Models"
+   |
+help: Replace `if`-`else`-block with `UNITY_PROJECT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("C:/Users/sandr/My project")`
+
+E402 Module level import not at top of file
+  --> scripts\test_spawn_scout.py:23:1
+   |
+21 |     sys.path.insert(0, str(project_root))
+22 |
+23 | from fastmcp import Client
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+24 |
+25 | from robotics_mcp.server import RoboticsConfig, RoboticsMCP
+   |
+
+E402 Module level import not at top of file
+  --> scripts\test_spawn_scout.py:25:1
+   |
+23 | from fastmcp import Client
+24 |
+25 | from robotics_mcp.server import RoboticsConfig, RoboticsMCP
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+SIM117 Use a single `with` statement with multiple contexts instead of nested `with` statements
+   --> scripts\watchfiles_runner.py:123:13
+    |
+121 |           try:
+122 |               timeout = aiohttp.ClientTimeout(total=5)
+123 | /             async with aiohttp.ClientSession(timeout=timeout) as session:
+124 | |                 async with session.get(self.health_check_url) as resp:
+    | |______________________________________________________________________^
+125 |                       if resp.status == 200:
+126 |                           # Check if this is a Robotics MCP health endpoint
+    |
+help: Combine `with` statements
+
+E722 Do not use bare `except`
+   --> scripts\watchfiles_runner.py:130:25
+    |
+128 |                             data = await resp.json()
+129 |                             return data.get("status") == "healthy" or "Robotics" in str(data)
+130 |                         except:
+    |                         ^^^^^^
+131 |                             # If we can't parse JSON, just check status
+132 |                             return resp.status == 200
+    |
+
+E722 Do not use bare `except`
+   --> scripts\watchfiles_runner.py:183:29
+    |
+181 | …                                 "utf-8", errors="ignore"
+182 | …                             ).strip()
+183 | …                     except:
+    |                       ^^^^^^
+184 | …                         pass
+    |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:56:1
+   |
+55 | # Import all necessary modules
+56 | import asyncio
+   | ^^^^^^^^^^^^^^
+57 | import logging
+58 | from pathlib import Path
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:57:1
+   |
+55 | # Import all necessary modules
+56 | import asyncio
+57 | import logging
+   | ^^^^^^^^^^^^^^
+58 | from pathlib import Path
+59 | from typing import Any, Literal
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:58:1
+   |
+56 | import asyncio
+57 | import logging
+58 | from pathlib import Path
+   | ^^^^^^^^^^^^^^^^^^^^^^^^
+59 | from typing import Any, Literal
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:59:1
+   |
+57 | import logging
+58 | from pathlib import Path
+59 | from typing import Any, Literal
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+60 |
+61 | import structlog
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:61:1
+   |
+59 | from typing import Any, Literal
+60 |
+61 | import structlog
+   | ^^^^^^^^^^^^^^^^
+62 | from fastapi import APIRouter, FastAPI, HTTPException
+63 | from fastapi.middleware.cors import CORSMiddleware
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:62:1
+   |
+61 | import structlog
+62 | from fastapi import APIRouter, FastAPI, HTTPException
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+63 | from fastapi.middleware.cors import CORSMiddleware
+64 | from fastapi.responses import FileResponse, JSONResponse
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:63:1
+   |
+61 | import structlog
+62 | from fastapi import APIRouter, FastAPI, HTTPException
+63 | from fastapi.middleware.cors import CORSMiddleware
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+64 | from fastapi.responses import FileResponse, JSONResponse
+65 | from fastapi.staticfiles import StaticFiles
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:64:1
+   |
+62 | from fastapi import APIRouter, FastAPI, HTTPException
+63 | from fastapi.middleware.cors import CORSMiddleware
+64 | from fastapi.responses import FileResponse, JSONResponse
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+65 | from fastapi.staticfiles import StaticFiles
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:65:1
+   |
+63 | from fastapi.middleware.cors import CORSMiddleware
+64 | from fastapi.responses import FileResponse, JSONResponse
+65 | from fastapi.staticfiles import StaticFiles
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+66 |
+67 | # TEMPORARILY DISABLE FastMCP IMPORT FOR DEBUGGING
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:69:1
+   |
+67 | # TEMPORARILY DISABLE FastMCP IMPORT FOR DEBUGGING
+68 | # Import FastMCP BEFORE doing logging replacement
+69 | from fastmcp import FastMCP
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+70 | from pydantic import BaseModel, Field
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:70:1
+   |
+68 | # Import FastMCP BEFORE doing logging replacement
+69 | from fastmcp import FastMCP
+70 | from pydantic import BaseModel, Field
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+71 |
+72 | from .tools.cad_converter import CADConverterTool
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:72:1
+   |
+70 | from pydantic import BaseModel, Field
+71 |
+72 | from .tools.cad_converter import CADConverterTool
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+73 | from .tools.drone_control import DroneControlTool
+74 | from .tools.robot_control import RobotControlTool
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:73:1
+   |
+72 | from .tools.cad_converter import CADConverterTool
+73 | from .tools.drone_control import DroneControlTool
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+74 | from .tools.robot_control import RobotControlTool
+75 | from .tools.robot_manufacturing import RobotManufacturingTool
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:74:1
+   |
+72 | from .tools.cad_converter import CADConverterTool
+73 | from .tools.drone_control import DroneControlTool
+74 | from .tools.robot_control import RobotControlTool
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+75 | from .tools.robot_manufacturing import RobotManufacturingTool
+76 | from .tools.robot_model_tools import RobotModelTools
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:75:1
+   |
+73 | from .tools.drone_control import DroneControlTool
+74 | from .tools.robot_control import RobotControlTool
+75 | from .tools.robot_manufacturing import RobotManufacturingTool
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+76 | from .tools.robot_model_tools import RobotModelTools
+77 | from .tools.vbot_crud import VbotCrudTool
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:76:1
+   |
+74 | from .tools.robot_control import RobotControlTool
+75 | from .tools.robot_manufacturing import RobotManufacturingTool
+76 | from .tools.robot_model_tools import RobotModelTools
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+77 | from .tools.vbot_crud import VbotCrudTool
+78 | from .utils.config_loader import ConfigLoader
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:77:1
+   |
+75 | from .tools.robot_manufacturing import RobotManufacturingTool
+76 | from .tools.robot_model_tools import RobotModelTools
+77 | from .tools.vbot_crud import VbotCrudTool
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+78 | from .utils.config_loader import ConfigLoader
+79 | from .utils.state_manager import RobotStateManager
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:78:1
+   |
+76 | from .tools.robot_model_tools import RobotModelTools
+77 | from .tools.vbot_crud import VbotCrudTool
+78 | from .utils.config_loader import ConfigLoader
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+79 | from .utils.state_manager import RobotStateManager
+   |
+
+E402 Module level import not at top of file
+  --> src\robotics_mcp\server.py:79:1
+   |
+77 | from .tools.vbot_crud import VbotCrudTool
+78 | from .utils.config_loader import ConfigLoader
+79 | from .utils.state_manager import RobotStateManager
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+80 |
+81 | # Configure structured logging
+   |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\server.py:397:17
+    |
+395 |                 return result
+396 |             except Exception as e:
+397 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+398 |
+399 |         @router.get("/tools")
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\server.py:441:25
+    |
+439 |                       except Exception as e:
+440 |                           logger.error(f"FastMCP call_tool failed: {e}")
+441 | /                         raise HTTPException(
+442 | |                             status_code=404,
+443 | |                             detail=f"Tool '{tool_name}' not found via call_tool",
+444 | |                         )
+    | |_________________________^
+445 |
+446 |                   if tool_func is None:
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\server.py:501:17
+    |
+499 |                 return robot.to_dict()
+500 |             except ValueError as e:
+501 |                 raise HTTPException(status_code=400, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+502 |             except Exception as e:
+503 |                 raise HTTPException(status_code=500, detail=str(e))
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\server.py:503:17
+    |
+501 |                 raise HTTPException(status_code=400, detail=str(e))
+502 |             except Exception as e:
+503 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+504 |
+505 |         @router.delete("/robots/{robot_id}")
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\server.py:515:17
+    |
+513 |                 }
+514 |             except Exception as e:
+515 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+516 |
+517 |         # Add web interface route
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\server.py:551:17
+    |
+549 |             except Exception as e:
+550 |                 logger.error(f"Error getting robots: {e}")
+551 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+552 |
+553 |         @self.http_app.get("/api/robots/{robot_id}")
+    |
+
+F811 Redefinition of unused `get_robot` from line 374
+   --> src\robotics_mcp\server.py:554:19
+    |
+553 |         @self.http_app.get("/api/robots/{robot_id}")
+554 |         async def get_robot(robot_id: str):
+    |                   ^^^^^^^^^ `get_robot` redefined here
+555 |             """Get specific robot status."""
+556 |             try:
+    |
+   ::: src\robotics_mcp\server.py:374:19
+    |
+373 |         @router.get("/robots/{robot_id}")
+374 |         async def get_robot(robot_id: str):
+    |                   --------- previous definition of `get_robot` here
+375 |             """Get robot information."""
+376 |             robot = self.state_manager.get_robot(robot_id)
+    |
+help: Remove definition: `get_robot`
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\server.py:576:17
+    |
+574 |             except Exception as e:
+575 |                 logger.error(f"Error getting robot {robot_id}: {e}")
+576 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+577 |
+578 |         @self.http_app.post("/api/robots/{robot_id}/command")
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\server.py:607:17
+    |
+605 |             except Exception as e:
+606 |                 logger.error(f"Error sending command to robot {robot_id}: {e}")
+607 |                 raise HTTPException(status_code=500, detail=str(e))
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+608 |
+609 |         self.http_app.include_router(router)
+    |
+
+SIM116 Use a dictionary instead of consecutive `if` statements
+   --> src\robotics_mcp\server.py:617:13
+    |
+615 |               # In production, this would call the actual robot control tools
+616 |
+617 | /             if action == "get_status":
+618 | |                 return {
+619 | |                     "success": True,
+620 | |                     "message": f"Status retrieved for {robot_id}",
+621 | |                     "battery": 85,
+622 | |                     "status": "idle",
+623 | |                     "connected": robot_id == "dreame_01"  # Mock connection status
+624 | |                 }
+625 | |             elif action == "start_cleaning":
+626 | |                 return {
+627 | |                     "success": True,
+628 | |                     "message": f"Cleaning started on {robot_id}",
+629 | |                     "command": "start_cleaning"
+630 | |                 }
+631 | |             elif action == "stop_cleaning":
+632 | |                 return {
+633 | |                     "success": True,
+634 | |                     "message": f"Cleaning stopped on {robot_id}",
+635 | |                     "command": "stop_cleaning"
+636 | |                 }
+637 | |             elif action == "return_to_dock":
+638 | |                 return {
+639 | |                     "success": True,
+640 | |                     "message": f"{robot_id} returning to dock",
+641 | |                     "command": "return_to_dock"
+642 | |                 }
+643 | |             elif action == "get_map":
+644 | |                 return {
+645 | |                     "success": True,
+646 | |                     "message": f"Map retrieved for {robot_id}",
+647 | |                     "map_data": {
+648 | |                         "rooms": [{"id": "living_room", "name": "Living Room", "coordinates": [0, 0, 200, 200]}],
+649 | |                         "obstacles": [],
+650 | |                         "charging_station": {"x": 100, "y": 100}
+651 | |                     }
+652 | |                 }
+653 | |             else:
+654 | |                 return {
+655 | |                     "success": True,
+656 | |                     "message": f"Command {action} executed on {robot_id}",
+657 | |                     "command": action
+658 | |                 }
+    | |_________________^
+659 |
+660 |           except Exception as e:
+    |
+
+N806 Variable `UNITY_LOAD_TIMEOUT` in function should be lowercase
+   --> src\robotics_mcp\server.py:705:9
+    |
+703 |         import asyncio
+704 |
+705 |         UNITY_LOAD_TIMEOUT = 30.0  # 30 second timeout
+    |         ^^^^^^^^^^^^^^^^^^
+706 |         MAX_RETRY_ATTEMPTS = 3
+707 |         RETRY_DELAY = 2.0
+    |
+
+N806 Variable `MAX_RETRY_ATTEMPTS` in function should be lowercase
+   --> src\robotics_mcp\server.py:706:9
+    |
+705 |         UNITY_LOAD_TIMEOUT = 30.0  # 30 second timeout
+706 |         MAX_RETRY_ATTEMPTS = 3
+    |         ^^^^^^^^^^^^^^^^^^
+707 |         RETRY_DELAY = 2.0
+    |
+
+N806 Variable `RETRY_DELAY` in function should be lowercase
+   --> src\robotics_mcp\server.py:707:9
+    |
+705 |         UNITY_LOAD_TIMEOUT = 30.0  # 30 second timeout
+706 |         MAX_RETRY_ATTEMPTS = 3
+707 |         RETRY_DELAY = 2.0
+    |         ^^^^^^^^^^^
+708 |
+709 |         logger.info(
+    |
+
+E722 Do not use bare `except`
+   --> src\robotics_mcp\services\workflow_executor.py:405:9
+    |
+403 |         try:
+404 |             return bool(eval(expr))
+405 |         except:
+    |         ^^^^^^
+406 |             return False
+    |
+
+F821 Undefined name `StepExecutionResult`
+   --> src\robotics_mcp\services\workflow_storage.py:421:23
+    |
+419 |         self,
+420 |         execution_id: str,
+421 |         step_result: "StepExecutionResult",
+    |                       ^^^^^^^^^^^^^^^^^^^
+422 |     ):
+423 |         """Add step execution result.
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\tools\cad_converter.py:224:13
+    |
+222 |             )
+223 |         except subprocess.TimeoutExpired:
+224 |             raise Exception(f"Command timed out: {' '.join(command)}")
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+225 |         except FileNotFoundError:
+226 |             raise Exception(f"Command not found: {command[0]}")
+    |
+
+B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+   --> src\robotics_mcp\tools\cad_converter.py:226:13
+    |
+224 |             raise Exception(f"Command timed out: {' '.join(command)}")
+225 |         except FileNotFoundError:
+226 |             raise Exception(f"Command not found: {command[0]}")
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+227 |
+228 |     async def _convert_cad(
+    |
+
+F821 Undefined name `hue_get_movement_events`
+   --> src\robotics_mcp\tools\robot_control.py:905:30
+    |
+903 |             # Route to appropriate Hue HomeAware handler
+904 |             if action == "hue_get_movement_events":
+905 |                 return await hue_get_movement_events(robot.robot_id)
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^
+906 |
+907 |             elif action == "hue_get_sensor_status":
+    |
+
+F821 Undefined name `hue_get_sensor_status`
+   --> src\robotics_mcp\tools\robot_control.py:908:30
+    |
+907 |             elif action == "hue_get_sensor_status":
+908 |                 return await hue_get_sensor_status(robot.robot_id)
+    |                              ^^^^^^^^^^^^^^^^^^^^^
+909 |
+910 |             elif action == "hue_get_movement_zones":
+    |
+
+F821 Undefined name `hue_get_movement_zones`
+   --> src\robotics_mcp\tools\robot_control.py:911:30
+    |
+910 |             elif action == "hue_get_movement_zones":
+911 |                 return await hue_get_movement_zones(robot.robot_id)
+    |                              ^^^^^^^^^^^^^^^^^^^^^^
+912 |
+913 |             else:
+    |
+
+F821 Undefined name `bpy`
+    --> src\robotics_mcp\tools\robot_model_tools.py:1328:22
+     |
+1326 | # Select all and frame view
+1327 | bpy.ops.object.select_all(action='SELECT')
+1328 | print(f"Created {len(bpy.data.objects)} objects:")
+     |                      ^^^
+1329 | for obj in bpy.data.objects:
+1330 |     print(f"  - {obj.name} at {obj.location}")
+     |
+
+F821 Undefined name `obj`
+    --> src\robotics_mcp\tools\robot_model_tools.py:1330:18
+     |
+1328 | print(f"Created {len(bpy.data.objects)} objects:")
+1329 | for obj in bpy.data.objects:
+1330 |     print(f"  - {obj.name} at {obj.location}")
+     |                  ^^^
+1331 |
+1332 | # Frame all objects in viewport (zoom to fit) - skip in background mode
+     |
+
+F821 Undefined name `obj`
+    --> src\robotics_mcp\tools\robot_model_tools.py:1330:32
+     |
+1328 | print(f"Created {len(bpy.data.objects)} objects:")
+1329 | for obj in bpy.data.objects:
+1330 |     print(f"  - {obj.name} at {obj.location}")
+     |                                ^^^
+1331 |
+1332 | # Frame all objects in viewport (zoom to fit) - skip in background mode
+     |
+
+F821 Undefined name `e`
+    --> src\robotics_mcp\tools\robot_model_tools.py:1344:68
+     |
+1342 |     print("Framed all objects in viewport")
+1343 | except Exception as e:
+1344 |     print(f"Note: Could not frame viewport (background mode): {str(e)}")
+     |                                                                    ^
+1345 |
+1346 | # Save .blend file (do this BEFORE any potential errors)
+     |
+
+F821 Undefined name `blend_path`
+    --> src\robotics_mcp\tools\robot_model_tools.py:1352:42
+     |
+1350 | try:
+1351 |     bpy.ops.wm.save_as_mainfile(filepath=blend_path)
+1352 |     print(f"SUCCESS: Saved .blend file: {blend_path}")
+     |                                          ^^^^^^^^^^
+1353 |     print(f"Objects saved: {len(bpy.data.objects)}")
+1354 | except Exception as save_error:
+     |
+
+F821 Undefined name `bpy`
+    --> src\robotics_mcp\tools\robot_model_tools.py:1353:33
+     |
+1351 |     bpy.ops.wm.save_as_mainfile(filepath=blend_path)
+1352 |     print(f"SUCCESS: Saved .blend file: {blend_path}")
+1353 |     print(f"Objects saved: {len(bpy.data.objects)}")
+     |                                 ^^^
+1354 | except Exception as save_error:
+1355 |     print(f"ERROR saving blend file: {save_error}")
+     |
+
+F821 Undefined name `save_error`
+    --> src\robotics_mcp\tools\robot_model_tools.py:1355:39
+     |
+1353 |     print(f"Objects saved: {len(bpy.data.objects)}")
+1354 | except Exception as save_error:
+1355 |     print(f"ERROR saving blend file: {save_error}")
+     |                                       ^^^^^^^^^^
+1356 |     raise
+1357 | """
+     |
+
+SIM115 Use a context manager for opening files
+    --> src\robotics_mcp\tools\robot_model_tools.py:1493:25
+     |
+1491 |             import tempfile
+1492 |
+1493 |             temp_base = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1494 |             temp_base.close()
+     |
+
+F401 `spz` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   --> src\robotics_mcp\tools\spz_converter.py:129:20
+    |
+127 |         # Check for Python spz library
+128 |         try:
+129 |             import spz  # type: ignore
+    |                    ^^^
+130 |
+131 |             tools_available["python_spz_lib"] = True
+    |
+help: Remove unused import: `spz`
+
+F401 `spz` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   --> src\robotics_mcp\tools\spz_converter.py:191:20
+    |
+189 |         # Method 2: Try Python spz library (if available)
+190 |         try:
+191 |             import spz  # type: ignore
+    |                    ^^^
+192 |
+193 |             # This would require the actual spz Python library implementation
+    |
+help: Remove unused import: `spz`
+
+E722 Do not use bare `except`
+   --> src\robotics_mcp\tools\virtual_robotics.py:369:29
+    |
+367 |                             try:
+368 |                                 unity_result = json.loads(first_content.text)
+369 |                             except:
+    |                             ^^^^^^
+370 |                                 unity_result = {"status": "success", "message": first_content.text}
+371 |                         else:
+    |
+
+Found 84 errors.

@@ -1,0 +1,34 @@
+{
+    "name": "robotics-mcp",
+    "version": "0.1.0",
+    "type": "server",
+    "runtime": "python",
+    "entry_point": "src/robotics_mcp/server.py",
+    "dependencies": [
+        "fastmcp>=2.14.4,<3.0.0"
+    ],
+    "build": {
+        "include": [
+            "src/**/*",
+            "README.md",
+            "LICENSE"
+        ],
+        "exclude": [
+            "tests/",
+            ".git/",
+            "__pycache__/",
+            "*.pyc",
+            ".venv/",
+            "dist/",
+            "build/",
+            "target/",
+            "docs/",
+            "scripts/"
+        ]
+    },
+    "scripts": {
+        "build": "mcpb build",
+        "pack": "mcpb pack . dist/robotics-mcp.mcpb",
+        "test": "python -m pytest"
+    }
+}

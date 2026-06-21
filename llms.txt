@@ -1,0 +1,39 @@
+# robotics-mcp — Robotics Control Server
+
+MCP server for physical and virtual robots: Dreame vacuums, Yahboom ROS arms, Elegoo, Gazebo simulation, drone control, Philips Hue, and World Labs integration. FastMCP 3.2, dual transport: stdio + HTTP SSE on port 10706.
+
+## Tools
+
+- `robot_control` — Control any robot (Dreame, Yahboom, drone, Hue): get_status, start_cleaning, arm_move, gripper_control, takeoff, set_light_state
+- `robot_navigation` — Navigation and path planning for mobile robots
+- `robot_model_tools` — URDF, robot model management, kinematics
+- `robot_manufacturing` — Manufacturing/assembly operations for robot arms
+- `robot_camera` — Camera capture, stream, and image processing
+- `robot_behavior` — Behavior tree and state machine management
+- `robot_animation` — Robot animation sequences
+- `robotics_system` — System diagnostics, health checks, ROS 2 node management
+- `dreame_control` — Dreame D20 Pro vacuum: cleaning zones, schedules, dock
+- `dreame_map_export` — Export Dreame LIDAR maps as floorplans
+- `gazebo_models` — Gazebo simulation model management
+- `drone_control` — PX4/ArduPilot drone: takeoff, waypoint, RTL
+- `agentic_robotics` — Multi-step robot workflows via LLM sampling
+- `agentic_support` — Agentic assist for planning robot operations
+- `vbot_crud` — Virtual robot (vbot) lifecycle in Unity/VR
+- `spz_converter` — SPZ (splat) file format conversion
+- `cad_converter` — CAD model format conversion for robotics
+- `sim_art_fleet` — Simulation art and asset fleet management
+- `fab_art_fleet` — Fabrication art pipeline for robot parts
+- `environmental_logistics` — Environmental sensor and logistics management
+- `noetix_bumi` — Noetix Bumi robot arm control
+- `hue_client` — Philips Hue Bridge Pro light control
+- `workflow_management` — Workflow definitions for multi-step sequences
+- `sim_orchestrator` — Simulation orchestration and registry
+- `robot_virtual` — Virtual robot creation and configuration
+
+## Config
+
+- Port: 10706 (dashboard), dual transport stdio + HTTP
+- Env: DREAME_MAP_URL, YAHBOOM_IP, GAZEBO_MASTER_URI
+- Clients: Dreame Cloud, Yahboom ROS, Elegoo, Gazebo
+
+See [llms-full.txt](llms-full.txt) for full tool reference.

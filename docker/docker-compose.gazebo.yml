@@ -1,0 +1,39 @@
+# Gazebo + ROS 1 + rosbridge for robotics-mcp simulation
+# Requires: Docker, X11 (for Gazebo GUI) or headless mode
+
+version: "3.8"
+
+services:
+  gazebo-ros:
+    build:
+      context: .
+      dockerfile: Dockerfile.ros1-melodic
+    container_name: robotics-gazebo
+    hostname: gazebo-ros
+    privileged: true
+    network_mode: bridge
+    volumes:
+      - ../src/robotics_mcp:/ros_ws/src/robotics_mcp:ro
+      - ros1_workspace:/ros_ws
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+      - ROS_MASTER_URI=http://localhost:11311
+      - ROS_HOSTNAME=gazebo-ros
+      - QT_X11_NO_MITSHM=1
+    ports:
+      - "9090:9090"
+      - "11311:11311"
+    stdin_open: true
+    tty: true
+    command: >
+      bash -c "
+        source /opt/ros/melodic/setup.bash;
+        roscore &
+        sleep 3;
+        roslaunch rosbridge_server rosbridge_websocket.launch
+      "
+
+volumes:
+  ros1_workspace:
+    driver: local

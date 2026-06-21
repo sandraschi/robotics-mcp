@@ -1,0 +1,25 @@
+.map-grid-pattern {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(16, 185, 129, 0.15) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
+}
+
+.lidar-sweep {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 270deg,
+    rgba(16, 185, 129, 0.2) 360deg
+  );
+}
+
+.pointcloud-dot {
+  box-shadow: 0 0 8px red;
+}
+
+.robot-indicator-glow {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+}

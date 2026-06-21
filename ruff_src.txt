@@ -1,0 +1,1259 @@
+[1m[91mS105 [0m[1mPossible hardcoded password assigned to: "token"[0m
+  [1m[94m-->[0m src\robotics_mcp\clients\dreame_client.py:36:44
+   [1m[94m|[0m
+[1m[94m34 |[0m         logger.info(f"Ô£à Robot at {self.ip} is reachable.")
+[1m[94m35 |[0m
+[1m[94m36 |[0m         if not self.token or self.token == "YOUR_TOKEN_HERE":
+   [1m[94m|[0m                                            [1m[91m^^^^^^^^^^^^^^^^^[0m
+[1m[94m37 |[0m             logger.warning("ÔÜá´©Å  Dreame Authentication Token is missing.")
+[1m[94m38 |[0m             logger.warning("Please extract the token using a 3rd party tool (e.g. VeVS Mi Home) and update config.")
+   [1m[94m|[0m
+
+[1m[91mS603 [0m[1m`subprocess` call: check for execution of untrusted input[0m
+  [1m[94m-->[0m src\robotics_mcp\clients\dreame_client.py:60:20
+   [1m[94m|[0m
+[1m[94m58 |[0m         command = ["ping", param, "1", self.ip]
+[1m[94m59 |[0m         try:
+[1m[94m60 |[0m             return subprocess.call(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+   [1m[94m|[0m                    [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m61 |[0m         except Exception:
+[1m[94m62 |[0m             return False
+   [1m[94m|[0m
+
+[1m[91mS105 [0m[1mPossible hardcoded password assigned to: "DREAME_TOKEN"[0m
+ [1m[94m-->[0m src\robotics_mcp\config.py:3:16
+  [1m[94m|[0m
+[1m[94m1 |[0m # Dreame Robot Configuration
+[1m[94m2 |[0m DREAME_IP = "192.168.0.179"
+[1m[94m3 |[0m DREAME_TOKEN = "YOUR_TOKEN_HERE"  # Update this with the token extracted via VeVS app or other methods
+  [1m[94m|[0m                [1m[91m^^^^^^^^^^^^^^^^^[0m
+[1m[94m4 |[0m
+[1m[94m5 |[0m # Moorebot Scout Configuration
+  [1m[94m|[0m
+
+[1m[91mRUF012 [0m[1mMutable class attributes should be annotated with `typing.ClassVar`[0m
+  [1m[94m-->[0m src\robotics_mcp\osc_bridge.py:17:24
+   [1m[94m|[0m
+[1m[94m16 |[0m       # Standard OSC Address Patterns
+[1m[94m17 |[0m       ADDRESS_PATTERNS = {
+   [1m[94m|[0m  [1m[91m________________________^[0m
+[1m[94m18 |[0m [1m[91m|[0m         "unity": "/unity/robot/{robot_type}/{param}",
+[1m[94m19 |[0m [1m[91m|[0m         "vrchat": "/avatar/parameters/{robot_type}_{param}",
+[1m[94m20 |[0m [1m[91m|[0m         "resonite": "/resonite/avatar/{robot_type}_{param}",  # Simplified for Resonite
+[1m[94m21 |[0m [1m[91m|[0m     }
+   [1m[94m|[0m [1m[91m|_____^[0m
+[1m[94m22 |[0m
+[1m[94m23 |[0m       def __init__(self):
+   [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (156 > 120)[0m
+ [1m[94m-->[0m src\robotics_mcp\scripts\raspbot_setup.py:1:121
+  [1m[94m|[0m
+[1m[94m1 |[0m [1m[94mÔÇª[0m python -m robotics_mcp.scripts.raspbot_setup --ensure-config [--ip IP] [--probe]."""
+  [1m[94m|[0m                                                   [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m2 |[0m [1m[94mÔÇª[0m
+[1m[94m3 |[0m [1m[94mÔÇª[0m
+  [1m[94m|[0m
+
+[1m[91mE402 [0m[1mModule level import not at top of file[0m
+  [1m[94m-->[0m src\robotics_mcp\server.py:60:1
+   [1m[94m|[0m
+[1m[94m59 |[0m # Import auth middleware
+[1m[94m60 |[0m from robotics_mcp.utils.auth import wurst_auth_middleware
+   [1m[94m|[0m [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+   [1m[94m|[0m
+
+[1m[91mS104 [0m[1mPossible binding to all interfaces[0m
+  [1m[94m-->[0m src\robotics_mcp\server.py:68:36
+   [1m[94m|[0m
+[1m[94m66 |[0m     enable_http: bool = Field(default=True, description="Enable HTTP interface alongside stdio")
+[1m[94m67 |[0m     http_port: int = Field(default=10892, description="HTTP server port")
+[1m[94m68 |[0m     http_host: str = Field(default="0.0.0.0", description="HTTP server host")
+   [1m[94m|[0m                                    [1m[91m^^^^^^^^^[0m
+[1m[94m69 |[0m     log_level: str = Field(default="INFO", description="Logging level")
+[1m[94m70 |[0m     config_path: str | None = Field(default=None, description="Path to config YAML file")
+   [1m[94m|[0m
+
+[1m[91mS104 [0m[1mPossible binding to all interfaces[0m
+   [1m[94m-->[0m src\robotics_mcp\server.py:847:43
+    [1m[94m|[0m
+[1m[94m845 |[0m         help="Server mode (default: stdio)",
+[1m[94m846 |[0m     )
+[1m[94m847 |[0m     parser.add_argument("--host", default="0.0.0.0", help="HTTP server host")
+    [1m[94m|[0m                                           [1m[91m^^^^^^^^^[0m
+[1m[94m848 |[0m     parser.add_argument("--port", type=int, default=10892, help="HTTP server port")
+[1m[94m849 |[0m     parser.add_argument("--config", help="Path to config YAML file")
+    [1m[94m|[0m
+
+[1m[91mF821 [0m[1mUndefined name `_is_stdio_mode`[0m
+   [1m[94m-->[0m src\robotics_mcp\server.py:884:12
+    [1m[94m|[0m
+[1m[94m882 |[0m         # CRITICAL: After server initialization, restore stdout for stdio mode
+[1m[94m883 |[0m         # This allows the server to communicate via JSON-RPC while preventing initialization logging
+[1m[94m884 |[0m         if _is_stdio_mode:
+    [1m[94m|[0m            [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m885 |[0m             if hasattr(sys.stdout, "restore"):
+[1m[94m886 |[0m                 sys.stdout.restore()
+    [1m[94m|[0m
+
+[1m[91mS307 [0m[1mUse of possibly insecure function; consider using `ast.literal_eval`[0m
+   [1m[94m-->[0m src\robotics_mcp\services\workflow_executor.py:408:25
+    [1m[94m|[0m
+[1m[94m406 |[0m         # Default: evaluate as boolean
+[1m[94m407 |[0m         try:
+[1m[94m408 |[0m             return bool(eval(expr))
+    [1m[94m|[0m                         [1m[91m^^^^^^^^^^[0m
+[1m[94m409 |[0m         except Exception:
+[1m[94m410 |[0m             return False
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (141 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\services\workflow_storage.py:176:121
+    [1m[94m|[0m
+[1m[94m174 |[0m [1m[94mÔÇª[0m
+[1m[94m175 |[0m [1m[94mÔÇª[0m
+[1m[94m176 |[0m [1m[94mÔÇª[0m= ?, author = ?, tags = ?, workflow_data = ?, updated_at = CURRENT_TIMESTAMP
+    [1m[94m|[0m                                                         [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m177 |[0m [1m[94mÔÇª[0m
+[1m[94m178 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (127 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\services\workflow_storage.py:441:121
+    [1m[94m|[0m
+[1m[94m439 |[0m             """
+[1m[94m440 |[0m             INSERT INTO workflow_execution_steps (
+[1m[94m441 |[0m                 id, execution_id, step_id, step_name, status, started_at, completed_at, output_data, error_message, retry_count
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^^^^^[0m
+[1m[94m442 |[0m             )
+[1m[94m443 |[0m             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (137 > 120)[0m
+  [1m[94m-->[0m src\robotics_mcp\tools\agentic_robotics.py:83:121
+   [1m[94m|[0m
+[1m[94m81 |[0m [1m[94mÔÇª[0m     # Complex manufacturing task
+[1m[94m82 |[0m [1m[94mÔÇª[0m     result = await autonomous_robotics_task(
+[1m[94m83 |[0m [1m[94mÔÇª[0m         task_description="Assemble circuit board: fetch components, place resistors, solder connections, test functionality",
+   [1m[94m|[0m                                                                                                               [1m[91m^^^^^^^^^^^^^^^^^[0m
+[1m[94m84 |[0m [1m[94mÔÇª[0m         available_robots=["scout-01", "go2-01"],
+[1m[94m85 |[0m [1m[94mÔÇª[0m         max_steps=15,
+   [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (130 > 120)[0m
+  [1m[94m-->[0m src\robotics_mcp\tools\agentic_support.py:35:121
+   [1m[94m|[0m
+[1m[94m33 |[0m                         "content": {
+[1m[94m34 |[0m                             "type": "text",
+[1m[94m35 |[0m                             "text": f"Evaluate this robotics objective and return a structured JSON mission profile: {objective}",
+   [1m[94m|[0m                                                                                                                         [1m[91m^^^^^^^^^^[0m
+[1m[94m36 |[0m                         },
+[1m[94m37 |[0m                     }
+   [1m[94m|[0m
+
+[1m[91mS603 [0m[1m`subprocess` call: check for execution of untrusted input[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\cad_converter.py:231:26
+    [1m[94m|[0m
+[1m[94m229 |[0m         """Run a command and return the result."""
+[1m[94m230 |[0m         try:
+[1m[94m231 |[0m             return await subprocess.run(command, capture_output=True, text=True, timeout=30)
+    [1m[94m|[0m                          [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m232 |[0m         except subprocess.TimeoutExpired as e:
+[1m[94m233 |[0m             raise Exception(f"Command timed out: {' '.join(command)}") from e
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (121 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:116:121
+    [1m[94m|[0m
+[1m[94m114 |[0m                 altitude: Target altitude (m) for takeoff operation
+[1m[94m115 |[0m                 mode: Flight mode for set_mode operation (e.g., "STABILIZE", "ALT_HOLD", "LOITER", "AUTO", "RTL")
+[1m[94m116 |[0m                 calibration_type: Type of calibration for calibrate operation (e.g., "accelerometer", "compass", "level")
+    [1m[94m|[0m                                                                                                                         [1m[91m^[0m
+[1m[94m117 |[0m
+[1m[94m118 |[0m             Returns:
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (171 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:131:121
+    [1m[94m|[0m
+[1m[94m129 |[0m [1m[94mÔÇª[0m
+[1m[94m130 |[0m [1m[94mÔÇª[0m=10.0)
+[1m[94m131 |[0m [1m[94mÔÇª[0m 10m", "safety_warnings": [], "next_commands": ["drone_control('get_status', 'drone_01')"]}
+    [1m[94m|[0m                                          [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m132 |[0m [1m[94mÔÇª[0m
+[1m[94m133 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (147 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:135:121
+    [1m[94m|[0m
+[1m[94m133 |[0m [1m[94mÔÇª[0m
+[1m[94m134 |[0m [1m[94mÔÇª[0mdrone_01")
+[1m[94m135 |[0m [1m[94mÔÇª[0mcy stop initiated", "error_recovery": {"rollback_options": ["arm", "takeoff"]}}
+    [1m[94m|[0m                                                      [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m136 |[0m [1m[94mÔÇª[0m
+[1m[94m137 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (230 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:231:121
+    [1m[94m|[0m
+[1m[94m229 |[0m [1m[94mÔÇª[0m
+[1m[94m230 |[0m [1m[94mÔÇª[0m
+[1m[94m231 |[0m [1m[94mÔÇª[0msp_url": "rtsp://drone_01/live", "quality": "720p"}, "next_commands": ["drone_streaming('start_recording', 'drone_01')"]}
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m232 |[0m [1m[94mÔÇª[0m
+[1m[94m233 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (190 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:235:121
+    [1m[94m|[0m
+[1m[94m233 |[0m [1m[94mÔÇª[0m
+[1m[94m234 |[0m [1m[94mÔÇª[0m="webrtc")
+[1m[94m235 |[0m [1m[94mÔÇª[0mdrone_01/live", "expires_in": 3600}, "quality_recommendations": ["Consider 1080p for better detail"]}
+    [1m[94m|[0m                                 [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m236 |[0m [1m[94mÔÇª[0m
+[1m[94m237 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (133 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:337:121
+    [1m[94m|[0m
+[1m[94m335 |[0m [1m[94mÔÇª[0m     Examples:
+[1m[94m336 |[0m [1m[94mÔÇª[0m         Set a waypoint mission:
+[1m[94m337 |[0m [1m[94mÔÇª[0m             result = await drone_navigation("set_waypoint", "drone_01", latitude=37.7749, longitude=-122.4194, altitude=30.0)
+    [1m[94m|[0m                                                                                                                   [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m338 |[0m [1m[94mÔÇª[0m             # Returns: {"success": true, "message": "Waypoint set for navigation", "mission_status": {"waypoints_queued": 1, "estim[1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (243 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:338:121
+    [1m[94m|[0m
+[1m[94m336 |[0m [1m[94mÔÇª[0m
+[1m[94m337 |[0m [1m[94mÔÇª[0m94, altitude=30.0)
+[1m[94m338 |[0m [1m[94mÔÇª[0moints_queued": 1, "estimated_flight_time": "45 seconds"}, "next_commands": ["drone_navigation('follow_waypoints', 'drone_01')"]}
+    [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m339 |[0m [1m[94mÔÇª[0m
+[1m[94m340 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (185 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:341:121
+    [1m[94m|[0m
+[1m[94m340 |[0m [1m[94mÔÇª[0m
+[1m[94m341 |[0m [1m[94mÔÇª[0moints=[{"lat": 37.7740, "lon": -122.4200}, {"lat": 37.7750, "lon": -122.4180}], max_altitude=50.0)
+    [1m[94m|[0m                                   [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m342 |[0m [1m[94mÔÇª[0mfety_warnings": [], "next_commands": ["drone_control('arm', 'drone_01')"]}
+[1m[94m343 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (161 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:342:121
+    [1m[94m|[0m
+[1m[94m340 |[0m [1m[94mÔÇª[0m
+[1m[94m341 |[0m [1m[94mÔÇª[0m01", fence_points=[{"lat": 37.7740, "lon": -122.4200}, {"lat": 37.7750, "lon": -122.4180}], max_altitude=50.0)
+[1m[94m342 |[0m [1m[94mÔÇª[0mlished", "safety_warnings": [], "next_commands": ["drone_control('arm', 'drone_01')"]}
+    [1m[94m|[0m                                               [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m343 |[0m [1m[94mÔÇª[0m
+[1m[94m344 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (214 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:441:121
+    [1m[94m|[0m
+[1m[94m439 |[0m [1m[94mÔÇª[0m
+[1m[94m440 |[0m [1m[94mÔÇª[0mn_001")
+[1m[94m441 |[0m [1m[94mÔÇª[0mstatus": {"waypoints_total": 5, "estimated_completion": "8 minutes"}, "safety_assessment": {"risk_level": "low"}}
+    [1m[94m|[0m                     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m442 |[0m [1m[94mÔÇª[0m
+[1m[94m443 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (127 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:444:121
+    [1m[94m|[0m
+[1m[94m443 |[0m [1m[94mÔÇª[0m         Tune flight parameters:
+[1m[94m444 |[0m [1m[94mÔÇª[0m             result = await drone_flight_control("set_parameter", "drone_01", param_name="WPNAV_SPEED", param_value=800)
+    [1m[94m|[0m                                                                                                                   [1m[91m^^^^^^^[0m
+[1m[94m445 |[0m [1m[94mÔÇª[0m             # Returns: {"success": true, "message": "Parameter updated", "parameter_suggestions": ["Consider WPNAV_ACCEL=500 for sm[1m[94mÔÇª[0m
+[1m[94m446 |[0m [1m[94mÔÇª[0m     """
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (227 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\drone_control.py:445:121
+    [1m[94m|[0m
+[1m[94m443 |[0m [1m[94mÔÇª[0m
+[1m[94m444 |[0m [1m[94mÔÇª[0m", param_value=800)
+[1m[94m445 |[0m [1m[94mÔÇª[0mConsider WPNAV_ACCEL=500 for smoother turns"], "next_commands": ["drone_flight_control('get_parameters', 'drone_01')"]}
+    [1m[94m|[0m              [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m446 |[0m [1m[94mÔÇª[0m
+[1m[94m447 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (162 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\environmental_logistics.py:98:121
+    [1m[94m|[0m
+[1m[94m 96 |[0m [1m[94mÔÇª[0m
+[1m[94m 97 |[0m [1m[94mÔÇª[0m
+[1m[94m 98 |[0m [1m[94mÔÇª[0mr", "fence", "nestling", "dog", "pool_perimeter", "toddler", "senior", "nursery_wall").
+    [1m[94m|[0m                                               [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m 99 |[0m [1m[94mÔÇª[0mfication.
+[1m[94m100 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (221 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\environmental_logistics.py:106:121
+    [1m[94m|[0m
+[1m[94m104 |[0m [1m[94mÔÇª[0m
+[1m[94m105 |[0m [1m[94mÔÇª[0m
+[1m[94m106 |[0m [1m[94mÔÇª[0m", "huggie_suit", "mural_animal_scene", "call_brother_steve", "call_police", "call_firefighters", "call_ambulance").
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m107 |[0m [1m[94mÔÇª[0m
+[1m[94m108 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (172 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\environmental_logistics.py:634:121
+    [1m[94m|[0m
+[1m[94m632 |[0m [1m[94mÔÇª[0m
+[1m[94m633 |[0m [1m[94mÔÇª[0m
+[1m[94m634 |[0m [1m[94mÔÇª[0mdler. There is a {emergency_type} emergency at {base_address}. Please respond immediately.",
+    [1m[94m|[0m                                          [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m635 |[0m [1m[94mÔÇª[0m
+[1m[94m636 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (172 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\environmental_logistics.py:639:121
+    [1m[94m|[0m
+[1m[94m637 |[0m [1m[94mÔÇª[0m
+[1m[94m638 |[0m [1m[94mÔÇª[0m
+[1m[94m639 |[0m [1m[94mÔÇª[0mse_address}. Resident: {user_name}. Type: {emergency_type}. Tactical deployment requested.",
+    [1m[94m|[0m                                          [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m640 |[0m [1m[94mÔÇª[0m
+[1m[94m641 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (174 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\environmental_logistics.py:644:121
+    [1m[94m|[0m
+[1m[94m642 |[0m [1m[94mÔÇª[0m
+[1m[94m643 |[0m [1m[94mÔÇª[0m
+[1m[94m644 |[0m [1m[94mÔÇª[0mse_address}. Resident: {user_name}. Type: {emergency_type}. Immediate suppression required.",
+    [1m[94m|[0m                                         [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m645 |[0m [1m[94mÔÇª[0m
+[1m[94m646 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (175 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\environmental_logistics.py:649:121
+    [1m[94m|[0m
+[1m[94m647 |[0m [1m[94mÔÇª[0m
+[1m[94m648 |[0m [1m[94mÔÇª[0m
+[1m[94m649 |[0m [1m[94mÔÇª[0m}. Resident: {user_name}. Subject Type: {emergency_type}. Life-support equipment indicated.",
+    [1m[94m|[0m                                        [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m650 |[0m [1m[94mÔÇª[0m
+[1m[94m651 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mRUF001 [0m[1mString contains ambiguous `ÔÇô` (EN DASH). Did you mean `-` (HYPHEN-MINUS)?[0m
+  [1m[94m-->[0m src\robotics_mcp\tools\noetix_bumi.py:19:33
+   [1m[94m|[0m
+[1m[94m17 |[0m         "weight_kg": 12,
+[1m[94m18 |[0m         "dof": 21,
+[1m[94m19 |[0m         "battery": "48V 3.5Ah, 2ÔÇô3 h runtime",
+   [1m[94m|[0m                                 [1m[91m^[0m
+[1m[94m20 |[0m         "peak_torque_nm": 50,
+[1m[94m21 |[0m         "speed_ms": 0.5,
+   [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (124 > 120)[0m
+    [1m[94m-->[0m src\robotics_mcp\tools\robot_behavior.py:1126:121
+     [1m[94m|[0m
+[1m[94m1124 |[0m                         error_code="UNKNOWN_ACTION",
+[1m[94m1125 |[0m                         suggestions=[
+[1m[94m1126 |[0m                             "Use plan_path, follow_path, set_waypoint, clear_waypoints, get_path_status, or avoid_obstacle",
+     [1m[94m|[0m                                                                                                                         [1m[91m^^^^[0m
+[1m[94m1127 |[0m                             "Check Unity MCP server for supported navigation actions",
+[1m[94m1128 |[0m                         ],
+     [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (126 > 120)[0m
+    [1m[94m-->[0m src\robotics_mcp\tools\robot_behavior.py:1353:121
+     [1m[94m|[0m
+[1m[94m1351 |[0m             action=action,
+[1m[94m1352 |[0m             data={
+[1m[94m1353 |[0m                 "note": "Physical robot manipulation not yet implemented (requires ROS MoveIt! or similar arm control stack)",
+     [1m[94m|[0m                                                                                                                         [1m[91m^^^^^^[0m
+[1m[94m1354 |[0m                 "ros_topics": {
+[1m[94m1355 |[0m                     "joint_states": "/joint_states",
+     [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (132 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_control.py:243:121
+    [1m[94m|[0m
+[1m[94m241 |[0m                 Emergency stop:
+[1m[94m242 |[0m                     result = await robot_control(robot_id="yahboom_01", action="stop")
+[1m[94m243 |[0m                     # Returns: {"success": true, "message": "Emergency stop activated", "safety_warnings": ["Verify robot stopped"]}
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^^^^^^^^^^[0m
+[1m[94m244 |[0m
+[1m[94m245 |[0m                 Yahboom AI query:
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (123 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_control.py:252:121
+    [1m[94m|[0m
+[1m[94m250 |[0m                         query_type="vision"
+[1m[94m251 |[0m                     )
+[1m[94m252 |[0m                     # Returns: {"success": true, "message": "AI analysis complete", "response": "I detect a clear pathway"}
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^[0m
+[1m[94m253 |[0m
+[1m[94m254 |[0m                 Dreame zone cleaning:
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (122 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_control.py:260:121
+    [1m[94m|[0m
+[1m[94m258 |[0m                         zones=[[0,0,200,200], [300,100,500,300]]
+[1m[94m259 |[0m                     )
+[1m[94m260 |[0m                     # Returns: {"success": true, "message": "Zone cleaning started", "estimated_completion": "45 minutes"}
+    [1m[94m|[0m                                                                                                                         [1m[91m^^[0m
+[1m[94m261 |[0m
+[1m[94m262 |[0m                 Unitree stand command:
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (137 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_control.py:268:121
+    [1m[94m|[0m
+[1m[94m266 |[0m [1m[94mÔÇª[0m
+[1m[94m267 |[0m [1m[94mÔÇª[0mt_01", action="sync_vbot")
+[1m[94m268 |[0m [1m[94mÔÇª[0mrtual robot synchronized", "next_commands": ["robot_behavior get_status"]}
+    [1m[94m|[0m                                                           [1m[91m^^^^^^^^^^^^^^^^^[0m
+[1m[94m269 |[0m [1m[94mÔÇª[0m
+[1m[94m270 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (131 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_manufacturing.py:170:121
+    [1m[94m|[0m
+[1m[94m168 |[0m                         action="stop_print"
+[1m[94m169 |[0m                     )
+[1m[94m170 |[0m                     # Returns: {"success": true, "message": "CNC operation stopped", "safety_warnings": ["Verify spindle stopped"]}
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^^^^^^^^^[0m
+[1m[94m171 |[0m
+[1m[94m172 |[0m                 Set printer temperature:
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (146 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:176:121
+    [1m[94m|[0m
+[1m[94m174 |[0m [1m[94mÔÇª[0meight": 0.3}
+[1m[94m175 |[0m [1m[94mÔÇª[0m
+[1m[94m176 |[0m [1m[94mÔÇª[0mmodel created successfully", "model_data": {"format": "fbx", "vertices": 8500}}
+    [1m[94m|[0m                                                       [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m177 |[0m [1m[94mÔÇª[0m
+[1m[94m178 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (151 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:186:121
+    [1m[94m|[0m
+[1m[94m184 |[0m [1m[94mÔÇª[0m
+[1m[94m185 |[0m [1m[94mÔÇª[0m
+[1m[94m186 |[0m [1m[94mÔÇª[0morted to Unity", "platform_integration": {"unity": true, "prefab_created": true}}
+    [1m[94m|[0m                                                    [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m187 |[0m [1m[94mÔÇª[0m
+[1m[94m188 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (138 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:196:121
+    [1m[94m|[0m
+[1m[94m194 |[0m [1m[94mÔÇª[0m
+[1m[94m195 |[0m [1m[94mÔÇª[0m
+[1m[94m196 |[0m [1m[94mÔÇª[0mbot exported from Unity", "model_data": {"animations": 5, "format": "fbx"}}
+    [1m[94m|[0m                                                           [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m197 |[0m [1m[94mÔÇª[0m
+[1m[94m198 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (143 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:206:121
+    [1m[94m|[0m
+[1m[94m204 |[0m [1m[94mÔÇª[0m"
+[1m[94m205 |[0m [1m[94mÔÇª[0m
+[1m[94m206 |[0m [1m[94mÔÇª[0m converted successfully", "model_data": {"format": "glb", "vertices": 12500}}
+    [1m[94m|[0m                                                        [1m[91m^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m207 |[0m [1m[94mÔÇª[0m
+[1m[94m208 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (151 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:210:121
+    [1m[94m|[0m
+[1m[94m208 |[0m [1m[94mÔÇª[0m
+[1m[94m209 |[0m [1m[94mÔÇª[0m
+[1m[94m210 |[0m [1m[94mÔÇª[0m available", "platform_integration": {"unity": true, "gaussian_splatting": true}}
+    [1m[94m|[0m                                                    [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m211 |[0m [1m[94mÔÇª[0m
+[1m[94m212 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (134 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:219:121
+    [1m[94m|[0m
+[1m[94m217 |[0m                         target_path="D:/Models/scene_converted.ply"
+[1m[94m218 |[0m                     )
+[1m[94m219 |[0m                     # Returns: {"success": true, "message": "SPZ converted to PLY", "model_data": {"format": "ply", "points": 500000}}
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m220 |[0m
+[1m[94m221 |[0m                 Install Unity Gaussian Splatting:
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (139 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:226:121
+    [1m[94m|[0m
+[1m[94m224 |[0m [1m[94mÔÇª[0motics"
+[1m[94m225 |[0m [1m[94mÔÇª[0m
+[1m[94m226 |[0m [1m[94mÔÇª[0mssian Splatting plugin installed", "platform_integration": {"unity": true}}
+    [1m[94m|[0m                                                          [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m227 |[0m [1m[94mÔÇª[0m
+[1m[94m228 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (121 > 120)[0m
+    [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:1009:121
+     [1m[94m|[0m
+[1m[94m1007 |[0m         roller.parent = hub
+[1m[94m1008 |[0m
+[1m[94m1009 |[0m # Create Chassis ({dimensions["length"] * 1000:.0f}x{dimensions["width"] * 1000:.0f}x{dimensions["height"] * 1000:.0f}mm)
+     [1m[94m|[0m                                                                                                                         [1m[91m^[0m
+[1m[94m1010 |[0m bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, {dimensions["height"] / 2 * 100}))
+[1m[94m1011 |[0m scout = bpy.context.active_object
+     [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (162 > 120)[0m
+    [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:1140:121
+     [1m[94m|[0m
+[1m[94m1138 |[0m [1m[94mÔÇª[0m
+[1m[94m1139 |[0m [1m[94mÔÇª[0m
+[1m[94m1140 |[0m [1m[94mÔÇª[0mount=12, roller_angle=45.0, location=(0,0,0), rotation=(0,0,0), name="mecanum_wheel"):
+     [1m[94m|[0m                                              [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m1141 |[0m [1m[94mÔÇª[0m
+[1m[94m1142 |[0m [1m[94mÔÇª[0m
+     [1m[94m|[0m
+
+[1m[91mS607 [0m[1mStarting a process with a partial executable path[0m
+    [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:1536:37
+     [1m[94m|[0m
+[1m[94m1534 |[0m         }
+[1m[94m1535 |[0m         try:
+[1m[94m1536 |[0m             result = subprocess.run(["spz-decompress", "--version"], capture_output=True, timeout=5)
+     [1m[94m|[0m                                     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m1537 |[0m             tools_available["adobe_spz_tools"] = result.returncode == 0
+[1m[94m1538 |[0m         except (FileNotFoundError, subprocess.TimeoutExpired):
+     [1m[94m|[0m
+
+[1m[91mS603 [0m[1m`subprocess` call: check for execution of untrusted input[0m
+    [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:1572:22
+     [1m[94m|[0m
+[1m[94m1570 |[0m         output_file = Path(output_path)
+[1m[94m1571 |[0m         try:
+[1m[94m1572 |[0m             result = subprocess.run(
+     [1m[94m|[0m                      [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m1573 |[0m                 ["spz-decompress", str(spz_file), str(output_file)],
+[1m[94m1574 |[0m                 capture_output=True,
+     [1m[94m|[0m
+
+[1m[91mS607 [0m[1mStarting a process with a partial executable path[0m
+    [1m[94m-->[0m src\robotics_mcp\tools\robot_model_tools.py:1573:17
+     [1m[94m|[0m
+[1m[94m1571 |[0m         try:
+[1m[94m1572 |[0m             result = subprocess.run(
+[1m[94m1573 |[0m                 ["spz-decompress", str(spz_file), str(output_file)],
+     [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m1574 |[0m                 capture_output=True,
+[1m[94m1575 |[0m                 timeout=60,
+     [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (150 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_virtual.py:456:121
+    [1m[94m|[0m
+[1m[94m454 |[0m [1m[94mÔÇª[0m"):
+[1m[94m455 |[0m [1m[94mÔÇª[0m
+[1m[94m456 |[0m [1m[94mÔÇª[0mobot_model(operation='spz_convert') or re-export from Marble as .ply/.fbx/.glb.",
+    [1m[94m|[0m                                                     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m457 |[0m [1m[94mÔÇª[0m
+[1m[94m458 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mS608 [0m[1mPossible SQL injection vector through string-based query construction[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robot_virtual.py:685:42
+    [1m[94m|[0m
+[1m[94m683 |[0m         except Exception as e:
+[1m[94m684 |[0m             logger.error("Failed to delete from platform", robot_id=robot_id, platform=platform, error=str(e))
+[1m[94m685 |[0m             return format_error_response(f"Failed to delete from {platform}: {e!s}", error_type="connection_error")
+    [1m[94m|[0m                                          [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (124 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robotics_system.py:154:121
+    [1m[94m|[0m
+[1m[94m152 |[0m                     "description": (
+[1m[94m153 |[0m                         "Unified robotics control via MCP - Physical and virtual robots (bot + vbot). "
+[1m[94m154 |[0m                         "Primary: Dreame D20 Pro vacuum. Also Moorebot Scout, Yahboom ROSMASTER, Unitree (when available), "
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^^[0m
+[1m[94m155 |[0m                         "and virtual robots in Unity/VRChat. Integrates with osc-mcp, unity3d-mcp, vrchat-mcp, avatar-mcp."
+[1m[94m156 |[0m                     ),
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (123 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\robotics_system.py:155:121
+    [1m[94m|[0m
+[1m[94m153 |[0m                         "Unified robotics control via MCP - Physical and virtual robots (bot + vbot). "
+[1m[94m154 |[0m                         "Primary: Dreame D20 Pro vacuum. Also Moorebot Scout, Yahboom ROSMASTER, Unitree (when available), "
+[1m[94m155 |[0m                         "and virtual robots in Unity/VRChat. Integrates with osc-mcp, unity3d-mcp, vrchat-mcp, avatar-mcp."
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^[0m
+[1m[94m156 |[0m                     ),
+[1m[94m157 |[0m                     "features": [
+    [1m[94m|[0m
+
+[1m[91mS607 [0m[1mStarting a process with a partial executable path[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\spz_converter.py:133:37
+    [1m[94m|[0m
+[1m[94m131 |[0m         # Check for Adobe spz-tools (would need to be installed separately)
+[1m[94m132 |[0m         try:
+[1m[94m133 |[0m             result = subprocess.run(["spz-decompress", "--version"], capture_output=True, timeout=5)
+    [1m[94m|[0m                                     [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m134 |[0m             tools_available["adobe_spz_tools"] = result.returncode == 0
+[1m[94m135 |[0m         except (FileNotFoundError, subprocess.TimeoutExpired):
+    [1m[94m|[0m
+
+[1m[91mS603 [0m[1m`subprocess` call: check for execution of untrusted input[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\spz_converter.py:176:22
+    [1m[94m|[0m
+[1m[94m174 |[0m         # Method 1: Try Adobe spz-tools (if available)
+[1m[94m175 |[0m         try:
+[1m[94m176 |[0m             result = subprocess.run(
+    [1m[94m|[0m                      [1m[91m^^^^^^^^^^^^^^[0m
+[1m[94m177 |[0m                 ["spz-decompress", str(spz_file), str(output_file)],
+[1m[94m178 |[0m                 capture_output=True,
+    [1m[94m|[0m
+
+[1m[91mS607 [0m[1mStarting a process with a partial executable path[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\spz_converter.py:177:17
+    [1m[94m|[0m
+[1m[94m175 |[0m         try:
+[1m[94m176 |[0m             result = subprocess.run(
+[1m[94m177 |[0m                 ["spz-decompress", str(spz_file), str(output_file)],
+    [1m[94m|[0m                 [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m178 |[0m                 capture_output=True,
+[1m[94m179 |[0m                 timeout=60,
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (124 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\spz_converter.py:213:121
+    [1m[94m|[0m
+[1m[94m211 |[0m                     "Build custom converter using Adobe's C++ library",
+[1m[94m212 |[0m                 ],
+[1m[94m213 |[0m                 "note": "There is no official Unity plugin for .spz. Re-exporting from Marble is the recommended solution.",
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^^[0m
+[1m[94m214 |[0m             },
+[1m[94m215 |[0m         )
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (138 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\spz_converter.py:270:121
+    [1m[94m|[0m
+[1m[94m268 |[0m [1m[94mÔÇª[0my support (better for navigation)",
+[1m[94m269 |[0m [1m[94mÔÇª[0m
+[1m[94m270 |[0m [1m[94mÔÇª[0mfiles. This installs Gaussian Splatting for .ply files as an alternative.",
+    [1m[94m|[0m                                                           [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m271 |[0m [1m[94mÔÇª[0m
+[1m[94m272 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (124 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\spz_converter.py:281:121
+    [1m[94m|[0m
+[1m[94m279 |[0m                 details={
+[1m[94m280 |[0m                     "unity_project": str(project_path),
+[1m[94m281 |[0m                     "note": "There is no official Unity plugin for .spz files. Re-export from Marble as .ply or .fbx/.glb.",
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^^[0m
+[1m[94m282 |[0m                 },
+[1m[94m283 |[0m             )
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (141 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\spz_converter.py:311:121
+    [1m[94m|[0m
+[1m[94m309 |[0m [1m[94mÔÇª[0m
+[1m[94m310 |[0m [1m[94mÔÇª[0m",
+[1m[94m311 |[0m [1m[94mÔÇª[0m does not support it natively. Re-export from Marble as .ply or .fbx/.glb.",
+    [1m[94m|[0m                                                         [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m312 |[0m [1m[94mÔÇª[0m
+[1m[94m313 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (133 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\vbot_crud.py:122:121
+    [1m[94m|[0m
+[1m[94m120 |[0m                     - "list": List all virtual robots (optionally filtered)
+[1m[94m121 |[0m                 robot_type: Type of robot (required for "create", optional for "list").
+[1m[94m122 |[0m                     Must be one of: "scout", "scout_e", "go2", "g1", "yahboom", "drone", "px4_quad", "ardupilot", "robbie", "custom".
+    [1m[94m|[0m                                                                                                                         [1m[91m^^^^^^^^^^^^^[0m
+[1m[94m123 |[0m                 robot_id: Virtual robot identifier (required for "read", "update", "delete").
+[1m[94m124 |[0m                     Auto-generated for "create" if not provided.
+    [1m[94m|[0m
+
+[1m[91mS608 [0m[1mPossible SQL injection vector through string-based query construction[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\vbot_crud.py:707:42
+    [1m[94m|[0m
+[1m[94m705 |[0m         except Exception as e:
+[1m[94m706 |[0m             logger.error("Failed to delete from platform", robot_id=robot_id, platform=platform, error=str(e))
+[1m[94m707 |[0m             return format_error_response(f"Failed to delete from {platform}: {e!s}", error_type="connection_error")
+    [1m[94m|[0m                                          [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (440 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\workflow_management.py:376:121
+    [1m[94m|[0m
+[1m[94m374 |[0m [1m[94mÔÇª[0m
+[1m[94m375 |[0m [1m[94mÔÇª[0m
+[1m[94m376 |[0m [1m[94mÔÇª[0mobj.data.materials else bpy.data.materials.new(name='Pink'); obj.data.materials.append(mat) if not obj.data.materials else None; mat.use_nodes = True; bsdf = mat.node_tree.nodes.get('Principled BSDF'); bsdf.inputs['Base Color'].default_value = (1.0, 0.4, 0.7, 1.0) if bsdf else None; mat.diffuse_color = (1.0, 0.4, 0.7, 1.0)"
+    [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m377 |[0m [1m[94mÔÇª[0m
+[1m[94m378 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (461 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\workflow_management.py:387:121
+    [1m[94m|[0m
+[1m[94m385 |[0m [1m[94mÔÇª[0m
+[1m[94m386 |[0m [1m[94mÔÇª[0m
+[1m[94m387 |[0m [1m[94mÔÇª[0mus=8, minor_radius=2); track = bpy.context.active_object; track.name = 'Racetrack'; track.scale = (1, 1, 0.05); mat = bpy.data.materials.new(name='Asphalt'); mat.use_nodes = True; bsdf = mat.node_tree.nodes.get('Principled BSDF'); bsdf.inputs['Base Color'].default_value = (0.1, 0.1, 0.1, 1.0) if bsdf else None; track.data.materials.append(mat)"
+    [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m388 |[0m [1m[94mÔÇª[0m
+[1m[94m389 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (424 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\workflow_management.py:398:121
+    [1m[94m|[0m
+[1m[94m396 |[0m [1m[94mÔÇª[0m
+[1m[94m397 |[0m [1m[94mÔÇª[0m
+[1m[94m398 |[0m [1m[94mÔÇª[0m-0.06, 0.04)); nose = bpy.context.active_object; nose.name = 'Clown Nose'; mat = bpy.data.materials.new(name='Red Nose'); mat.use_nodes = True; bsdf = mat.node_tree.nodes.get('Principled BSDF'); bsdf.inputs['Base Color'].default_value = (1.0, 0.0, 0.0, 1.0) if bsdf else None; nose.data.materials.append(mat)"
+    [1m[94m|[0m       [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m399 |[0m [1m[94mÔÇª[0m
+[1m[94m400 |[0m [1m[94mÔÇª[0m
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (121 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\workflow_management.py:791:121
+    [1m[94m|[0m
+[1m[94m789 |[0m                 "id": "vrm_to_resonite_with_osc",
+[1m[94m790 |[0m                 "name": "VRM to Resonite with OSC Control",
+[1m[94m791 |[0m                 "description": "Import VRM from avatar-mcp, process in Unity3D, upload to Resonite, and connect via OSC",
+    [1m[94m|[0m                                                                                                                         [1m[91m^[0m
+[1m[94m792 |[0m                 "category": "avatar",
+[1m[94m793 |[0m                 "version": "1.0.0",
+    [1m[94m|[0m
+
+[1m[91mE501 [0m[1mLine too long (121 > 120)[0m
+   [1m[94m-->[0m src\robotics_mcp\tools\workflow_management.py:986:121
+    [1m[94m|[0m
+[1m[94m984 |[0m                 "id": "dual_platform_avatar_deploy",
+[1m[94m985 |[0m                 "name": "Dual Platform Avatar Deployment",
+[1m[94m986 |[0m                 "description": "Import VRM, deploy to both VRChat and Resonite simultaneously, then connect OSC to both",
+    [1m[94m|[0m                                                                                                                         [1m[91m^[0m
+[1m[94m987 |[0m                 "category": "avatar",
+[1m[94m988 |[0m                 "version": "1.0.0",
+    [1m[94m|[0m
+
+[1m[91mI001 [0m[[1m[96m*[0m] [1mImport block is un-sorted or un-formatted[0m
+ [1m[94m-->[0m src\robotics_mcp\utils\auth.py:1:1
+  [1m[94m|[0m
+[1m[94m1 |[0m [1m[91m/[0m import os
+[1m[94m2 |[0m [1m[91m|[0m from fastapi import Request, HTTPException, Security
+[1m[94m3 |[0m [1m[91m|[0m from fastapi.security import APIKeyHeader
+[1m[94m4 |[0m [1m[91m|[0m from starlette.status import HTTP_403_FORBIDDEN
+[1m[94m5 |[0m [1m[91m|[0m import structlog
+[1m[94m6 |[0m [1m[91m|[0m from typing import Optional
+  [1m[94m|[0m [1m[91m|___________________________^[0m
+[1m[94m7 |[0m
+[1m[94m8 |[0m   logger = structlog.get_logger(__name__)
+  [1m[94m|[0m
+[1m[96mhelp[0m: [1mOrganize imports[0m
+
+[1m[91mF401 [0m[[1m[96m*[0m] [1m`typing.Optional` imported but unused[0m
+ [1m[94m-->[0m src\robotics_mcp\utils\auth.py:6:20
+  [1m[94m|[0m
+[1m[94m4 |[0m from starlette.status import HTTP_403_FORBIDDEN
+[1m[94m5 |[0m import structlog
+[1m[94m6 |[0m from typing import Optional
+  [1m[94m|[0m                    [1m[91m^^^^^^^^[0m
+[1m[94m7 |[0m
+[1m[94m8 |[0m logger = structlog.get_logger(__name__)
+  [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove unused import: `typing.Optional`[0m
+
+[1m[91mS105 [0m[1mPossible hardcoded password assigned to: "DEFAULT_BENNY_TOKEN"[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\auth.py:13:23
+   [1m[94m|[0m
+[1m[94m11 |[0m WURST_AUTH_HEADER = "X-Wurst-Auth"
+[1m[94m12 |[0m # Fallback token for local dev if environment is not set
+[1m[94m13 |[0m DEFAULT_BENNY_TOKEN = "benny-handshake-2026"
+   [1m[94m|[0m                       [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m14 |[0m
+[1m[94m15 |[0m api_key_header = APIKeyHeader(name=WURST_AUTH_HEADER, auto_error=False)
+   [1m[94m|[0m
+
+[1m[91mW293 [0m[1mBlank line contains whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\auth.py:20:1
+   [1m[94m|[0m
+[1m[94m18 |[0m     """
+[1m[94m19 |[0m     Middleware to verify the Benny/Wurstsemmel security handshake.
+[1m[94m20 |[0m     
+   [1m[94m|[0m [1m[91m^^^^[0m
+[1m[94m21 |[0m     Protects destructive robot movement or high-privilege hardware operations.
+[1m[94m22 |[0m     """
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mW291 [0m[[1m[96m*[0m] [1mTrailing whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\auth.py:25:27
+   [1m[94m|[0m
+[1m[94m23 |[0m     # Define sensitive paths that REQUIRE auth (e.g., robot control, movement)
+[1m[94m24 |[0m     protected_paths = [
+[1m[94m25 |[0m         "/mcp/move_robot", 
+   [1m[94m|[0m                           [1m[91m^[0m
+[1m[94m26 |[0m         "/mcp/execute_command", 
+[1m[94m27 |[0m         "/api/robot/control",
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove trailing whitespace[0m
+
+[1m[91mW291 [0m[[1m[96m*[0m] [1mTrailing whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\auth.py:26:32
+   [1m[94m|[0m
+[1m[94m24 |[0m     protected_paths = [
+[1m[94m25 |[0m         "/mcp/move_robot", 
+[1m[94m26 |[0m         "/mcp/execute_command", 
+   [1m[94m|[0m                                [1m[91m^[0m
+[1m[94m27 |[0m         "/api/robot/control",
+[1m[94m28 |[0m         "/api/osc/bridge/start"
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove trailing whitespace[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\auth.py:30:1
+   [1m[94m|[0m
+[1m[94m28 |[0m         "/api/osc/bridge/start"
+[1m[94m29 |[0m     ]
+[1m[94m30 |[0m     
+   [1m[94m|[0m [1m[91m^^^^[0m
+[1m[94m31 |[0m     requires_auth = any(request.url.path.startswith(p) for p in protected_paths)
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\auth.py:32:1
+   [1m[94m|[0m
+[1m[94m31 |[0m     requires_auth = any(request.url.path.startswith(p) for p in protected_paths)
+[1m[94m32 |[0m     
+   [1m[94m|[0m [1m[91m^^^^[0m
+[1m[94m33 |[0m     if requires_auth:
+[1m[94m34 |[0m         token = request.headers.get(WURST_AUTH_HEADER)
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\auth.py:36:1
+   [1m[94m|[0m
+[1m[94m34 |[0m         token = request.headers.get(WURST_AUTH_HEADER)
+[1m[94m35 |[0m         expected_token = os.getenv("WURST_AUTH_TOKEN", DEFAULT_BENNY_TOKEN)
+[1m[94m36 |[0m         
+   [1m[94m|[0m [1m[91m^^^^^^^^[0m
+[1m[94m37 |[0m         if not token or token != expected_token:
+[1m[94m38 |[0m             logger.warning(
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\auth.py:47:1
+   [1m[94m|[0m
+[1m[94m45 |[0m                 detail="Security Handshake Failed: Invalid or missing X-Wurst-Auth header. Robotics operation aborted."
+[1m[94m46 |[0m             )
+[1m[94m47 |[0m             
+   [1m[94m|[0m [1m[91m^^^^^^^^^^^^[0m
+[1m[94m48 |[0m     response = await call_next(request)
+[1m[94m49 |[0m     return response
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mF401 [0m[[1m[96m*[0m] [1m`os` imported but unused[0m
+ [1m[94m-->[0m src\robotics_mcp\utils\logging_config.py:3:8
+  [1m[94m|[0m
+[1m[94m1 |[0m import datetime
+[1m[94m2 |[0m import logging
+[1m[94m3 |[0m import os
+  [1m[94m|[0m        [1m[91m^^[0m
+[1m[94m4 |[0m import sys
+[1m[94m5 |[0m from typing import Any, Dict
+  [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove unused import: `os`[0m
+
+[1m[91mUP035 [0m[1m`typing.Dict` is deprecated, use `dict` instead[0m
+ [1m[94m-->[0m src\robotics_mcp\utils\logging_config.py:5:1
+  [1m[94m|[0m
+[1m[94m3 |[0m import os
+[1m[94m4 |[0m import sys
+[1m[94m5 |[0m from typing import Any, Dict
+  [1m[94m|[0m [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m6 |[0m
+[1m[94m7 |[0m import structlog
+  [1m[94m|[0m
+
+[1m[91mF401 [0m[[1m[96m*[0m] [1m`typing.Any` imported but unused[0m
+ [1m[94m-->[0m src\robotics_mcp\utils\logging_config.py:5:20
+  [1m[94m|[0m
+[1m[94m3 |[0m import os
+[1m[94m4 |[0m import sys
+[1m[94m5 |[0m from typing import Any, Dict
+  [1m[94m|[0m                    [1m[91m^^^[0m
+[1m[94m6 |[0m
+[1m[94m7 |[0m import structlog
+  [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove unused import[0m
+
+[1m[91mF401 [0m[[1m[96m*[0m] [1m`typing.Dict` imported but unused[0m
+ [1m[94m-->[0m src\robotics_mcp\utils\logging_config.py:5:25
+  [1m[94m|[0m
+[1m[94m3 |[0m import os
+[1m[94m4 |[0m import sys
+[1m[94m5 |[0m from typing import Any, Dict
+  [1m[94m|[0m                         [1m[91m^^^^[0m
+[1m[94m6 |[0m
+[1m[94m7 |[0m import structlog
+  [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove unused import[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\logging_config.py:79:1
+   [1m[94m|[0m
+[1m[94m77 |[0m         icon = ""
+[1m[94m78 |[0m         msg = record.getMessage()
+[1m[94m79 |[0m         
+   [1m[94m|[0m [1m[91m^^^^^^^^[0m
+[1m[94m80 |[0m         # In-message icon mapping (e.g. ":START: Server starting")
+[1m[94m81 |[0m         for key in BASH_ICONS:
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\logging_config.py:86:1
+   [1m[94m|[0m
+[1m[94m84 |[0m                 msg = msg.replace(placeholder, get_icon(key))
+[1m[94m85 |[0m                 break
+[1m[94m86 |[0m         
+   [1m[94m|[0m [1m[91m^^^^^^^^[0m
+[1m[94m87 |[0m         # Level-based icon injection
+[1m[94m88 |[0m         if record.levelno >= logging.ERROR:
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+   [1m[94m-->[0m src\robotics_mcp\utils\logging_config.py:107:1
+    [1m[94m|[0m
+[1m[94m105 |[0m     """Configure industrialized logging stack."""
+[1m[94m106 |[0m     log_level = log_level.upper()
+[1m[94m107 |[0m     
+    [1m[94m|[0m [1m[91m^^^^[0m
+[1m[94m108 |[0m     # Root logger configuration
+[1m[94m109 |[0m     root = logging.getLogger()
+    [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mRUF013 [0m[1mPEP 484 prohibits implicit `Optional`[0m
+   [1m[94m-->[0m src\robotics_mcp\utils\logging_config.py:142:22
+    [1m[94m|[0m
+[1m[94m140 |[0m     )
+[1m[94m141 |[0m
+[1m[94m142 |[0m def get_logger(name: str = None) -> structlog.stdlib.BoundLogger:
+    [1m[94m|[0m                      [1m[91m^^^[0m
+[1m[94m143 |[0m     """Get a standardized SOTA logger."""
+[1m[94m144 |[0m     return structlog.get_logger(name)
+    [1m[94m|[0m
+[1m[96mhelp[0m: [1mConvert to `T | None`[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:29:23
+   [1m[94m|[0m
+[1m[94m27 |[0m     obstacle_indices = random.sample(range(num_points), num_points // 10)
+[1m[94m28 |[0m     for idx in obstacle_indices:
+[1m[94m29 |[0m         ranges[idx] = random.uniform(range_min, 2.0)
+   [1m[94m|[0m                       [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m30 |[0m
+[1m[94m31 |[0m     return {
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:54:26
+   [1m[94m|[0m
+[1m[94m52 |[0m         "robot_id": robot_id,
+[1m[94m53 |[0m         "robot_type": robot_type,
+[1m[94m54 |[0m         "battery_level": random.uniform(0.5, 1.0),
+   [1m[94m|[0m                          [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m55 |[0m         "position": {
+[1m[94m56 |[0m             "x": random.uniform(-5, 5),
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:56:18
+   [1m[94m|[0m
+[1m[94m54 |[0m         "battery_level": random.uniform(0.5, 1.0),
+[1m[94m55 |[0m         "position": {
+[1m[94m56 |[0m             "x": random.uniform(-5, 5),
+   [1m[94m|[0m                  [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m57 |[0m             "y": random.uniform(-5, 5),
+[1m[94m58 |[0m             "theta": random.uniform(0, 2 * np.pi),
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:57:18
+   [1m[94m|[0m
+[1m[94m55 |[0m         "position": {
+[1m[94m56 |[0m             "x": random.uniform(-5, 5),
+[1m[94m57 |[0m             "y": random.uniform(-5, 5),
+   [1m[94m|[0m                  [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m58 |[0m             "theta": random.uniform(0, 2 * np.pi),
+[1m[94m59 |[0m         },
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:58:22
+   [1m[94m|[0m
+[1m[94m56 |[0m             "x": random.uniform(-5, 5),
+[1m[94m57 |[0m             "y": random.uniform(-5, 5),
+[1m[94m58 |[0m             "theta": random.uniform(0, 2 * np.pi),
+   [1m[94m|[0m                      [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m59 |[0m         },
+[1m[94m60 |[0m         "velocity": {"linear": random.uniform(0, 0.3), "angular": random.uniform(-2, 2)},
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:60:32
+   [1m[94m|[0m
+[1m[94m58 |[0m             "theta": random.uniform(0, 2 * np.pi),
+[1m[94m59 |[0m         },
+[1m[94m60 |[0m         "velocity": {"linear": random.uniform(0, 0.3), "angular": random.uniform(-2, 2)},
+   [1m[94m|[0m                                [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m61 |[0m         "connected": True,
+[1m[94m62 |[0m         "status": "idle",
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:60:67
+   [1m[94m|[0m
+[1m[94m58 |[0m             "theta": random.uniform(0, 2 * np.pi),
+[1m[94m59 |[0m         },
+[1m[94m60 |[0m         "velocity": {"linear": random.uniform(0, 0.3), "angular": random.uniform(-2, 2)},
+   [1m[94m|[0m                                                                   [1m[91m^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m61 |[0m         "connected": True,
+[1m[94m62 |[0m         "status": "idle",
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:73:29
+   [1m[94m|[0m
+[1m[94m71 |[0m     """
+[1m[94m72 |[0m     return {
+[1m[94m73 |[0m         "tof": {"distance": random.uniform(0.1, 3.0), "valid": True},
+   [1m[94m|[0m                             [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m74 |[0m         "imu": {
+[1m[94m75 |[0m             "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0},
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:79:26
+   [1m[94m|[0m
+[1m[94m77 |[0m             "linear_acceleration": {"x": 0.0, "y": 0.0, "z": 9.8},
+[1m[94m78 |[0m         },
+[1m[94m79 |[0m         "light": {"ch0": random.randint(0, 65535), "ch1": random.randint(0, 65535)},
+   [1m[94m|[0m                          [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m80 |[0m     }
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+  [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:79:59
+   [1m[94m|[0m
+[1m[94m77 |[0m             "linear_acceleration": {"x": 0.0, "y": 0.0, "z": 9.8},
+[1m[94m78 |[0m         },
+[1m[94m79 |[0m         "light": {"ch0": random.randint(0, 65535), "ch1": random.randint(0, 65535)},
+   [1m[94m|[0m                                                           [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m80 |[0m     }
+   [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+   [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:102:13
+    [1m[94m|[0m
+[1m[94m101 |[0m     for _ in range(5):
+[1m[94m102 |[0m         x = random.randint(10, width - 10)
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m103 |[0m         y = random.randint(10, height - 10)
+[1m[94m104 |[0m         size = random.randint(3, 8)
+    [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+   [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:103:13
+    [1m[94m|[0m
+[1m[94m101 |[0m     for _ in range(5):
+[1m[94m102 |[0m         x = random.randint(10, width - 10)
+[1m[94m103 |[0m         y = random.randint(10, height - 10)
+    [1m[94m|[0m             [1m[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m104 |[0m         size = random.randint(3, 8)
+[1m[94m105 |[0m         grid[y - size : y + size, x - size : x + size] = 100
+    [1m[94m|[0m
+
+[1m[91mS311 [0m[1mStandard pseudo-random generators are not suitable for cryptographic purposes[0m
+   [1m[94m-->[0m src\robotics_mcp\utils\simulated_data.py:104:16
+    [1m[94m|[0m
+[1m[94m102 |[0m         x = random.randint(10, width - 10)
+[1m[94m103 |[0m         y = random.randint(10, height - 10)
+[1m[94m104 |[0m         size = random.randint(3, 8)
+    [1m[94m|[0m                [1m[91m^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m105 |[0m         grid[y - size : y + size, x - size : x + size] = 100
+    [1m[94m|[0m
+
+[1m[91mI001 [0m[[1m[96m*[0m] [1mImport block is un-sorted or un-formatted[0m
+ [1m[94m-->[0m tests\test_industrial.py:1:1
+  [1m[94m|[0m
+[1m[94m1 |[0m [1m[91m/[0m import pytest
+[1m[94m2 |[0m [1m[91m|[0m from robotics_mcp.utils.auth import DEFAULT_BENNY_TOKEN
+  [1m[94m|[0m [1m[91m|_______________________________________________________^[0m
+[1m[94m3 |[0m
+[1m[94m4 |[0m   def test_health_check(api_client):
+  [1m[94m|[0m
+[1m[96mhelp[0m: [1mOrganize imports[0m
+
+[1m[91mF401 [0m[[1m[96m*[0m] [1m`pytest` imported but unused[0m
+ [1m[94m-->[0m tests\test_industrial.py:1:8
+  [1m[94m|[0m
+[1m[94m1 |[0m import pytest
+  [1m[94m|[0m        [1m[91m^^^^^^[0m
+[1m[94m2 |[0m from robotics_mcp.utils.auth import DEFAULT_BENNY_TOKEN
+  [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove unused import: `pytest`[0m
+
+[1m[91mF401 [0m[[1m[96m*[0m] [1m`robotics_mcp.utils.auth.DEFAULT_BENNY_TOKEN` imported but unused[0m
+ [1m[94m-->[0m tests\test_industrial.py:2:37
+  [1m[94m|[0m
+[1m[94m1 |[0m import pytest
+[1m[94m2 |[0m from robotics_mcp.utils.auth import DEFAULT_BENNY_TOKEN
+  [1m[94m|[0m                                     [1m[91m^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m3 |[0m
+[1m[94m4 |[0m def test_health_check(api_client):
+  [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove unused import: `robotics_mcp.utils.auth.DEFAULT_BENNY_TOKEN`[0m
+
+[1m[91mI001 [0m[[1m[96m*[0m] [1mImport block is un-sorted or un-formatted[0m
+  [1m[94m-->[0m tests\test_industrial.py:29:5
+   [1m[94m|[0m
+[1m[94m27 |[0m   def test_telemetry_logs_memory(mcp_server):
+[1m[94m28 |[0m       """Verify that the MemoryLogHandler is capturing telemetry."""
+[1m[94m29 |[0m [1m[91m/[0m     from robotics_mcp.utils.logging_config import get_recent_logs
+[1m[94m30 |[0m [1m[91m|[0m     import structlog
+   [1m[94m|[0m [1m[91m|____________________^[0m
+[1m[94m31 |[0m       
+[1m[94m32 |[0m       test_log = structlog.get_logger("test_telemetry")
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mOrganize imports[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+  [1m[94m-->[0m tests\test_industrial.py:31:1
+   [1m[94m|[0m
+[1m[94m29 |[0m     from robotics_mcp.utils.logging_config import get_recent_logs
+[1m[94m30 |[0m     import structlog
+[1m[94m31 |[0m     
+   [1m[94m|[0m [1m[91m^^^^[0m
+[1m[94m32 |[0m     test_log = structlog.get_logger("test_telemetry")
+[1m[94m33 |[0m     test_log.info(":START: Ground control to Major Tom")
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mW293 [0m[[1m[96m*[0m] [1mBlank line contains whitespace[0m
+  [1m[94m-->[0m tests\test_industrial.py:34:1
+   [1m[94m|[0m
+[1m[94m32 |[0m     test_log = structlog.get_logger("test_telemetry")
+[1m[94m33 |[0m     test_log.info(":START: Ground control to Major Tom")
+[1m[94m34 |[0m     
+   [1m[94m|[0m [1m[91m^^^^[0m
+[1m[94m35 |[0m     logs = get_recent_logs(limit=1)
+[1m[94m36 |[0m     assert len(logs) > 0
+   [1m[94m|[0m
+[1m[96mhelp[0m: [1mRemove whitespace from blank line[0m
+
+[1m[91mS108 [0m[1mProbable insecure usage of temporary file or directory: "/tmp/capture.jpg"[0m
+   [1m[94m-->[0m tests\unit\test_robot_behavior.py:128:49
+    [1m[94m|[0m
+[1m[94m127 |[0m     with patch("robotics_mcp.tools.robot_behavior.call_mounted_server_tool") as mock_call:
+[1m[94m128 |[0m         mock_call.return_value = {"image_path": "/tmp/capture.jpg"}
+    [1m[94m|[0m                                                 [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m129 |[0m
+[1m[94m130 |[0m         result = await tool_func(
+    [1m[94m|[0m
+
+[1m[91mS108 [0m[1mProbable insecure usage of temporary file or directory: "/tmp/capture.jpg"[0m
+   [1m[94m-->[0m tests\unit\test_robot_behavior.py:134:25
+    [1m[94m|[0m
+[1m[94m132 |[0m             category="camera",
+[1m[94m133 |[0m             action="capture_image",
+[1m[94m134 |[0m             output_path="/tmp/capture.jpg",
+    [1m[94m|[0m                         [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m135 |[0m         )
+    [1m[94m|[0m
+
+[1m[91mS108 [0m[1mProbable insecure usage of temporary file or directory: "/tmp/capture.jpg"[0m
+  [1m[94m-->[0m tests\unit\test_robot_camera.py:85:80
+   [1m[94m|[0m
+[1m[94m83 |[0m         mock_client_instance = AsyncMock()
+[1m[94m84 |[0m         mock_client.return_value.__aenter__.return_value = mock_client_instance
+[1m[94m85 |[0m         mock_client_instance.call_tool = AsyncMock(return_value={"image_path": "/tmp/capture.jpg"})
+   [1m[94m|[0m                                                                                [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m86 |[0m
+[1m[94m87 |[0m         result = await tool_func(
+   [1m[94m|[0m
+
+[1m[91mS108 [0m[1mProbable insecure usage of temporary file or directory: "/tmp/capture.jpg"[0m
+  [1m[94m-->[0m tests\unit\test_robot_camera.py:91:25
+   [1m[94m|[0m
+[1m[94m89 |[0m             operation="capture_image",
+[1m[94m90 |[0m             format="jpeg",
+[1m[94m91 |[0m             output_path="/tmp/capture.jpg",
+   [1m[94m|[0m                         [1m[91m^^^^^^^^^^^^^^^^^^[0m
+[1m[94m92 |[0m         )
+   [1m[94m|[0m
+
+[1m[91mS108 [0m[1mProbable insecure usage of temporary file or directory: "/tmp/test.fbx"[0m
+  [1m[94m-->[0m tests\unit\test_robot_model_tools.py:77:21
+   [1m[94m|[0m
+[1m[94m75 |[0m         operation="create",
+[1m[94m76 |[0m         robot_type="invalid_type",
+[1m[94m77 |[0m         output_path="/tmp/test.fbx",
+   [1m[94m|[0m                     [1m[91m^^^^^^^^^^^^^^^[0m
+[1m[94m78 |[0m     )
+   [1m[94m|[0m
+
+[1m[91mS108 [0m[1mProbable insecure usage of temporary file or directory: "/tmp/environment.glb"[0m
+   [1m[94m-->[0m tests\unit\test_robot_virtual.py:190:30
+    [1m[94m|[0m
+[1m[94m188 |[0m             operation="load_environment",
+[1m[94m189 |[0m             environment="test_environment",
+[1m[94m190 |[0m             environment_path="/tmp/environment.glb",
+    [1m[94m|[0m                              [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+[1m[94m191 |[0m             platform="unity",
+[1m[94m192 |[0m         )
+    [1m[94m|[0m
+
+Found 114 errors.
+[[36m*[0m] 20 fixable with the `--fix` option (2 hidden fixes can be enabled with the `--unsafe-fixes` option).

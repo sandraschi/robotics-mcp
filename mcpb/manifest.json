@@ -1,0 +1,73 @@
+{
+  "manifest_version": "0.2",
+  "name": "robotics-mcp",
+  "version": "0.2.1",
+  "description": "Unified robotics control via MCP - Physical and virtual robots (bot + vbot). Dreame D20 Pro vacuum, Yahboom ROSMASTER, Moorebot Scout, Unitree Go2/G1, Elegoo, Gazebo, Hue HomeAware, virtual robots in Unity/VRChat/Resonite, drone fleet (PX4/ArduPilot), sim fleet orchestration (MuJoCo/Gazebo/Isaac/LimX), manufacturing (3D printers/CNC/laser cutters), environmental logistics, CAD/SPZ conversion, fleet art bridges.",
+  "author": {
+    "name": "Sandra Schipal",
+    "email": "sandra@schipal.at"
+  },
+  "license": "MIT",
+  "server": {
+    "type": "python",
+    "entry_point": "src/robotics_mcp/server.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["-m", "robotics_mcp.server", "--mode", "stdio"],
+      "env": {
+        "PYTHONPATH": "${PWD}/src",
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  },
+  "user_config": {
+    "config_path": {
+      "type": "string",
+      "title": "Configuration File Path",
+      "description": "Path to robotics-mcp config YAML file (optional, uses default if empty)",
+      "required": false,
+      "default": ""
+    },
+    "http_enabled": {
+      "type": "boolean",
+      "title": "Enable HTTP Server",
+      "description": "Enable HTTP API alongside stdio (default: false for Claude Desktop)",
+      "required": false,
+      "default": false
+    },
+    "http_port": {
+      "type": "string",
+      "title": "HTTP Server Port",
+      "description": "Port for HTTP API server (default: 10892)",
+      "required": false,
+      "default": "10892"
+    }
+  },
+  "tools": [
+    {"name": "robotics_system", "description": "System management portmanteau - help, status, list_robots with filtering"},
+    {"name": "robot_control", "description": "Unified robot control - get_status, move, stop, return_to_dock, stand, sit, walk, sync_vbot, plus Yahboom (home_patrol, camera_capture, arm_move, gripper_control, navigate_to, ai_query), Dreame (start/stop_cleaning, clean_zone, clean_room, clean_spot, go_to, get_map, set_suction_level, set_water_volume, set_mop_humidity, start_mapping, start_fast_mapping, rename_room, set_cleaning_sequence, set_restricted_zones, get_cleaning_history, clear_error), Elegoo (emergency_stop), Hue HomeAware (hue_get_movement_events/sensor_status/movement_zones), and Gazebo operations"},
+    {"name": "robot_behavior", "description": "Robot behavior portmanteau - animation (set_wheel_speeds, play_animation, set_pose, stop_animation, get_animation_state), camera (get_camera_feed, get_virtual_camera, set_camera_angle, capture_image, start_streaming, stop_streaming, get_camera_status), navigation (plan_path, follow_path, set_waypoint, clear_waypoints, get_path_status, avoid_obstacle, get_current_path), manipulation (move_joints, move_end_effector, control_gripper, set_force_limit, get_manipulation_status, stop_manipulation)"},
+    {"name": "robot_manufacturing", "description": "Manufacturing equipment control - 3D printers, CNC machines, laser cutters with control, monitor, and maintenance operations"},
+    {"name": "robot_virtual", "description": "Virtual robot lifecycle - create, read, update, delete, list, spawn, load_environment, get_status, get_lidar, set_scale, test_navigation, sync_with_physical across Unity, VRChat, Resonite"},
+    {"name": "vbot_crud", "description": "Virtual robot CRUD - create, read, update, delete, list with support for scout, scout_e, go2, g1, yahboom, mechazilla, godzilla, drone, px4_quad, ardupilot, robbie, custom types"},
+    {"name": "robot_model", "description": "Robot model management - create, import, export, convert (FBX/GLB/OBJ/VRM/BLEND), SPZ check/convert/extract/install, execute scripts"},
+    {"name": "drone_control", "description": "Drone flight operations - arm, disarm, takeoff, land, RTL, move, goto_global, goto_local, set_mode, get_status, get_battery, get_gps, get_attitude, mission control, streaming (start/stop FPV, capture, record), navigation (set waypoints, mission planning, geofence), flight control modes, servo control"},
+    {"name": "dreame_control", "description": "Dedicated Dreame D20 Pro Plus vacuum control - DreameHome cloud operations: status, cleaning, auto-empty, self-clean, suction/water/mop settings, zone/room/spot cleaning, mapping, map export (OBJ/PLY/Unity JSON/Blender Python)"},
+    {"name": "gazebo_models", "description": "Gazebo Fuel model browser - search, download, spawn, list_local, delete_local for 3000+ free simulation assets"},
+    {"name": "noetix_info", "description": "Noetix Bumi humanoid robot - specs (94cm, 12kg, 21DOF), features, SDK links"},
+    {"name": "cad_converter", "description": "CAD file converter - convert STEP/STP/IGES to OBJ/STL/PLY/GLTF/GLB for Blender"},
+    {"name": "spz_converter", "description": "SPZ Gaussian splat converter - check, convert (PLY/JSON), extract, install into Unity projects"},
+    {"name": "robotics_sim_art", "description": "Sim-art fleet bridge via gimp-mcp HTTP - gimp_status, batch_gazebo_icons, import_gazebo_models, batch_vrchat_icons, avatar_thumbnail"},
+    {"name": "robotics_fab_art", "description": "Fab-art fleet bridge via inkscape-mcp HTTP - inkscape_status, batch_dxf_export, batch_laser_dots, gazebo_schematic, stage_fab_paths, push_gimp_schematic"},
+    {"name": "robotics_agentic_workflow", "description": "Complex multi-step robotics workflows using MCP sampling (FastMCP 3.1+) - autonomous mission orchestration"},
+    {"name": "environmental_logistics_handler", "description": "Specialized robotic logistics - stiffen_fabric, grip_textile, manipulate_pattern, darkroom_logistics, diy_construction, facade_maintenance, garden_logistics, security_patrol, pet_logistics, human_health_supervision, companion_logistics, mural_painting, emergency_dispatch"},
+    {"name": "workflow_management", "description": "Workflow lifecycle - create, read, update, delete, list, execute, status, templates, import, export, validate, schedule, unschedule, get_scheduled"},
+    {"name": "sim_fleet_status", "description": "Probe all registered simulation backend MCP servers (MuJoCo, Gazebo, Isaac, LimX)"},
+    {"name": "sim_fleet_route", "description": "Route a simulation task to the best available backend based on capability matching"},
+    {"name": "sim_fleet_backends", "description": "List all registered sim backends and their capabilities (offline registry)"},
+    {"name": "sim_marketplace_search_tool", "description": "Search robot model marketplace by keyword, tags, sim backend compatibility, or robot type"}
+  ],
+  "compatibility": {
+    "platforms": ["win32", "darwin", "linux"]
+  }
+}

@@ -1,0 +1,92 @@
+[1msrc\robotics_mcp\clients\dreame_client.py[0m[36m:[0m36[36m:[0m44[36m:[0m [1m[31mS105[0m Possible hardcoded password assigned to: "token"
+[1msrc\robotics_mcp\clients\dreame_client.py[0m[36m:[0m60[36m:[0m20[36m:[0m [1m[31mS603[0m `subprocess` call: check for execution of untrusted input
+[1msrc\robotics_mcp\config.py[0m[36m:[0m3[36m:[0m16[36m:[0m [1m[31mS105[0m Possible hardcoded password assigned to: "DREAME_TOKEN"
+[1msrc\robotics_mcp\osc_bridge.py[0m[36m:[0m17[36m:[0m24[36m:[0m [1m[31mRUF012[0m Mutable class attributes should be annotated with `typing.ClassVar`
+[1msrc\robotics_mcp\scripts\raspbot_setup.py[0m[36m:[0m1[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (156 > 120)
+[1msrc\robotics_mcp\server.py[0m[36m:[0m60[36m:[0m1[36m:[0m [1m[31mE402[0m Module level import not at top of file
+[1msrc\robotics_mcp\server.py[0m[36m:[0m68[36m:[0m36[36m:[0m [1m[31mS104[0m Possible binding to all interfaces
+[1msrc\robotics_mcp\server.py[0m[36m:[0m847[36m:[0m43[36m:[0m [1m[31mS104[0m Possible binding to all interfaces
+[1msrc\robotics_mcp\server.py[0m[36m:[0m884[36m:[0m12[36m:[0m [1m[31mF821[0m Undefined name `_is_stdio_mode`
+[1msrc\robotics_mcp\services\workflow_executor.py[0m[36m:[0m408[36m:[0m25[36m:[0m [1m[31mS307[0m Use of possibly insecure function; consider using `ast.literal_eval`
+[1msrc\robotics_mcp\services\workflow_storage.py[0m[36m:[0m176[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (141 > 120)
+[1msrc\robotics_mcp\services\workflow_storage.py[0m[36m:[0m441[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (127 > 120)
+[1msrc\robotics_mcp\tools\agentic_robotics.py[0m[36m:[0m83[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (137 > 120)
+[1msrc\robotics_mcp\tools\agentic_support.py[0m[36m:[0m35[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (130 > 120)
+[1msrc\robotics_mcp\tools\cad_converter.py[0m[36m:[0m231[36m:[0m26[36m:[0m [1m[31mS603[0m `subprocess` call: check for execution of untrusted input
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m116[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (121 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m131[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (171 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m135[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (147 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m231[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (230 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m235[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (190 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m337[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (133 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m338[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (243 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m341[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (185 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m342[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (161 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m441[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (214 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m444[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (127 > 120)
+[1msrc\robotics_mcp\tools\drone_control.py[0m[36m:[0m445[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (227 > 120)
+[1msrc\robotics_mcp\tools\environmental_logistics.py[0m[36m:[0m98[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (162 > 120)
+[1msrc\robotics_mcp\tools\environmental_logistics.py[0m[36m:[0m106[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (221 > 120)
+[1msrc\robotics_mcp\tools\environmental_logistics.py[0m[36m:[0m634[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (172 > 120)
+[1msrc\robotics_mcp\tools\environmental_logistics.py[0m[36m:[0m639[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (172 > 120)
+[1msrc\robotics_mcp\tools\environmental_logistics.py[0m[36m:[0m644[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (174 > 120)
+[1msrc\robotics_mcp\tools\environmental_logistics.py[0m[36m:[0m649[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (175 > 120)
+[1msrc\robotics_mcp\tools\noetix_bumi.py[0m[36m:[0m19[36m:[0m33[36m:[0m [1m[31mRUF001[0m String contains ambiguous `ÔÇô` (EN DASH). Did you mean `-` (HYPHEN-MINUS)?
+[1msrc\robotics_mcp\tools\robot_behavior.py[0m[36m:[0m1126[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (124 > 120)
+[1msrc\robotics_mcp\tools\robot_behavior.py[0m[36m:[0m1353[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (126 > 120)
+[1msrc\robotics_mcp\tools\robot_control.py[0m[36m:[0m243[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (132 > 120)
+[1msrc\robotics_mcp\tools\robot_control.py[0m[36m:[0m252[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (123 > 120)
+[1msrc\robotics_mcp\tools\robot_control.py[0m[36m:[0m260[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (122 > 120)
+[1msrc\robotics_mcp\tools\robot_control.py[0m[36m:[0m268[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (137 > 120)
+[1msrc\robotics_mcp\tools\robot_manufacturing.py[0m[36m:[0m170[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (131 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m176[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (146 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m186[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (151 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m196[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (138 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m206[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (143 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m210[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (151 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m219[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (134 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m226[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (139 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m1009[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (121 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m1140[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (162 > 120)
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m1536[36m:[0m37[36m:[0m [1m[31mS607[0m Starting a process with a partial executable path
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m1572[36m:[0m22[36m:[0m [1m[31mS603[0m `subprocess` call: check for execution of untrusted input
+[1msrc\robotics_mcp\tools\robot_model_tools.py[0m[36m:[0m1573[36m:[0m17[36m:[0m [1m[31mS607[0m Starting a process with a partial executable path
+[1msrc\robotics_mcp\tools\robot_virtual.py[0m[36m:[0m456[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (150 > 120)
+[1msrc\robotics_mcp\tools\robot_virtual.py[0m[36m:[0m685[36m:[0m42[36m:[0m [1m[31mS608[0m Possible SQL injection vector through string-based query construction
+[1msrc\robotics_mcp\tools\robotics_system.py[0m[36m:[0m154[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (124 > 120)
+[1msrc\robotics_mcp\tools\robotics_system.py[0m[36m:[0m155[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (123 > 120)
+[1msrc\robotics_mcp\tools\spz_converter.py[0m[36m:[0m133[36m:[0m37[36m:[0m [1m[31mS607[0m Starting a process with a partial executable path
+[1msrc\robotics_mcp\tools\spz_converter.py[0m[36m:[0m176[36m:[0m22[36m:[0m [1m[31mS603[0m `subprocess` call: check for execution of untrusted input
+[1msrc\robotics_mcp\tools\spz_converter.py[0m[36m:[0m177[36m:[0m17[36m:[0m [1m[31mS607[0m Starting a process with a partial executable path
+[1msrc\robotics_mcp\tools\spz_converter.py[0m[36m:[0m213[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (124 > 120)
+[1msrc\robotics_mcp\tools\spz_converter.py[0m[36m:[0m270[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (138 > 120)
+[1msrc\robotics_mcp\tools\spz_converter.py[0m[36m:[0m281[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (124 > 120)
+[1msrc\robotics_mcp\tools\spz_converter.py[0m[36m:[0m311[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (141 > 120)
+[1msrc\robotics_mcp\tools\vbot_crud.py[0m[36m:[0m122[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (133 > 120)
+[1msrc\robotics_mcp\tools\vbot_crud.py[0m[36m:[0m707[36m:[0m42[36m:[0m [1m[31mS608[0m Possible SQL injection vector through string-based query construction
+[1msrc\robotics_mcp\tools\workflow_management.py[0m[36m:[0m376[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (440 > 120)
+[1msrc\robotics_mcp\tools\workflow_management.py[0m[36m:[0m387[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (461 > 120)
+[1msrc\robotics_mcp\tools\workflow_management.py[0m[36m:[0m398[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (424 > 120)
+[1msrc\robotics_mcp\tools\workflow_management.py[0m[36m:[0m791[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (121 > 120)
+[1msrc\robotics_mcp\tools\workflow_management.py[0m[36m:[0m986[36m:[0m121[36m:[0m [1m[31mE501[0m Line too long (121 > 120)
+[1msrc\robotics_mcp\utils\auth.py[0m[36m:[0m13[36m:[0m23[36m:[0m [1m[31mS105[0m Possible hardcoded password assigned to: "DEFAULT_BENNY_TOKEN"
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m29[36m:[0m23[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m54[36m:[0m26[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m56[36m:[0m18[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m57[36m:[0m18[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m58[36m:[0m22[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m60[36m:[0m32[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m60[36m:[0m67[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m73[36m:[0m29[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m79[36m:[0m26[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m79[36m:[0m59[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m102[36m:[0m13[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m103[36m:[0m13[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1msrc\robotics_mcp\utils\simulated_data.py[0m[36m:[0m104[36m:[0m16[36m:[0m [1m[31mS311[0m Standard pseudo-random generators are not suitable for cryptographic purposes
+[1mtests\unit\test_robot_behavior.py[0m[36m:[0m128[36m:[0m49[36m:[0m [1m[31mS108[0m Probable insecure usage of temporary file or directory: "/tmp/capture.jpg"
+[1mtests\unit\test_robot_behavior.py[0m[36m:[0m134[36m:[0m25[36m:[0m [1m[31mS108[0m Probable insecure usage of temporary file or directory: "/tmp/capture.jpg"
+[1mtests\unit\test_robot_camera.py[0m[36m:[0m85[36m:[0m80[36m:[0m [1m[31mS108[0m Probable insecure usage of temporary file or directory: "/tmp/capture.jpg"
+[1mtests\unit\test_robot_camera.py[0m[36m:[0m91[36m:[0m25[36m:[0m [1m[31mS108[0m Probable insecure usage of temporary file or directory: "/tmp/capture.jpg"
+[1mtests\unit\test_robot_model_tools.py[0m[36m:[0m77[36m:[0m21[36m:[0m [1m[31mS108[0m Probable insecure usage of temporary file or directory: "/tmp/test.fbx"
+[1mtests\unit\test_robot_virtual.py[0m[36m:[0m190[36m:[0m30[36m:[0m [1m[31mS108[0m Probable insecure usage of temporary file or directory: "/tmp/environment.glb"
+Found 91 errors.

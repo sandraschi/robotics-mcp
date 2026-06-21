@@ -1,0 +1,294 @@
+{
+  "version": "1.0",
+  "description": "AI-Generated Blender Script Repository for Robotics MCP",
+  "categories": {
+    "robots": {
+      "description": "Robot models and robotic components",
+      "scripts": {
+        "moorebot_scout": {
+          "name": "Moorebot Scout Robot",
+          "description": "Complete Moorebot Scout robot with mecanum wheels and camera",
+          "file": "robots/moorebot_scout.py",
+          "author": "Gemini AI",
+          "tags": ["mecanum", "wheeled", "scout", "moorebot"],
+          "dimensions": "115x100x80mm",
+          "complexity": "medium",
+          "features": [
+            "Mecanum wheels with 45° roller orientation",
+            "Rounded chassis with bevel modifier",
+            "Camera eye sensor mount",
+            "Proper wheel positioning and parenting"
+          ],
+          "parameters": {
+            "dimensions": {
+              "type": "dict",
+              "default": {"length": 0.115, "width": 0.10, "height": 0.08},
+              "description": "Robot dimensions in meters"
+            }
+          },
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "robby_forbidden_planet": {
+          "name": "Robby the Robot - Forbidden Planet",
+          "description": "Iconic Robby robot from 1956 film Forbidden Planet with interlocking globe legs",
+          "file": "robots/robby_forbidden_planet.py",
+          "author": "Gemini AI",
+          "tags": ["classic", "film", "sci-fi", "forbidden-planet", "robby", "humanoid"],
+          "dimensions": "~120cm tall",
+          "complexity": "medium",
+          "features": [
+            "Interlocking globe legs (3 per side)",
+            "Barrel-shaped torso",
+            "Domed head with plexiglass appearance",
+            "Rotating scanner rings (ears)",
+            "Classic 1950s sci-fi robot design"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "robodog_black_mirror": {
+          "name": "Robodog - Black Mirror Metalhead",
+          "description": "Terrifying quadrupedal killer robot from Black Mirror Metalhead episode",
+          "file": "robots/robodog_black_mirror.py",
+          "author": "Gemini AI",
+          "tags": ["quadruped", "predator", "weapon", "black-mirror", "metalhead", "killer-robot"],
+          "dimensions": "~80x40x25cm",
+          "complexity": "medium",
+          "features": [
+            "Sleek gun-metal chassis",
+            "Four functional legs with piston sections",
+            "Modified front leg as weapon arm",
+            "Low-profile predatory silhouette",
+            "Sharp angular design"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "gort_day_earth_stood_still": {
+          "name": "Gort - The Day the Earth Stood Still",
+          "description": "Iconic Gort robot from 1951 film The Day the Earth Stood Still",
+          "file": "robots/gort_day_earth_stood_still.py",
+          "author": "Gemini AI",
+          "tags": ["classic", "film", "sci-fi", "day-earth-stood-still", "gort", "alien-robot"],
+          "dimensions": "~240cm tall",
+          "complexity": "medium",
+          "features": [
+            "Tall monolithic humanoid body",
+            "Distinctive visor slot for laser projection",
+            "Seamless metal appearance with subdivision surface",
+            "Intimidating otherworldly presence",
+            "Boolean modifier for visor cut-out"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "b9_lost_in_space": {
+          "name": "B-9 - Lost in Space",
+          "description": "Friendly B-9 robot from 1965 TV series Lost in Space",
+          "file": "robots/b9_lost_in_space.py",
+          "author": "Gemini AI",
+          "tags": ["classic", "tv", "sci-fi", "lost-in-space", "b9", "friendly-robot"],
+          "dimensions": "~180cm tall",
+          "complexity": "medium",
+          "features": [
+            "Tread-powered base with caterpillar tracks",
+            "Central leg pillar supporting torso",
+            "Accordion-style torso with stacked flexible rings",
+            "Brain dome on top with compressed appearance",
+            "1960s sci-fi robot aesthetic"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "r2d2_star_wars": {
+          "name": "R2-D2 - Star Wars",
+          "description": "Iconic R2-D2 astromech droid from the Star Wars franchise",
+          "file": "robots/r2d2_star_wars.py",
+          "author": "Gemini AI",
+          "tags": ["star-wars", "astromech", "r2d2", "droid", "sci-fi", "iconic"],
+          "dimensions": "~90cm tall",
+          "complexity": "medium",
+          "features": [
+            "Cylindrical main body with proper proportions",
+            "Hemispherical dome created with boolean operation",
+            "Blue and white color scheme ready for materials",
+            "Compact astromech droid appearance",
+            "Fits in starfighter cockpit scale"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "c3po_star_wars": {
+          "name": "C-3PO - Star Wars",
+          "description": "Protocol droid C-3PO from the Star Wars franchise",
+          "file": "robots/c3po_star_wars.py",
+          "author": "Gemini AI",
+          "tags": ["star-wars", "protocol-droid", "c3po", "droid", "sci-fi", "iconic"],
+          "dimensions": "~190cm tall",
+          "complexity": "medium",
+          "features": [
+            "Rectangular chest/torso with proper proportions",
+            "Iconic oval head with protocol droid appearance",
+            "Exposed mechanical waist section",
+            "Simplified cylindrical limbs",
+            "Golden color scheme ready for materials"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "batmobile_1960s": {
+          "name": "Batmobile - 1960s Classic",
+          "description": "Iconic 1966 Batmobile from Batman TV series with bat features",
+          "file": "robots/batmobile_1960s.py",
+          "author": "Grok AI",
+          "tags": ["batman", "batmobile", "vehicle", "classic", "1960s", "tv-series", "superhero"],
+          "dimensions": "~580x180x120cm",
+          "complexity": "medium",
+          "features": [
+            "Long sleek black chassis with angular lines",
+            "Bat-shaped front grille and fenders",
+            "Rocket exhaust ports on the sides",
+            "Bat wing fins on the rear deck",
+            "Turbine-style wheels with blades",
+            "Red interior control console"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "kitoh_abomination": {
+          "name": "Kitoh Abomination - Body Horror Robot",
+          "description": "Terrifying robotic abomination inspired by Mohiro Kitoh's manga with extreme body horror",
+          "file": "robots/kitoh_abomination.py",
+          "author": "Grok AI",
+          "tags": ["horror", "body-horror", "mohiro-kitoh", "psychological", "terrifying", "manga-inspired"],
+          "dimensions": "~220cm tall",
+          "complexity": "high",
+          "features": [
+            "Multiple heads in anatomically impossible positions",
+            "Extra limbs growing from wrong places",
+            "Exposed mechanical organs and wiring",
+            "Asymmetrical, distorted proportions",
+            "Procedural debris and cable generation",
+            "Horror material setup with metallic/bloody appearance",
+            "Extreme psychological terror elements"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19",
+          "content_warning": "Extreme body horror, psychological terror, not suitable for all audiences"
+        },
+        "iron_giant": {
+          "name": "Iron Giant - The Iron Giant (1999 Film)",
+          "description": "Beloved Iron Giant robot from the 1999 animated film with industrial machined aesthetic",
+          "file": "robots/iron_giant.py",
+          "author": "Grok AI",
+          "tags": ["iron-giant", "animated-film", "industrial", "machined", "1999", "sci-fi", "friendly-robot"],
+          "dimensions": "~350cm tall",
+          "complexity": "high",
+          "features": [
+            "Detailed head with skull structure and visor eye slot",
+            "Layered torso armor with mechanical articulation",
+            "Heavy industrial arms with tapered sections and joints",
+            "Powerful legs with bell-bottom boots and knee plates",
+            "Machined metal surfaces with beveled edges",
+            "Subdivision surface for organic-metal appearance"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        }
+      }
+    },
+    "architecture": {
+      "description": "Buildings, structures, and architectural models",
+      "scripts": {
+        "hohensalzburg_fortress": {
+          "name": "Hohensalzburg Fortress",
+          "description": "Detailed medieval castle model of Hohensalzburg Fortress in Salzburg, Austria",
+          "file": "architecture/hohensalzburg_fortress.py",
+          "author": "Gemini AI",
+          "tags": ["medieval", "castle", "fortress", "austria", "salzburg", "historical"],
+          "dimensions": "~250x150x60m",
+          "complexity": "complex",
+          "features": [
+            "Main castle keep with towers",
+            "Outer defensive walls with battlements",
+            "Corner towers and gatehouse",
+            "Inner courtyard buildings",
+            "Surrounding trees and terrain"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "fallingwater_house": {
+          "name": "Fallingwater House - Frank Lloyd Wright",
+          "description": "Iconic Fallingwater house by Frank Lloyd Wright, featured in North by Northwest",
+          "file": "architecture/fallingwater_house.py",
+          "author": "Grok AI",
+          "tags": ["frank-lloyd-wright", "fallingwater", "modernist", "cantilever", "organic-architecture", "north-by-northwest"],
+          "dimensions": "~45x70m footprint, 3 stories",
+          "complexity": "high",
+          "features": [
+            "Cantilevered concrete terraces over waterfall",
+            "Local sandstone construction with natural integration",
+            "Horizontal ribbon windows throughout",
+            "Multiple levels with complex cantilevering",
+            "Organic architecture principles",
+            "Modular design for VR performance",
+            "Detailed stonework and concrete textures",
+            "Interior and exterior components"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        },
+        "white_heron_castle": {
+          "name": "White Heron Castle (Himeji Castle)",
+          "description": "UNESCO World Heritage Site - Japan's largest and most beautiful feudal castle",
+          "file": "architecture/white_heron_castle.py",
+          "author": "Grok AI",
+          "tags": ["japan", "feudal", "castle", "himeji", "white-heron", "unesco", "traditional", "samurai"],
+          "dimensions": "~100x200m footprint, main keep ~50m tall",
+          "complexity": "very high",
+          "features": [
+            "Five-story main keep with traditional roofing",
+            "Three connected sub-keeps with corridors",
+            "Seventy-four yagura towers and turrets",
+            "Extensive stone foundations (oshikiri)",
+            "Multiple defensive walls and baileys",
+            "Traditional Japanese castle architecture",
+            "Modular design for VR performance",
+            "Stone, wood, and plaster materials",
+            "Machicolations and defensive features"
+          ],
+          "parameters": {},
+          "created": "2026-01-19",
+          "last_updated": "2026-01-19"
+        }
+      }
+    },
+    "tools": {
+      "description": "Modeling tools and utilities",
+      "scripts": {}
+    },
+    "environments": {
+      "description": "Environmental models and terrain",
+      "scripts": {}
+    }
+  },
+  "metadata": {
+    "total_scripts": 13,
+    "last_updated": "2026-01-19",
+    "ai_models_used": ["Gemini", "Grok"],
+    "contributors": ["Gemini AI", "Grok AI"]
+  }
+}

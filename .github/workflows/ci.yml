@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Windows — pre-commit & pytest
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web_sota/package-lock.json
+
+      - name: Install web_sota npm deps (Biome pre-commit hook)
+        working-directory: web_sota
+        run: npm ci
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Pre-commit (Ruff + Biome)
+        run: uv run pre-commit run --all-files
+
+      - name: Pytest
+        run: uv run pytest -q
