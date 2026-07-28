@@ -55,7 +55,11 @@ async def call_gimp_tool(
         if "success" not in data:
             data = {**data, "success": bool(body.get("success", True))}
         return data
-    return body if isinstance(body, dict) else {"success": False, "error": "Invalid gimp response", "message": "Invalid gimp response"}
+    return (
+        body
+        if isinstance(body, dict)
+        else {"success": False, "error": "Invalid gimp response", "message": "Invalid gimp response"}
+    )
 
 
 async def call_avatar_tool(
@@ -112,4 +116,8 @@ async def call_inkscape_tool(
         if "success" not in data:
             data = {**data, "success": bool(body.get("success", True))}
         return data
-    return body if isinstance(body, dict) else {"success": False, "error": "Invalid inkscape response", "message": "Invalid inkscape response"}
+    return (
+        body
+        if isinstance(body, dict)
+        else {"success": False, "error": "Invalid inkscape response", "message": "Invalid inkscape response"}
+    )

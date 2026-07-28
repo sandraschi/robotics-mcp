@@ -327,7 +327,11 @@ class DreameHomeClient:
 
             raw = self._protocol.get_device_file(object_name, 0)
             if raw is None:
-                return {"success": False, "error": "get_device_file returned None", "message": "get_device_file returned None"}
+                return {
+                    "success": False,
+                    "error": "get_device_file returned None",
+                    "message": "get_device_file returned None",
+                }
 
             result: dict[str, Any] = {
                 "success": True,

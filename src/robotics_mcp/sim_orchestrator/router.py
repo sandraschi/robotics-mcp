@@ -22,6 +22,7 @@ async def probe_backend(key: str) -> dict:
 async def probe_all() -> dict[str, dict]:
     """Probe all registered sim backends in parallel."""
     import asyncio
+
     results = await asyncio.gather(*[probe_backend(k) for k in SIM_BACKENDS])
     return dict(zip(SIM_BACKENDS.keys(), results, strict=True))
 
@@ -88,8 +89,12 @@ Advise which backend to start and what port it runs on.
 """
         try:
             import httpx as hx
-            resp = hx.post("http://127.0.0.1:11434/api/generate",
-                           json={"model": "llama3.2:3b", "prompt": prompt, "stream": False}, timeout=30)
+
+            resp = hx.post(
+                "http://127.0.0.1:11434/api/generate",
+                json={"model": "llama3.2:3b", "prompt": prompt, "stream": False},
+                timeout=30,
+            )
             advice = resp.json().get("response", "")
         except Exception:
             advice = "No LLM available to advise."

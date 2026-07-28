@@ -401,7 +401,11 @@ class RobotControlTool:
         raw = await call_mounted_server_tool(self.mounted_servers, "yahboom", "yahboom_tool", params)
         if isinstance(raw, dict):
             return raw
-        return {"success": False, "error": "Unexpected response from mounted yahboom-mcp", "message": "Unexpected response from mounted yahboom-mcp"}
+        return {
+            "success": False,
+            "error": "Unexpected response from mounted yahboom-mcp",
+            "message": "Unexpected response from mounted yahboom-mcp",
+        }
 
     async def _handle_yahboom_robot(
         self,

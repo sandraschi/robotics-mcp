@@ -334,7 +334,11 @@ class CADConverterTool:
         try:
             # FreeCAD conversion would require a Python script
             # This is a simplified version - real implementation would need FreeCAD Python API
-            return {"success": False, "error": "FreeCAD conversion not implemented yet", "message": "FreeCAD conversion not implemented yet"}
+            return {
+                "success": False,
+                "error": "FreeCAD conversion not implemented yet",
+                "message": "FreeCAD conversion not implemented yet",
+            }
 
         except Exception as e:
             return {"success": False, "error": str(e), "message": str(e), "tool_used": "FreeCAD"}

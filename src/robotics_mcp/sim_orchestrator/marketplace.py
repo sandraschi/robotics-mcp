@@ -66,22 +66,20 @@ def _filter_catalog(
 
     if sim_backend:
         candidates = [
-            (k, v) for k, v in candidates
-            if sim_backend in [b.lower() for b in v.get("sim_backends", [])]
-            or sim_backend in v.get("sim_backends", [])
+            (k, v)
+            for k, v in candidates
+            if sim_backend in [b.lower() for b in v.get("sim_backends", [])] or sim_backend in v.get("sim_backends", [])
         ]
 
     if tags:
         tag_set = {t.lower() for t in tags}
-        candidates = [
-            (k, v) for k, v in candidates
-            if tag_set & {t.lower() for t in v.get("tags", [])}
-        ]
+        candidates = [(k, v) for k, v in candidates if tag_set & {t.lower() for t in v.get("tags", [])}]
 
     if query:
         q = query.lower()
         candidates = [
-            (k, v) for k, v in candidates
+            (k, v)
+            for k, v in candidates
             if q in v.get("name", "").lower()
             or q in k.lower()
             or any(q in t.lower() for t in v.get("tags", []))
@@ -135,8 +133,7 @@ async def sim_marketplace_search(
 
     if not matches and ctx is not None and query:
         catalog_text = "\n".join(
-            f"  - {mid}: {e['name']} ({e['type']}) — tags: {', '.join(e['tags'])}"
-            for mid, e in MODEL_CATALOG.items()
+            f"  - {mid}: {e['name']} ({e['type']}) — tags: {', '.join(e['tags'])}" for mid, e in MODEL_CATALOG.items()
         )
         prompt = (
             f"User searched the robot model marketplace with query: '{query}'. "
@@ -145,6 +142,7 @@ async def sim_marketplace_search(
         )
         try:
             import httpx
+
             resp = httpx.post(
                 "http://127.0.0.1:11434/api/generate",
                 json={"model": "llama3.2:3b", "prompt": prompt, "stream": False},

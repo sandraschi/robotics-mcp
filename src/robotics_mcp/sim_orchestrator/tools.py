@@ -51,18 +51,22 @@ def register_sim_orchestrator(mcp: FastMCP) -> None:
         return {
             "success": True,
             "message": f"{len(SIM_BACKENDS)} backends in registry.",
-            "backends": {
-                k: {kk: vv for kk, vv in v.items() if kk != "health"}
-                for k, v in SIM_BACKENDS.items()
-            },
+            "backends": {k: {kk: vv for kk, vv in v.items() if kk != "health"} for k, v in SIM_BACKENDS.items()},
         }
 
     @mcp.tool()
     async def sim_marketplace_search_tool(
         query: Annotated[str | None, Field(description="Keyword to search model names, tags, and formats.")] = None,
-        tags: Annotated[list[str] | None, Field(description="Filter by tags (e.g. 'humanoid', 'biped', 'quadruped').")] = None,
-        sim_backend: Annotated[str | None, Field(description="Filter by compatible sim backend (e.g. 'mujoco', 'gazebo', 'isaac', 'limx').")] = None,
-        type: Annotated[str | None, Field(description="Filter by robot type (e.g. 'humanoid', 'quadruped', 'biped').")] = None,
+        tags: Annotated[
+            list[str] | None, Field(description="Filter by tags (e.g. 'humanoid', 'biped', 'quadruped').")
+        ] = None,
+        sim_backend: Annotated[
+            str | None,
+            Field(description="Filter by compatible sim backend (e.g. 'mujoco', 'gazebo', 'isaac', 'limx')."),
+        ] = None,
+        type: Annotated[
+            str | None, Field(description="Filter by robot type (e.g. 'humanoid', 'quadruped', 'biped').")
+        ] = None,
         ctx: Context | None = None,
     ) -> dict:
         """Search the robot model marketplace for available models.

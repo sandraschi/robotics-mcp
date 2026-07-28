@@ -86,7 +86,12 @@ class YahboomMcpClient:
             return {"success": True, "status": "success", "frame": data, "frame_size": len(data)}
 
         if response.status == 204:
-            return {"success": False, "status": "error", "error": "No camera frame available yet", "message": "No camera frame available yet"}
+            return {
+                "success": False,
+                "status": "error",
+                "error": "No camera frame available yet",
+                "message": "No camera frame available yet",
+            }
 
         if not response.content_length and response.status == 200:
             body = await response.text()
