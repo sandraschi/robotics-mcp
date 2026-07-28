@@ -1,15 +1,22 @@
-set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+﻿set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 import 'scripts/just/fleet.just'
 
-# ── Dashboard (Industrialized v1.4.1) ────────────────────────────────────────
+# â”€â”€ Dashboard (Industrialized v1.4.1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 # Open the interactive recipe dashboard in the browser
 default:
     @just --list
 
-# ── Quality ───────────────────────────────────────────────────────────────────
 
-# Execute Python (Ruff) and Web (Biome) linting sweep — use `biome ci` (matches npm run biome:ci)
+# Synchronize deps, pre-commit hooks, and web frontend
+bootstrap:
+    uv sync --extra dev --group dev
+    uv run pre-commit install
+    Set-Location web_sota; npm ci; if ($LASTEXITCODE -ne 0) { npm install }
+    Write-Host "Pre-commit hooks installed." -ForegroundColor Green
+# â”€â”€ Quality â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+# Execute Python (Ruff) and Web (Biome) linting sweep â€” use `biome ci` (matches npm run biome:ci)
 lint:
     uv run ruff check .
     Set-Location web_sota; npx @biomejs/biome ci .
@@ -20,13 +27,13 @@ fix:
     uv run ruff format .
     Set-Location web_sota; npx @biomejs/biome check --write .
 
-# ── Testing ───────────────────────────────────────────────────────────────────
+# â”€â”€ Testing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 # Execute Pytest SOTA v1.4.1 test suite
 test:
     uv run pytest --cov=src/robotics_mcp tests/
 
-# ── Hardening ─────────────────────────────────────────────────────────────────
+# â”€â”€ Hardening â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 # Execute Bandit security audit
 check-sec:
@@ -36,7 +43,7 @@ check-sec:
 audit-deps:
     uv run safety check
 
-# ── Rust Operations ───────────────────────────────────────────────────────────
+# â”€â”€ Rust Operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 # Execute Rust linting (Clippy)
 lint-rs:
@@ -46,7 +53,7 @@ lint-rs:
 fix-rs:
     cargo fmt --all
 
-# ── Web UI ────────────────────────────────────────────────────────────────────
+# â”€â”€ Web UI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 # Start frontend development server (Vite)
 dev-ui:
@@ -56,7 +63,7 @@ dev-ui:
 build-ui:
     Set-Location web_sota; npm run build
 
-# ── Tauri Native ───────────────────────────────────────────────────────────────
+# â”€â”€ Tauri Native â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 # Build Tauri native desktop app (full pipeline: frontend + backend)
 build-native:
@@ -64,10 +71,7 @@ build-native:
     $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
     npx @tauri-apps/cli build
 
-# Run the CUA smoke test against the installed NSIS app
-cua-nsis-test:
-    uv run python scripts/cua-smoke.py
-# ── Playwright E2E ─────────────────────────────────────────────────────
+# â”€â”€ Playwright E2E â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 # Install Playwright browsers (one-time)
 e2e-install:
