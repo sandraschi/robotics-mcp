@@ -1,4 +1,4 @@
-import { Layers, Map, Maximize, Radio, Target } from "lucide-react";
+import { Layers, Map as MapIcon, Maximize, Radio, Target } from "lucide-react";
 import "./map.css";
 
 export default function MapPage() {
@@ -7,7 +7,7 @@ export default function MapPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight mb-2 flex items-center gap-3">
-            <Map className="w-8 h-8 text-emerald-400" />
+            <MapIcon className="w-8 h-8 text-emerald-400" />
             Map & Telemetry
           </h1>
           <p className="text-gray-400">
@@ -36,7 +36,7 @@ export default function MapPage() {
               View Layers
             </h3>
             {[
-              { name: "Occupancy Grid (Map)", active: true, icon: Map },
+              { name: "Occupancy Grid (Map)", active: true, icon: MapIcon },
               { name: "Global Costmap", active: true, icon: Layers },
               { name: "Local Costmap", active: false, icon: Layers },
               { name: "LiDAR Scans (/scan)", active: true, icon: Radio },

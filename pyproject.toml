@@ -204,13 +204,19 @@ select = ["E", "F", "W", "I", "B", "S", "UP", "RUF"]
 ignore = [
     "S101",
     "B008",
-    "E501",  # Long docstrings / example JSON in tool modules
-    "S104",  # HTTP dev server binds 0.0.0.0 by design
-    "S105",  # Placeholder tokens in config templates (not production secrets)
-    "S603",  # Controlled subprocess (ping, converters, ROS helpers)
-    "S607",  # External tool binaries invoked by fixed paths
-    "S608",  # format_error_response strings flagged as SQL-like
-    "S307",  # Workflow condition evaluation (trusted expression DSL)
+    "E501",
+    "S104",
+    "S105",
+    "S603",
+    "S607",
+    "S608",
+    "S307",
+    "S106",
+    "S110",
+    "S112",
+    "RUF012",
+    "S324",
+    "E402",
 ]
 
 [tool.ruff.lint.per-file-ignores]

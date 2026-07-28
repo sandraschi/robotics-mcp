@@ -5,18 +5,18 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { AppLayout } from "./components/layout/app-layout";
 import FloatingChat from "./components/FloatingChat";
+import { AppLayout } from "./components/layout/app-layout";
 import AppsHub from "./pages/apps";
 import Control from "./pages/control";
 import Dashboard from "./pages/dashboard";
 import DreamePage from "./pages/dreame";
+import Logging from "./pages/Logging";
 import MapPage from "./pages/map";
 import Onboarding, { ONBOARDING_DONE_KEY } from "./pages/onboarding";
 import ROS2Page from "./pages/ros2";
 import StatusPage from "./pages/status";
 import ToolsExplorer from "./pages/tools";
-import Logging from "./pages/Logging";
 import VbotEcosystem from "./pages/vbot_ecosystem";
 import YahboomPage from "./pages/yahboom";
 

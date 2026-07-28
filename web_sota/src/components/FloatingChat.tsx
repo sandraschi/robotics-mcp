@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { API_BASE } from "@/lib/api";
 
 interface Message {
@@ -11,8 +11,12 @@ export default function FloatingChat() {
   const [chat, setChat] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [provider, setProvider] = useState(() => localStorage.getItem("llm_provider") || "ollama");
-  const [model, setModel] = useState(() => localStorage.getItem("llm_model") || "");
+  const [provider, _setProvider] = useState(
+    () => localStorage.getItem("llm_provider") || "ollama",
+  );
+  const [model, setModel] = useState(
+    () => localStorage.getItem("llm_model") || "",
+  );
   const [modelList, setModelList] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -34,11 +38,11 @@ export default function FloatingChat() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [model]);
 
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chat, open]);
+  }, [open]);
 
   const sendMessage = async (text: string) => {
     setChat((prev) => [...prev, { role: "user", content: text }]);
@@ -50,9 +54,21 @@ export default function FloatingChat() {
         body: JSON.stringify({ provider, model, prompt: text }),
       });
       const data = await r.json();
-      setChat((prev) => [...prev, { role: "assistant", content: data.response || data.error || "No response" }]);
+      setChat((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.response || data.error || "No response",
+        },
+      ]);
     } catch {
-      setChat((prev) => [...prev, { role: "assistant", content: "Request failed. Is the backend running?" }]);
+      setChat((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Request failed. Is the backend running?",
+        },
+      ]);
     }
     setLoading(false);
   };
@@ -74,28 +90,53 @@ export default function FloatingChat() {
                 <select
                   className="bg-slate-800 border border-slate-600 rounded text-xs px-2 py-1 text-slate-300 max-w-[140px]"
                   value={model}
-                  onChange={(e) => { setModel(e.target.value); localStorage.setItem("llm_model", e.target.value); }}
+                  onChange={(e) => {
+                    setModel(e.target.value);
+                    localStorage.setItem("llm_model", e.target.value);
+                  }}
                 >
-                  {modelList.map((m) => <option key={m} value={m}>{m.split(":")[0]}</option>)}
+                  {modelList.map((m) => (
+                    <option key={m} value={m}>
+                      {m.split(":")[0]}
+                    </option>
+                  ))}
                 </select>
               )}
-              <button onClick={() => setOpen(false)} className="text-slate-500 hover:text-slate-300 text-lg leading-none">&times;</button>
+              <button
+                onClick={() => setOpen(false)}
+                className="text-slate-500 hover:text-slate-300 text-lg leading-none"
+              >
+                &times;
+              </button>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-3 space-y-2 text-sm">
             {chat.length === 0 && (
-              <p className="text-slate-500 text-xs text-center pt-8">Ask a question about this simulation.</p>
+              <p className="text-slate-500 text-xs text-center pt-8">
+                Ask a question about this simulation.
+              </p>
             )}
             {chat.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-xl px-3 py-2 whitespace-pre-wrap ${
-                  msg.role === "user" ? "bg-cyan-800 text-cyan-100" : "bg-slate-800 text-slate-300"
-                }`}>
+              <div
+                key={i}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-xl px-3 py-2 whitespace-pre-wrap ${
+                    msg.role === "user"
+                      ? "bg-cyan-800 text-cyan-100"
+                      : "bg-slate-800 text-slate-300"
+                  }`}
+                >
                   {msg.content}
                 </div>
               </div>
             ))}
-            {loading && <div className="text-slate-500 text-xs animate-pulse">Thinking...</div>}
+            {loading && (
+              <div className="text-slate-500 text-xs animate-pulse">
+                Thinking...
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
           <div className="border-t border-slate-700 p-3 flex gap-2">
@@ -121,7 +162,17 @@ export default function FloatingChat() {
           className="h-12 w-12 rounded-full bg-cyan-700 hover:bg-cyan-600 shadow-xl flex items-center justify-center text-white text-xl transition-colors"
           title="Open chat"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </button>

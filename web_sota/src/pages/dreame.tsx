@@ -3,7 +3,7 @@ import {
   Battery,
   Droplets,
   Home,
-  Map,
+  Map as MapIcon,
   Play,
   Square,
   Wind,
@@ -106,7 +106,7 @@ export default function DreamePage() {
         <div className="lg:col-span-2 glass-card border border-white/10 rounded-xl overflow-hidden flex flex-col">
           <div className="p-4 border-b border-white/10 bg-slate-900/50 flex justify-between">
             <h3 className="font-semibold flex items-center gap-2">
-              <Map className="w-4 h-4 text-sky-400" /> Floorplan Vector Map
+              <MapIcon className="w-4 h-4 text-sky-400" /> Floorplan Vector Map
             </h3>
             <span className="text-xs text-slate-400 font-mono">
               MAP ID: GROUND_FLOOR_B
