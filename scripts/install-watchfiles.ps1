@@ -1,13 +1,13 @@
 # Install Watchfiles for Robotics MCP Crashproofing
 # This script installs the watchfiles library and required dependencies
 
-Write-Host "ðŸ”§ Installing Watchfiles for Robotics MCP Crashproofing" -ForegroundColor Green
+Write-Host "ðŸ"§ Installing Watchfiles for Robotics MCP Crashproofing" -ForegroundColor Green
 Write-Host "======================================================" -ForegroundColor Cyan
 
 # Check if Python is available
 try {
     $pythonVersion = python --version 2>&1
-    Write-Host "âœ“ Python found: $pythonVersion" -ForegroundColor Green
+    Write-Host "âœ" Python found: $pythonVersion" -ForegroundColor Green
 } catch {
     Write-Host "âœ- Python not found. Please install Python 3.8+ first." -ForegroundColor Red
     exit 1
@@ -16,22 +16,22 @@ try {
 # Check if pip is available
 try {
     $pipVersion = python -m pip --version 2>&1
-    Write-Host "âœ“ Pip found: $pipVersion" -ForegroundColor Green
+    Write-Host "âœ" Pip found: $pipVersion" -ForegroundColor Green
 } catch {
     Write-Host "âœ- Pip not found. Please install pip first." -ForegroundColor Red
     exit 1
 }
 
 # Install watchfiles and aiohttp
-Write-Host "ðŸ“¦ Installing watchfiles and dependencies..." -ForegroundColor Yellow
+Write-Host "ðŸ"¦ Installing watchfiles and dependencies..." -ForegroundColor Yellow
 python -m pip install watchfiles>=0.24.0 aiohttp>=3.9.0
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "âœ“ Watchfiles installation successful!" -ForegroundColor Green
+    Write-Host "âœ" Watchfiles installation successful!" -ForegroundColor Green
 
     # Test the installation
     Write-Host "ðŸ§ª Testing watchfiles installation..." -ForegroundColor Yellow
-    python -c "import watchfiles, aiohttp; print('âœ“ All dependencies installed successfully')"
+    python -c "import watchfiles, aiohttp; print('âœ" All dependencies installed successfully')"
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "" -ForegroundColor Green

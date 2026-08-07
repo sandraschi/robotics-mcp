@@ -45,7 +45,7 @@ if ($watchfilesProcess) {
         Stop-Process -Id $watchfilesProcess.Id -Force
     }
 
-    Write-Host "✓ Watchfiles protection stopped" -ForegroundColor Green
+    Write-Host "OK Watchfiles protection stopped" -ForegroundColor Green
 } else {
     Write-Host "No watchfiles process found for port $Port" -ForegroundColor Yellow
 }
@@ -62,7 +62,7 @@ if ($mcpProcesses) {
         Write-Host "Stopping MCP server process (PID: $($proc.Id))" -ForegroundColor Yellow
         Stop-Process -Id $proc.Id -Force
     }
-    Write-Host "✓ MCP server processes stopped" -ForegroundColor Green
+    Write-Host "OK MCP server processes stopped" -ForegroundColor Green
 } else {
     Write-Host "No MCP server processes found for port $Port" -ForegroundColor Yellow
 }
