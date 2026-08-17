@@ -397,23 +397,17 @@ class RoboticsMCP:
                     )
             except Exception as e:
                 logger.error(f"Error listing tools: {e}")
-                # Try internal _tools dict
-                mcp_tools = getattr(self.mcp, "_tools", {})
-                for tool_name, tool_func in mcp_tools.items():
-                    description = ""
-                    if hasattr(tool_func, "__doc__") and tool_func.__doc__:
-                        description = tool_func.__doc__.split("\n")[0].strip()
-
-                    # Try to find schema if possible
-                    schema = {}
-                    if hasattr(tool_func, "parameters"):
-                        schema = tool_func.parameters
-                        if hasattr(schema, "model_json_schema"):
-                            schema = schema.model_json_schema()
+                # Fall back to the public async API (private attrs removed in 3.4.x)
+                mcp_tools = await self.mcp.list_tools()
+                for tool in mcp_tools:
+                    description = getattr(tool, "description", "") or ""
+                    schema = getattr(tool, "parameters", {})
+                    if hasattr(schema, "model_json_schema"):
+                        schema = schema.model_json_schema()
 
                     tools.append(
                         {
-                            "name": tool_name,
+                            "name": tool.name,
                             "description": description,
                             "inputSchema": schema,
                         }
@@ -426,19 +420,21 @@ class RoboticsMCP:
             if params is None:
                 params = {}
             try:
-                # Try multiple ways to access FastMCP tools
+                # Method 1: Public sync API - get_tool (private attrs removed in 3.4.x)
                 tool_func = None
-
-                # Method 1: Check _tools dict
-                if hasattr(self.mcp, "_tools") and tool_name in self.mcp._tools:
-                    tool_func = self.mcp._tools[tool_name]
+                try:
+                    tool = self.mcp.get_tool(tool_name)
+                except (ValueError, KeyError, TypeError):
+                    tool = None
+                if tool is not None:
+                    tool_func = getattr(tool, "fn", tool)
                 # Method 2: Check if tool_name is a method on mcp
-                elif hasattr(self.mcp, tool_name):
+                if tool_func is None and hasattr(self.mcp, tool_name):
                     attr = getattr(self.mcp, tool_name)
                     if callable(attr):
                         tool_func = attr
                 # Method 3: Use FastMCP's call_tool method if available
-                elif hasattr(self.mcp, "call_tool"):
+                if tool_func is None and hasattr(self.mcp, "call_tool"):
                     try:
                         result = await self.mcp.call_tool(tool_name, arguments=params)
                         return {"result": result}
@@ -775,11 +771,17 @@ class RoboticsMCP:
             self.environmental_logistics.register()  # Logistics: textiles, pet, mural, health
             logger.debug("Registered robot_textile tool")
 
-            tools = getattr(self.mcp, "_tools", {})
+            import asyncio
+
+            async def _list_tools_sync() -> list:
+                return await self.mcp.list_tools()
+
+            loop = asyncio.get_event_loop()
+            tools = asyncio.run(_list_tools_sync()) if not loop.is_running() else []
             logger.info(
                 "All tools registered",
                 tool_count=len(tools),
-                tool_names=list(tools.keys()),
+                tool_names=[t.name for t in tools],
             )
         except Exception as e:
             logger.error("Failed to register tools", error=str(e), exc_info=True)

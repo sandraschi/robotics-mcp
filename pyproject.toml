@@ -221,7 +221,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S108"]
-"src/robotics_mcp/utils/simulated_data.py" = ["S311"]
+  "src/robotics_mcp/utils/simulated_data.py" = ["S311"]
+  "scripts/cua-webapp-test.py" = ["B007", "S310", "S603", "S607"]
 
 [tool.ruff.format]
 quote-style = "double"

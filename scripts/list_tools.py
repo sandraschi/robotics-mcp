@@ -11,7 +11,12 @@ config = RoboticsConfig()
 server = RoboticsMCP(config)
 
 # Get all tools
-all_tools = server.mcp._tool_manager._tools if hasattr(server.mcp, "_tool_manager") else {}
+import asyncio
+
+async def _list() -> dict:
+    return {t.name: t for t in await server.mcp.list_tools()}
+
+all_tools = asyncio.run(_list())
 
 print("=" * 60)
 print("Available Tools in Robotics MCP")

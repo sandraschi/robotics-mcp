@@ -133,17 +133,17 @@ class RoboticsSystemTool:
     async def _handle_help(self) -> dict[str, Any]:
         """Handle help operation."""
         try:
-            # Get all registered tools
+            # Get all registered tools via the public async API
             tools_info = []
-            # FastMCP stores tools in _tools dict - get description from docstring
-            for tool_name, tool_func in getattr(self.mcp, "_tools", {}).items():
+            for tool in await self.mcp.list_tools():
+                tool_func = getattr(tool, "fn", tool)
                 description = ""
                 if hasattr(tool_func, "__doc__") and tool_func.__doc__:
                     # Get first line of docstring as description
                     description = tool_func.__doc__.split("\n")[0].strip()
                 tools_info.append(
                     {
-                        "name": tool_name,
+                        "name": tool.name,
                         "description": description,
                     }
                 )
