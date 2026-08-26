@@ -295,7 +295,7 @@ class RoboticsMCP:
                 self.mounted_servers,
             )
 
-            # Noetix Bumi humanoid — info and SDK links
+            # Noetix Bumi humanoid - info and SDK links
             self.noetix_bumi = NoetixBumiTool(self.mcp)
 
             # Gazebo Fuel model browser + spawner
@@ -880,6 +880,12 @@ def main():
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
 
     args, _unknown = parser.parse_known_args()
+
+    import os as _os
+    if _os.getenv("ROBOTICS_TAURI") == "1":
+        args.mode = "http"
+        args.port = int(_os.getenv("PORT", args.port))
+        args.host = _os.getenv("HOST", args.host)
 
     # Consolidate mode
     mode_intent = "stdio"
