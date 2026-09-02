@@ -77,7 +77,7 @@ def format_unavailable_error(
     if details:
         extra.update(details)
     return format_error_response(
-        f"{backend} not available — cannot {operation}",
+        f"{backend} not available - cannot {operation}",
         error_type="not_available",
         robot_id=robot_id,
         action=action,

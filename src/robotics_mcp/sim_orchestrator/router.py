@@ -1,4 +1,4 @@
-"""Sim MCP router — dispatches tasks to available simulation backends."""
+"""Sim MCP router - dispatches tasks to available simulation backends."""
 
 import httpx
 from fastmcp import Context
@@ -75,15 +75,15 @@ async def dispatch_sim(
         prompt = f"""The user wants to: {task}
 
 No simulation backends are currently running. The available backends are:
-- MuJoCo (port 11046, /health) — fast physics, differentiable, GPU parallel
-- Gazebo (port 10991, /health) — sensors, ROS, terrains
-- Isaac Sim (port 11049, /health) — photorealistic, NVIDIA GPU
-- LimX Robotics (port 11044, /health) — TRON 1, Oli, VLA policies
-- Resonite (port 10979, /health) — XR worlds, spatial, avatars
-- VRChat (port 10712, /health) — social VR, user-generated worlds, avatars
-- Unity 3D (port 10831, /health) — real-time 3D, interactive scenes
-- World Labs (port 10865, /health) — 3D world generation, image/text-to-world
-- Blender (port 10849, /health) — 3D modelling, furniture, assets, sculpting
+- MuJoCo (port 11046, /health) - fast physics, differentiable, GPU parallel
+- Gazebo (port 10991, /health) - sensors, ROS, terrains
+- Isaac Sim (port 11049, /health) - photorealistic, NVIDIA GPU
+- LimX Robotics (port 11044, /health) - TRON 1, Oli, VLA policies
+- Resonite (port 10979, /health) - XR worlds, spatial, avatars
+- VRChat (port 10712, /health) - social VR, user-generated worlds, avatars
+- Unity 3D (port 10831, /health) - real-time 3D, interactive scenes
+- World Labs (port 10865, /health) - 3D world generation, image/text-to-world
+- Blender (port 10849, /health) - 3D modelling, furniture, assets, sculpting
 
 Advise which backend to start and what port it runs on.
 """

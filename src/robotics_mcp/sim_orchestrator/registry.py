@@ -1,4 +1,4 @@
-"""Sim MCP fleet registry — discovers and tracks available simulation backends."""
+"""Sim MCP fleet registry - discovers and tracks available simulation backends."""
 
 SIM_BACKENDS = {
     "mujoco": {

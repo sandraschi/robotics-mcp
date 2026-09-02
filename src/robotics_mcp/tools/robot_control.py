@@ -7,6 +7,7 @@ from fastmcp import Context
 
 from ..clients.elegoo_client import ElegooClient, ElegooRobotConfig
 from ..clients.gazebo_client import GazeboClient, GazeboRobotConfig
+from ..clients.nori_mcp_client import NoriMcpClient, nori_mcp_url
 from ..clients.yahboom_mcp_client import YahboomMcpClient, mcp_call_succeeded, yahboom_mcp_url
 from ..utils.error_handler import (
     format_error_response,
@@ -91,6 +92,11 @@ class RobotControlTool:
                 "hue_get_movement_events",
                 "hue_get_sensor_status",
                 "hue_get_movement_zones",
+                # Nori A3 specific actions (bridge to norirobotics-mcp, WebRTC/Supabase, mock-first)
+                "connect",
+                "disconnect",
+                "episode_start",
+                "episode_stop",
             ],
             linear: float | None = None,
             angular: float | None = None,
@@ -140,6 +146,8 @@ class RobotControlTool:
             - Unitree Go2/G1: Quadrupedal robots (when hardware available)
             - Virtual Robots: Unity3D/VRChat robots
             - Hue HomeAware: Philips Hue Bridge Pro with RF-based movement detection
+            - Nori A3: Bimanual home robot, bridged to the standalone norirobotics-mcp server
+              (WebRTC/Supabase via nori-sdk; defaults to nori-sdk's own mock session pre-hardware)
 
             SUPPORTED OPERATIONS:
             - Universal: "get_status", "move", "stop"
@@ -151,6 +159,8 @@ class RobotControlTool:
                      "clean_spot", "start_mapping", "rename_room", "set_cleaning_sequence",
                      "set_restricted_zones", "get_cleaning_history", "clear_error"
             - Hue HomeAware: "hue_get_movement_events", "hue_get_sensor_status", "hue_get_movement_zones"
+            - Nori A3: "connect", "disconnect" (session lifecycle), "get_status" and "stop" (universal,
+                     reused), "episode_start"/"episode_stop" (LeRobot-format recording, task via `query`)
 
             Args:
                 robot_id: Unique robot identifier. MUST follow naming convention:
@@ -195,6 +205,15 @@ class RobotControlTool:
                     - "get_cleaning_history": Retrieve cleaning history
                     - "clear_error": Clear error conditions
 
+                    Nori A3 Operations:
+                    - "connect": Open a session against norirobotics-mcp (real robot if Supabase
+                      credentials are configured there, else nori-sdk's own mock session)
+                    - "disconnect": Close the active session
+                    - "episode_start": Begin a LeRobot-format episode recording. Pass the task
+                      description via `query` (e.g. query="pour water into cup")
+                    - "episode_stop": End the current episode recording
+                    - "get_status" / "stop": Universal actions, reused (stop = e-stop)
+
                 linear: Linear velocity (m/s) for move operations. Range: -2.0 to 2.0 m/s
                 angular: Angular velocity (rad/s) for rotation. Range: -3.14 to 3.14 rad/s
                 duration: Movement duration in seconds. Default: continuous until stopped
@@ -214,7 +233,8 @@ class RobotControlTool:
                 room_name: New name for room renaming operations
                 cleaning_sequence: List of room IDs defining cleaning order [room1, room2, ...]
                 restricted_zones: Dictionary with 'walls' and 'zones' keys for virtual barriers
-                query: AI query text for multimodal analysis (Yahboom robots)
+                query: AI query text for multimodal analysis (Yahboom robots); also reused as
+                    the episode task description for Nori A3's "episode_start" action
                 query_type: AI query type. MUST be "text", "vision", "voice", or "multimodal"
 
             Returns:
@@ -328,6 +348,8 @@ class RobotControlTool:
                     return await self._handle_elegoo_robot(robot, action, linear, angular)
                 elif robot.robot_type == "gazebo":
                     return await self._handle_gazebo_robot(robot, action, linear, angular, duration)
+                elif robot.robot_type == "nori_a3":
+                    return await self._handle_nori_robot(robot, action, query)
                 else:
                     return await self._handle_physical_robot(robot, action, linear, angular, duration)
             except Exception as e:
@@ -366,7 +388,7 @@ class RobotControlTool:
             )
             return format_error_response(
                 f"Robot type '{robot.robot_type}' does not have a dedicated client. "
-                f"Supported types with real hardware clients: yahboom, dreame, elegoo, gazebo, hue. "
+                f"Supported types with real hardware clients: yahboom, dreame, elegoo, gazebo, hue, nori_a3. "
                 f"Register this robot with a supported type or implement a client for '{robot.robot_type}'.",
                 error_type="not_implemented",
                 robot_id=robot.robot_id,
@@ -511,7 +533,7 @@ class RobotControlTool:
 
             if action in ("arm_move", "gripper_control"):
                 return format_error_response(
-                    f"Action '{action}' is not supported on ROSMaster-M1 via robotics-mcp — use yahboom-mcp tools directly",
+                    f"Action '{action}' is not supported on ROSMaster-M1 via robotics-mcp - use yahboom-mcp tools directly",
                     error_type="unsupported_action",
                     robot_id=robot.robot_id,
                     action=action,
@@ -681,6 +703,148 @@ class RobotControlTool:
             return handle_tool_error("_handle_gazebo_robot", e, robot_id=robot.robot_id, action=action)
         finally:
             await client.disconnect()
+
+    def _nori_mcp_client(self, robot: Any) -> NoriMcpClient:
+        meta = robot.metadata or {}
+        base_url = meta.get("nori_mcp_url") or nori_mcp_url()
+        return NoriMcpClient(base_url=base_url)
+
+    async def _nori_mcp_preflight(self, client: NoriMcpClient, robot_id: str, action: str) -> dict[str, Any] | None:
+        """Return an error response if norirobotics-mcp is unreachable; else None."""
+        health = await client.health()
+        if not client.is_reachable(health):
+            return format_error_response(
+                f"norirobotics-mcp not reachable at {client.base_url}",
+                error_type="not_available",
+                robot_id=robot_id,
+                action=action,
+                details={"health": health, "hint": "Start norirobotics-mcp (default http://127.0.0.1:11970)"},
+            )
+        return None
+
+    async def _handle_nori_robot(
+        self,
+        robot: Any,
+        action: str,
+        query: str | None,
+    ) -> dict[str, Any]:
+        """Handle Nori A3 robot commands via norirobotics-mcp's REST API.
+
+        norirobotics-mcp already wraps nori-sdk (WebRTC/Supabase) end to end — this handler
+        bridges to it rather than re-implementing any robot logic, mirroring the Yahboom
+        HTTP-bridge pattern.
+        """
+        try:
+            client = self._nori_mcp_client(robot)
+            preflight = await self._nori_mcp_preflight(client, robot.robot_id, action)
+            if preflight:
+                return preflight
+
+            if action == "get_status":
+                session = await client.session_status()
+                if not mcp_call_succeeded(session):
+                    return format_error_response(
+                        session.get("error", "Nori A3 status check failed"),
+                        error_type=session.get("error_type", "status_error"),
+                        robot_id=robot.robot_id,
+                        action=action,
+                        details=session,
+                    )
+                status = client.build_status_payload(session)
+                return format_success_response(
+                    f"Nori A3 {robot.robot_id} status retrieved via norirobotics-mcp"
+                    + (" (mock session)" if session.get("mock") else ""),
+                    robot_id=robot.robot_id,
+                    action=action,
+                    data=status,
+                )
+
+            if action == "connect":
+                result = await client.session_connect()
+                if not mcp_call_succeeded(result):
+                    return format_error_response(
+                        result.get("error", "Nori A3 connect failed"),
+                        error_type=result.get("error_type", "connection_error"),
+                        robot_id=robot.robot_id,
+                        action=action,
+                        details=result,
+                    )
+                return format_success_response(
+                    result.get("message", f"Nori A3 {robot.robot_id} session opened"),
+                    robot_id=robot.robot_id,
+                    action=action,
+                    data=result,
+                )
+
+            if action == "disconnect":
+                result = await client.session_disconnect()
+                return format_success_response(
+                    result.get("message", f"Nori A3 {robot.robot_id} session closed"),
+                    robot_id=robot.robot_id,
+                    action=action,
+                    data=result,
+                )
+
+            if action == "stop":
+                logger.warning(":SECURITY: EMERGENCY STOP via norirobotics-mcp", robot_id=robot.robot_id)
+                result = await client.estop()
+                if not mcp_call_succeeded(result):
+                    return format_error_response(
+                        result.get("error", "Nori A3 e-stop failed"),
+                        error_type="motion_error",
+                        robot_id=robot.robot_id,
+                        action=action,
+                        details=result,
+                    )
+                return format_success_response(
+                    f"Nori A3 {robot.robot_id} e-stopped via norirobotics-mcp",
+                    robot_id=robot.robot_id,
+                    action=action,
+                    data=result,
+                )
+
+            if action == "episode_start":
+                result = await client.episode_start(task=query)
+                if not mcp_call_succeeded(result):
+                    return format_error_response(
+                        result.get("error", "Nori A3 episode_start failed"),
+                        error_type="recording_error",
+                        robot_id=robot.robot_id,
+                        action=action,
+                        details=result,
+                    )
+                return format_success_response(
+                    result.get("message", f"Nori A3 {robot.robot_id} episode recording started"),
+                    robot_id=robot.robot_id,
+                    action=action,
+                    data=result,
+                )
+
+            if action == "episode_stop":
+                result = await client.episode_stop()
+                if not mcp_call_succeeded(result):
+                    return format_error_response(
+                        result.get("error", "Nori A3 episode_stop failed"),
+                        error_type="recording_error",
+                        robot_id=robot.robot_id,
+                        action=action,
+                        details=result,
+                    )
+                return format_success_response(
+                    result.get("message", f"Nori A3 {robot.robot_id} episode recording stopped"),
+                    robot_id=robot.robot_id,
+                    action=action,
+                    data=result,
+                )
+
+            return format_error_response(
+                f"Unsupported action '{action}' for Nori A3",
+                error_type="unsupported_action",
+                robot_id=robot.robot_id,
+                action=action,
+            )
+        except Exception as e:
+            return handle_tool_error("_handle_nori_robot", e, robot_id=robot.robot_id, action=action)
 
     async def _handle_dreame_robot(
         self,

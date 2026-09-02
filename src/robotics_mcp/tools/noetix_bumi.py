@@ -1,4 +1,4 @@
-"""Noetix Bumi humanoid robot — info and SDK links.
+"""Noetix Bumi humanoid robot - info and SDK links.
 
 Noetix Bumi: 94 cm, 12 kg, 21 DOF consumer humanoid (~$1,370). ROS/ROS2, Python, C++.
 See docs/hardware/NOETIX_BUMI.md for full details.
@@ -37,7 +37,7 @@ NOETIX_INFO = {
 
 
 class NoetixBumiTool:
-    """Noetix Bumi humanoid — info and SDK references."""
+    """Noetix Bumi humanoid - info and SDK references."""
 
     def __init__(self, mcp: Any):
         self.mcp = mcp
@@ -45,10 +45,10 @@ class NoetixBumiTool:
     def register(self) -> None:
         @self.mcp.tool()
         async def noetix_info(operation: str = "info") -> dict[str, Any]:
-            """Noetix Bumi humanoid robot — features, specs, and SDK links.
+            """Noetix Bumi humanoid robot - features, specs, and SDK links.
 
             Operations:
-                info — return features, specs, GitHub and docs links (default)
+                info - return features, specs, GitHub and docs links (default)
 
             Returns:
                 success, message, and data (specs, features, github, docs).

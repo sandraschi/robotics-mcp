@@ -12,7 +12,7 @@ from pythonosc.udp_client import SimpleUDPClient
 
 logger = logging.getLogger(__name__)
 
-# Fleet teleop contract — see teleoperator-mcp/docs/resonite/VBOOMY_OSC.md
+# Fleet teleop contract - see teleoperator-mcp/docs/resonite/VBOOMY_OSC.md
 VBOOMY_SPAWN_ADDRESS = "/resonite/vbot/spawn"
 VBOOMY_RESET_PREFIX = "/robot/{robot_id}/reset"
 VBOOMY_MOVE_PREFIX = "/robot/{robot_id}/move"

@@ -8,11 +8,25 @@ import pytest
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_spawn_virtual_robot(initialized_server):
+    """Resonite spawn goes through real ResoniteLink calls: discover -> connect -> spawn_mesh
+    (see robotics-mcp CHANGELOG - fixed 2026-09-02, replacing the old always-"succeeds"
+    fire-and-forget OSC send this test used to trivially pass against)."""
+    initialized_server.robot_virtual.mounted_servers = {"resonite": MagicMock()}
+
+    def fake_call(mounted_servers, server_name, tool_name, params=None):
+        if tool_name == "resonite_link_discover":
+            return {"sessions": [{"sessionName": "Home", "host": "localhost", "linkPort": 4242}]}
+        if tool_name == "resonite_link_connect":
+            return {"status": "success"}
+        if tool_name == "resonite_link_spawn_mesh":
+            return {"status": "success", "slot_id": "Reso_test123"}
+        raise AssertionError(f"Unexpected tool call: {tool_name}")
+
     with patch(
         "robotics_mcp.tools.robot_virtual.call_mounted_server_tool",
         new_callable=AsyncMock,
     ) as mock_call:
-        mock_call.return_value = {"status": "success"}
+        mock_call.side_effect = fake_call
         result = await initialized_server.robot_virtual._handle_create(
             robot_type="yahboom",
             robot_id="test_yahboom_01",
@@ -29,6 +43,7 @@ async def test_spawn_virtual_robot(initialized_server):
     assert robot is not None
     assert robot.is_virtual is True
     assert robot.platform == "resonite"
+    assert robot.metadata["resonite_slot_id"] == "Reso_test123"
 
 
 @pytest.mark.integration

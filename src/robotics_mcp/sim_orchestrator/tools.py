@@ -1,4 +1,4 @@
-"""MCP tools for sim fleet orchestration — dispatches to mujoco-mcp, gazebo-mcp, isaac-mcp, limx-robotics-mcp."""
+"""MCP tools for sim fleet orchestration - dispatches to mujoco-mcp, gazebo-mcp, isaac-mcp, limx-robotics-mcp."""
 
 from typing import Annotated, Any
 

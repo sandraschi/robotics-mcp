@@ -18,8 +18,8 @@ function RobotCard({
   const loading = status === undefined;
   const hasStatus = status && !status.error;
   const simulated = hasStatus && status.simulated === true;
-  const battery = hasStatus?.battery;
-  const position = hasStatus?.position;
+  const battery = status && !status.error ? status.battery : undefined;
+  const position = status && !status.error ? status.position : undefined;
 
   return (
     <div className="border border-white/10 rounded-xl bg-slate-900/50 backdrop-blur p-4 flex flex-col gap-3">

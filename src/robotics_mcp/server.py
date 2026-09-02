@@ -179,6 +179,8 @@ class RoboticsMCP:
                         robot_type = "hue"
                     elif robot_key.startswith("gazebo"):
                         robot_type = "gazebo"
+                    elif robot_key.startswith("nori"):
+                        robot_type = "nori_a3"
                     else:
                         robot_type = robot_key
 
@@ -563,6 +565,7 @@ class RoboticsMCP:
 
             # Load Unity3D-MCP with robust error handling and timeout protection
             await self._mount_unity_server_safely()
+            await self._mount_resonite_server_safely()
 
             # DISABLED stdio mounts (protocol hangs):
             # - vrchat-mcp, avatar-mcp, blender-mcp, gimp-mcp
@@ -711,6 +714,101 @@ class RoboticsMCP:
                 exc_info=True,
             )
             raise  # Re-raise to trigger retry logic
+
+    async def _mount_resonite_server_safely(self):
+        """Safely mount Resonite MCP server (ResoniteLink) with timeout and error handling.
+
+        Mirrors _mount_unity_server_safely - same timeout/retry safety net, since resonite-mcp
+        (like unity3d-mcp) can be slow or absent and must never block robotics-mcp startup.
+        """
+        import asyncio
+
+        resonite_load_timeout = 30.0
+        max_retry_attempts = 3
+        retry_delay = 2.0
+
+        logger.info(
+            "Attempting to load Resonite MCP server with safety measures",
+            timeout=resonite_load_timeout,
+            max_retries=max_retry_attempts,
+        )
+
+        for attempt in range(max_retry_attempts):
+            try:
+                load_task = asyncio.create_task(self._load_resonite_server())
+                try:
+                    await asyncio.wait_for(load_task, timeout=resonite_load_timeout)
+                    logger.info(
+                        "Successfully loaded Resonite MCP server",
+                        attempt=attempt + 1,
+                        server_count=len(self.mounted_servers),
+                    )
+                    return
+                except TimeoutError:
+                    logger.warning(
+                        f"Resonite server load timeout (attempt {attempt + 1}/{max_retry_attempts})",
+                        timeout=resonite_load_timeout,
+                    )
+                    load_task.cancel()
+                    if attempt < max_retry_attempts - 1:
+                        await asyncio.sleep(retry_delay)
+                        continue
+                    logger.error("Resonite server load failed after all retry attempts")
+                    break
+            except Exception as e:
+                logger.warning(
+                    f"Resonite server load failed (attempt {attempt + 1}/{max_retry_attempts})",
+                    error=str(e),
+                    error_type=type(e).__name__,
+                )
+                if attempt < max_retry_attempts - 1:
+                    await asyncio.sleep(retry_delay)
+                else:
+                    logger.error("Resonite server load failed after all retry attempts")
+                    break
+
+        logger.warning(
+            "Resonite MCP server unresponsive - Resonite vbot spawning halted",
+            available_servers=list(self.mounted_servers.keys()),
+        )
+        self._resonite_available = False
+
+    async def _load_resonite_server(self):
+        """Load Resonite MCP server with proper error isolation.
+
+        Unlike unity3d_mcp.server.Unity3DMCP (a wrapper class), resonite_mcp.server exposes a
+        module-level `server` FastMCP instance directly - no class to instantiate.
+        """
+        try:
+            logger.debug("Importing resonite_mcp server module...")
+            import sys
+            from pathlib import Path
+
+            resonite_mcp_path = Path(__file__).parent.parent.parent.parent / "resonite-mcp" / "src"
+            if str(resonite_mcp_path) not in sys.path:
+                sys.path.insert(0, str(resonite_mcp_path))
+                logger.debug("Added resonite-mcp to Python path", path=str(resonite_mcp_path))
+
+            from resonite_mcp.server import server as resonite_server
+
+            logger.debug("Testing Resonite server responsiveness...")
+            if hasattr(resonite_server, "list_tools"):
+                loop = asyncio.get_running_loop()
+                tools = await loop.run_in_executor(None, resonite_server.list_tools)
+                logger.debug("Resonite server health check passed", tool_count=len(tools) if tools else 0)
+
+            self.mounted_servers["resonite"] = resonite_server
+            self._resonite_available = True
+            logger.info("Resonite MCP server loaded successfully")
+
+        except ImportError as e:
+            logger.warning("Resonite MCP not available (not installed)", error=str(e))
+            raise
+        except Exception as e:
+            logger.error(
+                "Failed to load Resonite MCP server", error=str(e), error_type=type(e).__name__, exc_info=True
+            )
+            raise
 
     def _register_tools(self):
         """Register all MCP tools."""

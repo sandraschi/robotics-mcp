@@ -79,6 +79,12 @@ class ConfigLoader:
                     "navigation_enabled": True,
                     "arm_enabled": False,
                 },
+                "nori_a3": {
+                    "enabled": False,
+                    "robot_id": "nori_a3_01",
+                    "nori_mcp_url": "http://127.0.0.1:11970",
+                    "mock_mode": True,
+                },
                 "moorebot_scout": {
                     "enabled": False,
                     "robot_id": "scout_01",

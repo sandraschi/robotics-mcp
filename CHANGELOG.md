@@ -1,4 +1,68 @@
 
+## [Unreleased] — 2026-09-02
+
+### Added
+- Nori A3 as a third physical robot type (`nori_a3`), bridged via HTTP to the standalone
+  `norirobotics-mcp` server (mirrors the existing Yahboom bridge pattern): new
+  `clients/nori_mcp_client.py`, `robot_control` actions `connect`/`disconnect`/
+  `episode_start`/`episode_stop` plus reused `get_status`/`stop`, `robotics.nori_a3` config
+  block, `nori_*` key-prefix type inference in `server.py`.
+
+### Fixed
+- **Unity vbot spawning was non-functional for every robot type** (pre-existing, not
+  Nori-specific): `robot_virtual.py`/`vbot_crud.py` called a fictional
+  `execute_unity_method(class_name="VbotSpawner", ...)` — no such Unity class ever existed, and
+  `unity3d-mcp`'s real dispatch is genuinely parameterless. Both files now call the real,
+  parameterized `unity_bridge(operation="create_object"|"transform_object"|"delete_object")`
+  tool. Requires the updated `unity3d-mcp` `MCPBridge.cs` (adds `Capsule`/`Sphere`/`Box`
+  primitive spawning + position/rotation/scale application to `CreateObject`) — not yet
+  live-Editor verified (no Unity Editor running during this pass).
+- **Resonite vbot spawning was also non-functional** — initially misdiagnosed as "needs manual
+  ProtoFlux/mod work" (see `mcp-central-docs/projects/norirobotics-mcp/VBOT_SPAWN_MANUAL_STEPS.md`
+  for the correction history); Sandra caught that a real avatar had already been spawned live
+  via `resonite-mcp/scripts/spawn_nekomimi_in_home.py`, using resonite-mcp's real **ResoniteLink**
+  WebSocket protocol client — a completely different, working mechanism from the dead OSC
+  `vbot_osc_receiver.py` path this repo's `osc_bridge.spawn_vbot()` was calling into the void.
+  `server.py` now mounts `resonite_mcp.server.server` in-process (`_load_resonite_server()` /
+  `_mount_resonite_server_safely()`, mirrors the Unity mount). `robot_virtual.py`/`vbot_crud.py`'s
+  Resonite spawn/delete now call the real `resonite_link_discover` → `resonite_link_connect` →
+  `resonite_link_spawn_mesh` → `resonite_link_destroy_slot` chain, spawning a procedural
+  placeholder box (`utils/mesh_primitives.py::box_mesh()`) since no real A3 mesh exists yet.
+  Not yet live-verified (no Resonite session was running with ResoniteLink enabled during this
+  pass — `resonite_link_discover` returned zero sessions when checked).
+- **`call_mounted_server_tool` returns a `CallToolResult`, not a plain dict** — code calling
+  `.get()` directly on it (as the pre-existing Unity/Resonite spawn code did, and as my first
+  draft of the Resonite fix also did) raises `AttributeError`. All spawn/update/delete paths now
+  unwrap via `vbot_crud.extract_result_data()` before touching the result as a dict.
+- **`MCPBridge.cs`'s non-standard `"status": "created"`/`"status": "deleted"`** returns didn't
+  match the CRUD layer's literal `"status": "success"` check in `_handle_create`/`_create_vbot`
+  — a genuinely successful Unity spawn/delete would still get reported as a failure and the
+  robot unregistered. Normalized at the unwrap point in both files.
+- **Nori A3's `nori_mcp_client.build_status_payload()`** put the session's connection-phase dict
+  under a `"status"` key, which `format_success_response`'s `data=` merge then used to clobber
+  its own top-level `"status": "success"` marker — renamed to `connection_status`.
+- `griffelib` was pinned at 2.0.2 in `uv.lock`, which doesn't ship the `griffe` compat shim
+  `fastmcp` 3.4.x imports — broke every `fastmcp` import in this repo. Upgraded
+  `fastmcp`/`fastmcp-slim` 3.4.4 → 3.4.7 and `griffelib` 2.0.2 → 2.2.0 (still within the
+  `fastmcp>=3.4.4,<4` constraint).
+- Updated `tests/integration/test_virtual_robotics_integration.py::test_spawn_virtual_robot`,
+  which only passed before because the old Resonite path always "succeeded" unconditionally
+  (fire-and-forget OSC, no real check) — it now mocks the real discover/connect/spawn_mesh
+  call sequence instead of a single blanket `{"status": "success"}`.
+
+### Added (later same day)
+- Resonite/Unity vbot spawn for `robot_type="nori_a3"` now uses the REAL Nori A3 geometry
+  (correctly posed via forward kinematics) instead of the procedural placeholder box/capsule
+  — see `norirobotics-mcp` CHANGELOG for how the mesh assets were sourced/generated. New
+  `mesh_primitives.load_nori_a3_mesh()` and `robot_virtual._stage_nori_a3_glb_in_unity()`.
+
+### Known gap
+- Mounting Unity3D MCP and Resonite MCP both fail in the current dev venv on missing transitive
+  deps (`UnityPy`, `psutil` respectively) — neither is installed in `robotics-mcp`'s own
+  `pyproject.toml`. Both spawn paths are code-correct and unit-tested with mocks, but won't
+  actually mount (and therefore won't actually spawn anything) until those are installed in
+  whatever environment runs against a live Unity Editor / Resonite session.
+
 ## [Unreleased] — 2026-06-14
 
 ### Added

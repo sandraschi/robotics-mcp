@@ -1,4 +1,4 @@
-"""Dreame robot vacuum client — DreameHome cloud only (no miio).
+"""Dreame robot vacuum client - DreameHome cloud only (no miio).
 
 Uses DreameHome cloud API via clients.dreame_cloud_client. Set DREAME_USER and
 DREAME_PASSWORD; optional DREAME_REF_PATH to Tasshack ref clone.
@@ -200,7 +200,7 @@ async def dreame_get_status(robot_id: str = "dreame_01", config: dict[str, Any] 
             result={"status": status, "robot_id": robot_id},
         )
     return build_robotics_error_response(
-        error="Dreame status failed — set DREAME_USER and DREAME_PASSWORD (DreameHome cloud)",
+        error="Dreame status failed - set DREAME_USER and DREAME_PASSWORD (DreameHome cloud)",
         robot_type="dreame",
         robot_id=robot_id,
         recovery_options=[
@@ -220,7 +220,7 @@ async def dreame_start_cleaning(robot_id: str = "dreame_01", config: dict[str, A
             result={"robot_id": robot_id, "action": "start_cleaning"},
         )
     return build_robotics_error_response(
-        error="Failed to start cleaning — check DREAME_USER/DREAME_PASSWORD",
+        error="Failed to start cleaning - check DREAME_USER/DREAME_PASSWORD",
         robot_type="dreame",
         robot_id=robot_id,
     )
@@ -273,7 +273,7 @@ async def dreame_get_map(robot_id: str = "dreame_01", config: dict[str, Any] | N
             result={"robot_id": robot_id, "map": map_data},
         )
     return build_robotics_error_response(
-        error="Map not available — set DREAME_USER/DREAME_PASSWORD and DREAME_REF_PATH",
+        error="Map not available - set DREAME_USER/DREAME_PASSWORD and DREAME_REF_PATH",
         robot_type="dreame",
         robot_id=robot_id,
     )

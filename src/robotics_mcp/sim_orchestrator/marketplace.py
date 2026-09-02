@@ -1,4 +1,4 @@
-"""Model marketplace — curated index + LLM search for robot models."""
+"""Model marketplace - curated index + LLM search for robot models."""
 
 from fastmcp import Context
 
@@ -109,7 +109,7 @@ async def sim_marketplace_search(
     type: str | None = None,
     ctx: Context | None = None,
 ) -> dict:
-    """Search the model marketplace — curated index + LLM fallback for fuzzy matching.
+    """Search the model marketplace - curated index + LLM fallback for fuzzy matching.
 
     Filters by keyword, tags, sim backend, or robot type.
     When exact match returns nothing and ctx is available, falls back to
@@ -133,7 +133,7 @@ async def sim_marketplace_search(
 
     if not matches and ctx is not None and query:
         catalog_text = "\n".join(
-            f"  - {mid}: {e['name']} ({e['type']}) — tags: {', '.join(e['tags'])}" for mid, e in MODEL_CATALOG.items()
+            f"  - {mid}: {e['name']} ({e['type']}) - tags: {', '.join(e['tags'])}" for mid, e in MODEL_CATALOG.items()
         )
         prompt = (
             f"User searched the robot model marketplace with query: '{query}'. "

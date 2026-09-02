@@ -4,6 +4,7 @@ Consolidates virtual robot CRUD operations and virtual robotics operations into 
 """
 
 import asyncio
+from pathlib import Path
 from typing import Any, Literal
 
 import structlog
@@ -21,6 +22,7 @@ from ..utils.mcp_client_helper import call_mounted_server_tool
 from ..utils.response_builders import (
     build_robotics_error_response,
 )
+from .vbot_crud import extract_result_data
 
 logger = structlog.get_logger(__name__)
 
@@ -32,6 +34,7 @@ SUPPORTED_ROBOT_TYPES = [
     "robbie",
     "custom",
     "yahboom",
+    "nori_a3",  # Nori A3 bimanual home robot (placeholder primitive - no real 3D model yet)
     "mechazilla",
     "godzilla",
     "dreame",
@@ -348,6 +351,12 @@ class RobotVirtualTool:
         if spawn_result.get("status") != "success":
             self.state_manager.unregister_robot(robot_id)
             return spawn_result
+
+        if spawn_result.get("resonite_slot_id"):
+            robot = self.state_manager.get_robot(robot_id)
+            if robot:
+                robot.metadata["resonite_slot_id"] = spawn_result["resonite_slot_id"]
+
         return format_success_response(
             f"Virtual robot {robot_id} created successfully",
             data={
@@ -597,43 +606,33 @@ class RobotVirtualTool:
         """Spawn robot in Unity or VRChat."""
         try:
             if platform == "unity" and "unity" in self.mounted_servers:
+                # No real 3D model exists for most vbot robot_types - spawn a labeled
+                # primitive placeholder via the real unity_bridge(operation="create_object")
+                # action (MCPBridge.cs CreateObject). The formerly-called "execute_unity_method"
+                # -> "VbotSpawner.SpawnRobot" path never existed as a real Unity class/method.
                 pos = position or {"x": 0.0, "y": 0.0, "z": 0.0}
                 result = await call_mounted_server_tool(
                     self.mounted_servers,
                     "unity",
-                    "execute_unity_method",
+                    "unity_bridge",
                     {
-                        "class_name": "VbotSpawner",
-                        "method_name": "SpawnRobot",
-                        "parameters": {
-                            "robotId": robot_id,
-                            "robotType": robot_type,
-                            "position": {
-                                "x": pos.get("x", 0.0),
-                                "y": pos.get("y", 0.0),
-                                "z": pos.get("z", 0.0),
-                            },
-                            "scale": scale,
-                        },
+                        "operation": "create_object",
+                        "name": robot_id,
+                        "object_type": "Capsule",
+                        "position": [pos.get("x", 0.0), pos.get("y", 0.0), pos.get("z", 0.0)],
+                        "scale": scale,
                     },
                 )
-                return result
+                # MCPBridge.cs CreateObject returns {"status": "created", ...} - normalize to
+                # the CRUD layer's "success" convention (_handle_create checks for it literally).
+                data = extract_result_data(result)
+                if data.get("status") == "created":
+                    data["status"] = "success"
+                if robot_type == "nori_a3":
+                    data["real_model"] = await self._stage_nori_a3_glb_in_unity()
+                return data
             elif platform == "resonite":
-                from ..osc_bridge import osc_bridge
-
-                pos = position or {"x": 0.0, "y": 0.0, "z": 0.0}
-                await osc_bridge.spawn_vbot(
-                    robot_id,
-                    robot_type,
-                    x=float(pos.get("x", 0.0)),
-                    y=float(pos.get("y", 0.0)),
-                    z=float(pos.get("z", 0.0)),
-                    scale=float(scale),
-                )
-                return format_success_response(
-                    f"Spawned {robot_id} in Resonite via OSC",
-                    data={"robot_id": robot_id, "platform": platform, "osc": True},
-                )
+                return await self._spawn_in_resonite(robot_id, position, scale, robot_type)
             else:
                 return format_unavailable_error(
                     f"{platform} integration",
@@ -645,6 +644,129 @@ class RobotVirtualTool:
             logger.error("Failed to spawn in platform", robot_id=robot_id, platform=platform, error=str(e))
             return format_error_response(f"Failed to update in {platform}: {e!s}", error_type="connection_error")
 
+    async def _stage_nori_a3_glb_in_unity(self) -> dict[str, Any]:
+        """Best-effort: stage the real, correctly-posed A3 GLB into the mounted Unity project's
+        Assets folder via unity3d-mcp's real import_3d_model (verified: it genuinely copies the
+        file, not a stub - see import_export_manager.py:123-133).
+
+        This does NOT instantiate a live GameObject from the imported asset - unity3d-mcp has
+        no "instantiate from imported prefab" tool yet, only asset-import and primitive
+        create_object. The capsule spawned above is what's actually visible in the running
+        scene; this just makes the real model available in the project for a manual drag-in
+        (or a future tool) instead of only ever having a capsule. Never fails the overall spawn.
+        """
+        glb_path = (
+            Path(__file__).resolve().parent.parent.parent.parent.parent
+            / "norirobotics-mcp"
+            / "models"
+            / "nori_description"
+            / "nori_a3_posed.glb"
+        )
+        if not glb_path.is_file():
+            return {"staged": False, "reason": "nori_a3_posed.glb not found - run norirobotics-mcp/scripts/export_posed_mesh.py"}
+        try:
+            result = extract_result_data(
+                await call_mounted_server_tool(
+                    self.mounted_servers, "unity", "import_3d_model", {"model_path": str(glb_path)}
+                )
+            )
+            return {"staged": bool(result.get("success")), "detail": result}
+        except Exception as e:
+            return {"staged": False, "reason": str(e)}
+
+    async def _ensure_resonite_connected(self) -> dict[str, Any] | None:
+        """Discover + connect to a live ResoniteLink session. Returns an error dict on failure, else None.
+
+        Real protocol (Yellow-Dog-Man/ResoniteLink), not the dead OSC vbot_osc_receiver path -
+        proven working by resonite-mcp's scripts/spawn_nekomimi_in_home.py (a VRM spawned live
+        into Sandra's Resonite Home via this exact discover -> connect -> spawn_mesh sequence).
+        """
+        if "resonite" not in self.mounted_servers:
+            return format_unavailable_error("Resonite MCP", "connect", details={"hint": "resonite-mcp not mounted"})
+
+        discover = extract_result_data(
+            await call_mounted_server_tool(
+                self.mounted_servers, "resonite", "resonite_link_discover", {"timeout_seconds": 8.0}
+            )
+        )
+        sessions = discover.get("sessions")
+        if not sessions:
+            return format_error_response(
+                "No ResoniteLink sessions found on the LAN. Is Resonite running with ResoniteLink "
+                "enabled (Dashboard -> Session -> Settings -> Enable ResoniteLink)?",
+                error_type="not_available",
+            )
+        session = sessions[0]
+        connect = extract_result_data(
+            await call_mounted_server_tool(
+                self.mounted_servers,
+                "resonite",
+                "resonite_link_connect",
+                {"input_data": {"host": session.get("host", "localhost"), "port": session["linkPort"]}},
+            )
+        )
+        if connect.get("status") != "success":
+            return format_error_response(
+                f"Failed to connect to ResoniteLink session {session.get('sessionName')!r}",
+                error_type="connection_error",
+                details={"connect_result": connect},
+            )
+        return None
+
+    async def _spawn_in_resonite(
+        self, robot_id: str, position: dict[str, float] | None, scale: float | None, robot_type: str | None = None
+    ) -> dict[str, Any]:
+        """Spawn a robot mesh in a live Resonite world via ResoniteLink.
+
+        For "nori_a3" this is the REAL, correctly-posed A3 geometry (26k tris, decimated from
+        norirobotics-mcp's vendored nori_description meshes - see
+        norirobotics-mcp/scripts/export_posed_mesh.py). Every other robot_type still gets a
+        procedural placeholder box, since no real model exists for them. Both paths use the
+        same discover -> connect -> spawn_mesh pipeline already proven for the nekomimi-chan
+        VRM spawn.
+        """
+        from ..utils.mesh_primitives import box_mesh, load_nori_a3_mesh
+
+        preflight = await self._ensure_resonite_connected()
+        if preflight:
+            return preflight
+
+        pos = position or {"x": 0.0, "y": 0.0, "z": 0.0}
+        real = load_nori_a3_mesh() if robot_type == "nori_a3" else None
+        if real is not None:
+            vertices, submeshes = real
+            color = {"r": 0.88, "g": 0.88, "b": 0.86, "a": 1.0}  # off-white, matches the real A3's body color
+        else:
+            vertices, submeshes = box_mesh(size=(scale or 1.0) * 0.3)
+            color = {"r": 0.2, "g": 0.6, "b": 0.9, "a": 1.0}
+        result = extract_result_data(
+            await call_mounted_server_tool(
+                self.mounted_servers,
+                "resonite",
+                "resonite_link_spawn_mesh",
+                {
+                    "vertices": vertices,
+                    "submeshes": submeshes,
+                    "name": robot_id,
+                    "pos_x": pos.get("x", 0.0),
+                    "pos_y": pos.get("y", 0.0),
+                    "pos_z": pos.get("z", 0.0),
+                    "color_r": color["r"],
+                    "color_g": color["g"],
+                    "color_b": color["b"],
+                    "color_a": color["a"],
+                },
+            )
+        )
+        if result.get("status") != "success":
+            return format_error_response(
+                "ResoniteLink spawn_mesh failed", error_type="spawn_error", details={"result": result}
+            )
+        return format_success_response(
+            f"Spawned {robot_id} in Resonite via ResoniteLink",
+            data={"robot_id": robot_id, "platform": "resonite", "resonite_slot_id": result.get("slot_id")},
+        )
+
     async def _update_in_platform(
         self, robot_id: str, platform: str, position: dict[str, float] | None, scale: float | None
     ) -> dict[str, Any]:
@@ -652,27 +774,26 @@ class RobotVirtualTool:
         try:
             # Unity Platform Handler
             if platform == "unity" and "unity" in self.mounted_servers:
-                pos = None
+                params: dict[str, Any] = {"operation": "transform_object", "target": robot_id}
                 if position:
-                    pos = {
-                        "x": position.get("x", 0.0),
-                        "y": position.get("y", 0.0),
-                        "z": position.get("z", 0.0),
-                    }
-                result = await call_mounted_server_tool(
-                    self.mounted_servers,
-                    "unity",
-                    "execute_unity_method",
-                    {
-                        "class_name": "VbotSpawner",
-                        "method_name": "UpdateRobot",
-                        "parameters": {"robotId": robot_id, "position": pos, "scale": scale},
-                    },
-                )
-                return result
+                    params["position"] = [position.get("x", 0.0), position.get("y", 0.0), position.get("z", 0.0)]
+                if scale is not None:
+                    params["scale"] = scale
+                result = await call_mounted_server_tool(self.mounted_servers, "unity", "unity_bridge", params)
+                return extract_result_data(result)
 
-            # Resonite / VRChat Handler (OSC)
-            elif platform in ["vrchat", "resonite"]:
+            elif platform == "resonite":
+                # ResoniteLink has no generic "move slot" tool wired here yet (spawn_mesh
+                # doesn't return a Transform component id to write to) - respawn to move,
+                # rather than silently no-op via the dead OSC path.
+                return format_not_implemented_error(
+                    "Resonite vbot move/update — respawn (delete + create) to reposition for now",
+                    robot_id=robot_id,
+                )
+
+            # VRChat Handler (OSC) — see docs VBOT_SPAWN_MANUAL_STEPS.md: VRChat OSC has no
+            # real spawn/move primitive until a custom world+avatar is built and uploaded.
+            elif platform == "vrchat":
                 robot = self.state_manager.get_robot(robot_id)
                 robot_type = robot.robot_type if robot else "unknown"
 
@@ -709,12 +830,32 @@ class RobotVirtualTool:
                 result = await call_mounted_server_tool(
                     self.mounted_servers,
                     "unity",
-                    "execute_unity_method",
-                    {
-                        "class_name": "VbotSpawner",
-                        "method_name": "DeleteRobot",
-                        "parameters": {"robotId": robot_id},
-                    },
+                    "unity_bridge",
+                    {"operation": "delete_object", "target": robot_id},
+                )
+                data = extract_result_data(result)
+                if data.get("status") == "deleted":
+                    data["status"] = "success"
+                return data
+            elif platform == "resonite" and "resonite" in self.mounted_servers:
+                robot = self.state_manager.get_robot(robot_id)
+                slot_id = (robot.metadata or {}).get("resonite_slot_id") if robot else None
+                if not slot_id:
+                    return format_error_response(
+                        f"No resonite_slot_id recorded for {robot_id} — cannot delete",
+                        error_type="not_found",
+                        robot_id=robot_id,
+                    )
+                preflight = await self._ensure_resonite_connected()
+                if preflight:
+                    return preflight
+                result = extract_result_data(
+                    await call_mounted_server_tool(
+                        self.mounted_servers,
+                        "resonite",
+                        "resonite_link_destroy_slot",
+                        {"slot_id": slot_id},
+                    )
                 )
                 return result
             else:

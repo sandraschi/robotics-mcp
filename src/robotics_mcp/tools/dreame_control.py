@@ -367,7 +367,7 @@ class DreameControlTool:
 
         @self.mcp.tool()
         async def dreame_onboard() -> dict[str, Any]:
-            """Dreame D20 Pro Plus — DreameHome cloud setup (no local token).
+            """Dreame D20 Pro Plus - DreameHome cloud setup (no local token).
 
             This server uses the DreameHome cloud API. Set environment variables
             and optionally the Tasshack ref clone path. No network discovery or

@@ -97,7 +97,7 @@ def _bootstrap_tasshack(ref_path: Path) -> None:
         _map_manager_cls = getattr(map_mod, "DreameVacuumMapManager", None)
         logger.info("Tasshack map module loaded (map rendering available)")
     except Exception as e:
-        logger.warning("Tasshack map load failed — map rendering unavailable", error=str(e))
+        logger.warning("Tasshack map load failed - map rendering unavailable", error=str(e))
         _map_manager_cls = None
 
     logger.info("Tasshack protocol loaded", ref_path=str(ref_path))
