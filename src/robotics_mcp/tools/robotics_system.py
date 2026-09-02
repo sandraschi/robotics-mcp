@@ -66,7 +66,7 @@ class RoboticsSystemTool:
             - Improves discoverability by grouping related operations together
             - Reduces cognitive load when working with system management tasks
             - Enables consistent system interface across all operations
-            - Follows FastMCP 2.13+ best practices for feature-rich MCP servers
+            - Follows FastMCP 3.4.4+ best practices for feature-rich MCP servers
 
             SUPPORTED OPERATIONS:
             - help: Get comprehensive help information about the server and its tools

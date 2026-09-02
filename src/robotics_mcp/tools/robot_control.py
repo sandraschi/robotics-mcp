@@ -136,7 +136,7 @@ class RobotControlTool:
             - Enables seamless switching between physical and virtual robots
             - Provides consistent error handling and safety protocols across all robot types
             - Supports conversational AI interaction with context-aware responses
-            - Follows FastMCP 2.13+ best practices for feature-rich MCP servers
+            - Follows FastMCP 3.4.4+ best practices for feature-rich MCP servers
 
             SUPPORTED ROBOT TYPES:
             - Dreame D20 Pro: Primary platform - LIDAR vacuum with mapping, zone cleaning, mop, auto-empty

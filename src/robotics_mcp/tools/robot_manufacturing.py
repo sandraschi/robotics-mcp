@@ -71,7 +71,7 @@ class RobotManufacturingTool:
             - Enables consistent manufacturing workflow across different device types
             - Provides unified error handling and safety protocols
             - Supports conversational AI interaction with rich response formats
-            - Follows FastMCP 2.13+ best practices for feature-rich MCP servers
+            - Follows FastMCP 3.4.4+ best practices for feature-rich MCP servers
 
             SUPPORTED OPERATIONS:
             - 3D Printers: Print control, monitoring, maintenance (OctoPrint/Moonraker)

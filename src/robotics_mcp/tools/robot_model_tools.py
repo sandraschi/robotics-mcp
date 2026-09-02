@@ -106,7 +106,7 @@ class RobotModelTools:
             - Improves discoverability by grouping related operations together
             - Reduces cognitive load when working with robot models
             - Enables consistent model interface across all operations
-            - Follows FastMCP 2.13+ best practices for feature-rich MCP servers
+            - Follows FastMCP 3.4.4+ best practices for feature-rich MCP servers
 
             SUPPORTED OPERATIONS:
             - create: Create robot 3D model from scratch using Blender MCP

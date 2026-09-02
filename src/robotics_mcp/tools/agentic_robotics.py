@@ -106,7 +106,7 @@ class AgenticRoboticsTool:
                         error_code="SAMPLING_UNAVAILABLE",
                         message="FastMCP context does not support SEP-1577 sampling with tools",
                         recovery_options=[
-                            "Ensure FastMCP 2.14.1+ is installed",
+                            "Ensure FastMCP 3.4.4+ is installed",
                             "Check that sampling handlers are configured",
                             "Verify LLM provider supports tool calling",
                         ],
@@ -241,7 +241,7 @@ class AgenticRoboticsTool:
                         error_code="SAMPLING_UNAVAILABLE",
                         message="Intelligent manufacturing requires SEP-1577 sampling capabilities",
                         recovery_options=[
-                            "Ensure FastMCP 2.14.1+ with sampling support",
+                            "Ensure FastMCP 3.4.4+ with sampling support",
                             "Check LLM provider configuration",
                         ],
                         urgency="high",
@@ -359,7 +359,7 @@ class AgenticRoboticsTool:
                         error_code="SAMPLING_UNAVAILABLE",
                         message="Batch processing requires SEP-1577 sampling capabilities",
                         recovery_options=[
-                            "Ensure FastMCP 2.14.1+ with sampling support",
+                            "Ensure FastMCP 3.4.4+ with sampling support",
                             "Check LLM provider configuration for batch operations",
                         ],
                         urgency="high",
