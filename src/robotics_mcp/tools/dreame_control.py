@@ -5,7 +5,7 @@ Portmanteau pattern: Consolidates Dreame vacuum operations via DreameHome cloud 
 - dreame_control: Status, cleaning, dock, map, configuration
 - dreame_onboard: Cloud setup instructions (DREAME_USER, DREAME_PASSWORD)
 
-SOTA: FastMCP 2.13+ compliant with conversational responses.
+SOTA: FastMCP 3.4.4+ compliant with conversational responses.
 """
 
 from pathlib import Path

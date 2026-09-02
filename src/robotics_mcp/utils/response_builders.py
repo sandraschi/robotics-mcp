@@ -1,5 +1,5 @@
 """
-FastMCP 2.14.1+ Conversational Response Builders for Robotics MCP.
+FastMCP 3.4.4+ Conversational Response Builders for Robotics MCP.
 
 Provides intelligent error recovery and conversational response patterns
 for robotics operations, following the same patterns as tapo-camera-mcp.

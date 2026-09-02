@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Robotics MCP Server - Unified control for physical and virtual robots.
 
-FastMCP 2.13+ compliant server with dual transport (stdio/HTTP) and MCP server composition.
+FastMCP 3.4.4+ compliant server with dual transport (stdio/HTTP) and MCP server composition.
 """
 
 # CRITICAL: Set stdio to binary mode on Windows for Antigravity IDE compatibility

@@ -7,7 +7,7 @@ Portmanteau pattern: Consolidates core drone operations into unified interface:
 - drone_navigation: Aerial navigation (GPS, waypoints, obstacle avoidance)
 - drone_flight_control: Advanced flight modes (RTL, loiter, mission planning)
 
-SOTA: FastMCP 2.13+ compliant with conversational responses and sampling support.
+SOTA: FastMCP 3.4.4+ compliant with conversational responses and sampling support.
 """
 
 import asyncio
