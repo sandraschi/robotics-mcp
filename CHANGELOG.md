@@ -1,6 +1,21 @@
 
 ## [Unreleased] — 2026-09-03
 
+### Verified
+- **Nori A3 integration (robotics-mcp ↔ norirobotics-mcp) is now live end-to-end verified**,
+  not just code/offline-reviewed. `norirobotics-mcp` happened to be running on its default
+  port (11970) during this session - ran `NoriMcpClient` directly against it (health, hero,
+  session_status, connect, status-after-connect, disconnect - all real HTTP calls, real
+  responses, no mocks) and separately drove the actual `RobotControlTool._handle_nori_robot`
+  dispatch path with a `RobotState(robot_type="nori_a3")` through get_status → connect →
+  get_status → episode_start("pick up the red block") → episode_stop → e-stop → disconnect →
+  an unsupported-action error case. Every step succeeded with correctly-shaped responses
+  (including the mock-session nori_sdk fields: joint descriptors, camera layout, watchdog
+  profile). No code changes were needed - this confirms Phase 1 of the original Nori A3
+  integration plan (client, config block, dispatch handler, `SUPPORTED_ROBOT_TYPES` in
+  `robot_virtual.py`/`vbot_crud.py`) works as designed against the real service, not just
+  against test doubles.
+
 ### Fixed
 - **Stale "FastMCP 2.13+"/"2.14.x" claims across docstrings and docs**: the actual dependency
   has been `fastmcp>=3.4.4,<4` (pinned in `pyproject.toml`, resolved to 3.4.7) for some time -
