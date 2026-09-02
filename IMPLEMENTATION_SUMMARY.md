@@ -13,8 +13,9 @@
 - Scripts in `scripts/`
 - MCPB packaging in `mcpb/`
 
-### 2. **FastMCP 2.13+ Server** ✅
-- Main server (`server.py`) with FastMCP 2.13
+### 2. **FastMCP 3.4.4+ Server** ✅
+- Main server (`server.py`) with FastMCP 3.4.4+ (2026-09-03: corrected from the 2.13 this
+  originally cited - `pyproject.toml` pins `fastmcp>=3.4.4,<4`)
 - Dual transport support (stdio + HTTP)
 - Server lifespan management
 - Structured logging (structlog)

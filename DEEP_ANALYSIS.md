@@ -22,7 +22,9 @@
 
 ## 1. Executive Summary
 
-**robotics-mcp** is an ambitious FastMCP 2.14.3 server that aims to unify physical robot control (Dreame vacuums, Yahboom ROS robots, Elegoo cars, Unitree quadrupeds, drones) with virtual robot control (Unity3D, VRChat) through a single MCP interface. It includes a full React/Next.js webapp with real-time WebSocket communication, LLM integration, workflow management, and camera feeds.
+**robotics-mcp** is an ambitious FastMCP 3.4.4+ server (2026-09-03: corrected from the 2.14.3
+this line originally cited - the repo has been on the 3.x line for some time; `pyproject.toml`
+pins `fastmcp>=3.4.4,<4`) that aims to unify physical robot control (Dreame vacuums, Yahboom ROS robots, Elegoo cars, Unitree quadrupeds, drones) with virtual robot control (Unity3D, VRChat) through a single MCP interface. It includes a full React/Next.js webapp with real-time WebSocket communication, LLM integration, workflow management, and camera feeds.
 
 ### Verdict
 
@@ -62,7 +64,7 @@ The **architecture is sound** - portmanteau tool pattern, dual transport (stdio+
 
 **God-Object robot_control.py**: At 1374 lines, this single tool handler manages Yahboom, Dreame, Hue, Elegoo, Gazebo, physical, and virtual robots. Each handler is 100-200 lines of if/elif chains. Should be decomposed into strategy pattern or separate handler classes.
 
-**Missing `ctx: Context` Parameter**: Per FastMCP 2.14 standards, all `@mcp.tool()` functions MUST accept `ctx: Context` for progress reporting and structured logging. None of the tools use it. This is a compliance gap.
+**Missing `ctx: Context` Parameter** *(2026-09-03: already fixed - see §10 "Fix Log" → "Structural Fixes" below, `ctx: Context` is now present on the portmanteau tools; leaving this finding in place as the audit record of the original gap)*: Per FastMCP standards, all `@mcp.tool()` functions MUST accept `ctx: Context` for progress reporting and structured logging. None of the tools use it. This is a compliance gap.
 
 **Lifespan Disabled**: `server_lifespan` is a stub (`return None`). The comment says "TEMPORARILY DISABLE LIFESPAN FOR DEBUGGING" - this means startup/shutdown hooks are not functional.
 

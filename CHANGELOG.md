@@ -1,4 +1,23 @@
 
+## [Unreleased] — 2026-09-03
+
+### Fixed
+- **Stale "FastMCP 2.13+"/"2.14.x" claims across docstrings and docs**: the actual dependency
+  has been `fastmcp>=3.4.4,<4` (pinned in `pyproject.toml`, resolved to 3.4.7) for some time -
+  FastMCP 2.x is explicitly retired per the fleet standard
+  (`mcp-central-docs/standards/JUNE_2026_STANDARDS_BAR.md`). Confirmed this was cosmetic, not
+  functional, before touching anything: the actual code already uses current-era API shapes
+  (`from fastmcp import Context`, `ctx: Context` params, `from fastmcp.server import
+  create_proxy`), just with wrong version numbers in the surrounding prose. Fixed across 11
+  source files (`server.py`, `transport.py`, `utils/response_builders.py`, and 8 files under
+  `tools/`) plus `DEEP_ANALYSIS.md`/`IMPLEMENTATION_SUMMARY.md`'s present-tense "what this is"
+  claims. `DEEP_ANALYSIS.md`'s "Missing ctx: Context" finding (itself already stale - the gap
+  it describes was fixed per that same document's own Fix Log) was annotated rather than
+  deleted, preserving the audit trail. `PLAN.md` and old `CHANGELOG.md` entries were
+  deliberately left untouched - both are point-in-time historical records of what was true
+  when written, not living reference docs; retroactively editing them would misrepresent
+  history rather than correct it.
+
 ## [Unreleased] — 2026-09-02
 
 ### Added

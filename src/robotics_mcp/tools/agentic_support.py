@@ -25,7 +25,7 @@ class AgenticSupportTool:
             """
             logger.info(f"Agentic workflow initiated: {objective}")
 
-            # Example: Basic FastMCP 2.14.5 Sampling request
+            # Example: Basic FastMCP 3.4.4+ Sampling request
             try:
                 msg = [
                     {
