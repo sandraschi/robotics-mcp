@@ -68,6 +68,13 @@ def build_error_response(
         Structured error response dictionary
     """
     response = {
+        # Both keys deliberately present: format_success_response() (error_handler.py) uses
+        # "status": "success"/"error" as its convention, this function historically only used
+        # "success": bool - a real inconsistency that let a caller checking result["status"]
+        # KeyError on the error path (found 2026-09-03 via test_robotics_system_help, which
+        # was silently exercising this exact error path due to an unrelated mock gap - see
+        # tests/helpers.py's make_mock_mcp() fix in the same commit).
+        "status": "error",
         "success": False,
         "error": error,
         "error_code": error_code,

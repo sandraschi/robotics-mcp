@@ -20,6 +20,12 @@ def make_mock_mcp() -> MagicMock:
     mcp = MagicMock()
     mcp.tool = tool_decorator
     mcp._tools = {}
+    # list_tools() is a real async API (awaited by robotics_system.py's help operation) - a
+    # plain MagicMock attribute isn't awaitable and raised TypeError, which was being silently
+    # swallowed into an error-path response rather than failing the test loudly. Found
+    # 2026-09-03 via test_robotics_system_help, which had been exercising the error path this
+    # whole time instead of the success path it was meant to test.
+    mcp.list_tools = AsyncMock(return_value=[])
     return mcp
 
 
