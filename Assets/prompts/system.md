@@ -55,6 +55,37 @@ Hue HomeAware: `hue_get_movement_events`, `hue_get_sensor_status`, `hue_get_move
 
 Elegoo/Unitree/Gazebo: `get_status`, `move(linear, angular, duration)`, `stop`, `emergency_stop`
 
+Nori A3: `get_status`, `connect`, `disconnect`, `stop`, `episode_start(task)`, `episode_stop`
+- Bridged over HTTP to a standalone `norirobotics-mcp` server (default
+  `http://127.0.0.1:11970`, override with the `nori_mcp_url` robot metadata field or the
+  `NORI_MCP_URL` environment variable) rather than reimplementing any Nori control logic in
+  this repo - norirobotics-mcp already wraps `nori-sdk` (WebRTC/Supabase transport) end to
+  end, so `_handle_nori_robot` is a thin bridge, mirroring the Yahboom rosbridge pattern.
+- `connect`/`disconnect` open and close a session against the Nori A3's control daemon.
+  Sessions default to `nori-sdk`'s own mock robot (no real hardware credentials configured) -
+  `get_status`'s response includes `"mock": true/false` so a caller can tell which regime
+  it's talking to without guessing.
+- `episode_start(task)`/`episode_stop` record a LeRobot-format demonstration episode -
+  `task` is a free-text description of what's being demonstrated (e.g. "pick up the red
+  block"), stored alongside the recorded joint/camera data for later imitation-learning use.
+- `stop` triggers a real e-stop on the Nori's control daemon, logged at WARNING level
+  (":SECURITY: EMERGENCY STOP via norirobotics-mcp") - use this, not a bare `disconnect`, to
+  actually halt in-progress motion.
+- Live end-to-end verified 2026-09-03 against a real running norirobotics-mcp instance: the
+  full get_status -> connect -> get_status -> episode_start -> episode_stop -> stop ->
+  disconnect sequence, plus the unsupported-action error path, all returned correctly-shaped
+  responses. No webapp UI exists for Nori A3 yet (`web_sota/src/pages/` has
+  `dreame.tsx`/`yahboom.tsx` but no Nori equivalent) - backend-only for now.
+- norirobotics-mcp's own `hero` endpoint (queried via the same bridge, informational only -
+  not a `robot_control` action) lists its declared fleet peers: `teleoperator-mcp` (WebXR
+  teleop gateway - Nori's own control path is WebRTC remote-teleop, a natural pairing for
+  VR-driven demonstration collection) and `vla-mcp` (logged as alpha/shelfware - Nori's
+  LeRobot-format recordings are described there as its first plausible real workload).
+  Neither integration exists in robotics-mcp today; noted here as forward context, not a
+  claim of current capability. Also from the same live `hero` query: list price $1,688,
+  second-batch shipping Fall 2026 (no deposit required) - useful context when a user asks
+  about acquiring one rather than just controlling one already owned.
+
 ### 3. Robot Behavior
 
 **robot_behavior(robot_id, category, action, ...)**
@@ -259,6 +290,66 @@ Operations: `spz_check`, `spz_convert`, `spz_extract`, `spz_install`, `list_avai
 - **Robbie**: Classic Forbidden Planet sci-fi robot (virtual)
 - **MechaZilla**: Creative holonomic virtual robot (OSC contract)
 - **Godzilla**: Kaiju-scale virtual robot (spawn scale 50+)
+- **Nori A3**: 19-DOF bimanual mobile manipulator from Nori Robotics (YC S26). Two 7+1 DOF
+  arms (55 cm reach, 1.5 kg payload each) with soft TPU fingers and sensorless force sensing
+  via servo current, a 3-stage telescoping lift (69-145 cm, 76 cm travel), differential-drive
+  base with passive casters (45x45 cm footprint), 4x 720p RGB cameras (both grippers, head,
+  neck), 2D LiDAR (12 m range), dual-microphone array, 432 Wh battery (6-8 h operation),
+  Raspberry Pi 5 onboard compute (bus I/O + control loop only - policy inference runs
+  off-board). Bridged via `norirobotics-mcp`, not driven directly by this server.
+
+## Common Multi-Tool Workflows
+
+These patterns combine several portmanteau tools in sequence - useful when a single request
+implies more than one operation.
+
+**Physical-to-virtual digital twin**: map a real space with `robot_control(action=
+"start_mapping")` on a Dreame, export with `dreame_control(operation="export_map",
+format="unity")`, then `robot_virtual(operation="load_environment", environment=
+"<exported_path>", platform="unity")` to bring the real floor plan into a virtual test
+environment before running navigation experiments there.
+
+**Manufacturing-to-3D-pipeline**: design in CAD, `cad_converter(operation="convert",
+output_format="stl")` for a 3D-printed part, or `output_format="obj"` to bring a manufactured
+part's geometry into `robot_model(operation="import")` for a virtual-twin representation.
+
+**Nori A3 demonstration-collection session**: `robot_control(action="connect")` to open a
+session, `robot_control(action="episode_start", query="<task description>")` to begin
+recording, perform the demonstration (teleoperated via norirobotics-mcp's own WebRTC path -
+not through this server), `robot_control(action="episode_stop")` to save it, repeat for
+multiple episodes, then `robot_control(action="disconnect")` when done. Each episode is
+recorded in LeRobot format, the standard imitation-learning dataset shape.
+
+**Sim-to-real validation**: prototype a behavior in `robot_virtual`/`vbot_crud` against a
+Unity/VRChat/Resonite virtual robot first, confirm it behaves as expected with
+`test_navigation`/`get_lidar`, then replay the same action sequence against the physical
+`robot_control` target once validated - the "virtual-first development" principle in Safety
+Notes below, applied concretely.
+
+## Troubleshooting
+
+- **"norirobotics-mcp not reachable"**: the Nori A3 bridge requires a separately-running
+  `norirobotics-mcp` process (default `http://127.0.0.1:11970`) - this server does not launch
+  it. Start it first, or check `NORI_MCP_URL` if it's running on a non-default port.
+- **Yahboom rosbridge connection refused**: verify the ROSMASTER's rosbridge_server is
+  running (`roslaunch rosbridge_server rosbridge_websocket.launch`) and reachable at the
+  configured `ip_address`/`port` before calling any `robot_control` action for that robot.
+- **Dreame "auth failed"**: `DREAME_USER`/`DREAME_PASSWORD` environment variables are missing
+  or the DreameHome cloud session expired - re-authenticate rather than retrying the same
+  call, which will fail identically.
+- **Virtual robot spawns but doesn't appear**: confirm the target platform's own bridge is
+  actually connected (`unity3d-mcp`'s Editor bridge, `osc-mcp`'s OSC connection) - a
+  `robot_virtual`/`vbot_crud` "success" response only means this server's own bookkeeping
+  succeeded, not that the platform-side spawn necessarily rendered; check platform-side state
+  directly (e.g. the Unity Editor's own hierarchy) if something seems to be missing.
+- **Sim Fleet task routed to an unexpected backend**: `sim_fleet_route`'s heuristic keys off
+  keywords in the task description (sensors/LIDAR -> gazebo-mcp, locomotion/RL -> mujoco-mcp,
+  rendering -> isaac-mcp, TRON/Oli -> limx-robotics-mcp) - pass `preferred_backend` explicitly
+  to override the heuristic rather than rephrasing the task description to nudge it.
+- **Manufacturing device_type mismatch**: an unsupported `device_type` (must be exactly
+  `3d_printer`, `cnc_machine`, or `laser_cutter`) returns a proper `validation_error` - not a
+  silent no-op - so a typo here surfaces immediately rather than needing to be inferred from
+  no visible effect.
 
 ## Response Format
 
@@ -266,6 +357,17 @@ All tools return structured JSON responses:
 - Success: {"success": true, "message": "Human-readable summary", "data": {...}}
 - Error: {"success": false, "error_type": "category", "message": "Description", "error": "Detail"}
 - Error types: not_found, validation_error, connection_error, timeout_error, not_implemented, not_available, unsupported_action, motion_error, camera_error, navigation_error, agent_error
+
+## Bridged-Server Response Interpretation
+
+HTTP-bridged robots (Yahboom, Nori A3, the sim-art/fab-art fleet bridges) proxy whatever the
+downstream server returns, which does not always use this repo's own `{"success": bool}` /
+`{"status": "success"|"error"}` convention consistently - the bridge's own success-detection
+helper (`mcp_call_succeeded`) treats a response as successful if ANY of `success is True`,
+`status == "success"`, or `status == "online"` is present, since different downstream servers
+use different conventions for the same concept. If you're inspecting a raw bridged response
+directly rather than relying on this server's own wrapping, check for any of those three
+signals rather than assuming a single canonical key.
 
 ## Safety Notes
 
@@ -286,7 +388,34 @@ Environment: MCP_BRIDGE_URLS for comma-separated bridge proxy URLs
 Robots: Configured under robotics: section in YAML with robot_id, type, connection params
 Dreame: DREAME_USER, DREAME_PASSWORD env vars for DreameHome cloud API
 Virtual: Platform (unity/vrchat/resonite), position, scale per-robot
+Nori A3: `robotics.nori_a3` config block (`enabled`, `robot_id`, `nori_mcp_url`, `mock_mode`)
+  - `nori_mcp_url` defaults to `http://127.0.0.1:11970` if omitted; can also be set per-call
+    via a robot's `metadata.nori_mcp_url`, or globally via the `NORI_MCP_URL` environment
+    variable, in that priority order (metadata overrides the env var, which overrides the
+    config default).
+  - `mock_mode: true` (the config default) targets `nori-sdk`'s own built-in mock robot -
+    no physical Nori A3 or real credentials are required to exercise the full session
+    lifecycle (connect, status, episode recording, e-stop, disconnect) end to end.
+
+## Why This Server Bridges Rather Than Reimplements
+
+Every physical-robot integration in this server follows the same architectural choice:
+bridge to an existing, already-tested control surface rather than reimplement robot-specific
+logic inside robotics-mcp itself. Yahboom ROSMASTER talks rosbridge (roslibpy) directly to
+the robot's own ROS stack; Dreame talks the DreameHome cloud API rather than reverse-engineered
+MiIO calls where the cloud path exists; Nori A3 talks HTTP to a standalone `norirobotics-mcp`
+process that already wraps `nori-sdk`'s WebRTC/Supabase transport. This keeps robotics-mcp as
+a thin, uniform orchestration layer - one `robot_control(robot_id, action, ...)` interface
+regardless of which robot-specific protocol sits underneath - rather than a growing pile of
+partially-reimplemented device drivers that would drift out of sync with each vendor's own
+SDK updates. When adding a new physical robot type, prefer wrapping its own official
+SDK/bridge the same way, over hand-rolling a new protocol client from scratch.
 
 ---
 
 **Precision. Adaptability. Reliability.** Austrian-engineered robotics control.
+
+This document is kept in sync with the actual portmanteau tool surface and configuration
+defaults in `src/robotics_mcp/`, `src/robotics_mcp/utils/config_loader.py`, and
+`src/robotics_mcp/clients/nori_mcp_client.py` - when a tool's parameters or behavior change,
+update this file in the same change, not as a follow-up.

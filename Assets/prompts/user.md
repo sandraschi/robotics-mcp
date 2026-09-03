@@ -156,6 +156,54 @@ Ask: "Move the Gazebo robot forward"
 
 ---
 
+## Tutorial 1b: Nori A3 Bimanual Manipulator
+
+The Nori A3 is bridged over HTTP to a standalone `norirobotics-mcp` server, not driven
+directly by robotics-mcp - `norirobotics-mcp` must be running (default
+`http://127.0.0.1:11970`) before any of these calls will succeed. It defaults to a mock
+session (no real hardware required) unless real credentials are configured, so every example
+below is safe to try without owning the physical robot.
+
+Ask: "Check the status of nori_01"
+- Use: `robot_control(robot_id="nori_01", action="get_status")`
+- The response includes `"connected"` and `"mock"` booleans, plus a nested
+  `"connection_status"` (phase/failure/detail) once connected, and `"camera_layout"` (grid
+  tile layout for the 4 onboard cameras) when a session is active.
+
+Ask: "Connect to nori_01"
+- Use: `robot_control(robot_id="nori_01", action="connect")`
+- Opens a session against the Nori's control daemon. In mock mode this returns a synthetic
+  session descriptor (joint names, ranges, camera list, capabilities) rather than a real
+  hardware handshake - useful for testing the integration without hardware.
+
+Ask: "Start recording a demonstration of picking up the red block"
+- Use: `robot_control(robot_id="nori_01", action="episode_start", query="pick up the red block")`
+- `query` here is the free-text task description stored alongside the recorded episode, not a
+  question being asked to the robot - it becomes the LeRobot dataset's task label.
+
+Ask: "Stop the current recording"
+- Use: `robot_control(robot_id="nori_01", action="episode_stop")`
+- Response includes `"episodes_kept"` (running count of saved episodes this session) and
+  `"free_gb"` (remaining storage) so a caller can tell whether it's worth recording more
+  without a separate status check.
+
+Ask: "Emergency stop nori_01"
+- Use: `robot_control(robot_id="nori_01", action="stop")`
+- This is a real e-stop trigger, distinct from `disconnect` - use it to halt in-progress
+  motion, not just to end the session cleanly.
+
+Ask: "Disconnect from nori_01"
+- Use: `robot_control(robot_id="nori_01", action="disconnect")`
+
+Ask: "Record three demonstration episodes of a stacking task, back to back"
+- Use: `robot_control(robot_id="nori_01", action="connect")`
+- Then, three times: `robot_control(robot_id="nori_01", action="episode_start", query="stack the blue block on the green block")` followed by (after the demonstration) `robot_control(robot_id="nori_01", action="episode_stop")`
+- Then: `robot_control(robot_id="nori_01", action="disconnect")`
+- Each `episode_stop` response's `"episodes_kept"` should increment by one across the three
+  passes - a quick sanity check that nothing silently failed mid-sequence.
+
+---
+
 ## Tutorial 2: Robot Behavior Control
 
 ### Animation Control
@@ -547,6 +595,109 @@ Ask: "Compare robot sizes in VR"
 
 ---
 
+## Tutorial 17: Combined Multi-Tool Workflows
+
+These tutorials chain several portmanteau tools together for realistic end-to-end tasks that
+a single call can't cover on its own.
+
+### Physical-to-Virtual Digital Twin
+
+Ask: "Map my apartment with the Dreame, then bring it into Unity for navigation testing"
+- Use: `robot_control(robot_id="dreame_01", action="start_mapping")`
+- Wait for mapping to complete, then: `robot_control(robot_id="dreame_01", action="get_map")`
+  to confirm the map is ready
+- Then: `dreame_control(operation="export_map", format="unity", output_path="D:/Maps/apartment_navmesh.json")`
+- Then: `robot_virtual(operation="load_environment", environment="D:/Maps/apartment_navmesh.json", platform="unity")`
+- Then: `robot_virtual(operation="create", robot_type="scout", platform="unity")` to spawn a
+  test robot into the freshly-imported real floor plan
+- Then: `robot_virtual(operation="test_navigation", robot_id="vbot_scout_01")`
+
+### Manufacturing-to-Model Pipeline
+
+Ask: "I have a CAD file for a robot bracket - get it ready for both 3D printing and a
+virtual-twin model"
+- Use: `cad_converter(operation="convert", input_path="D:/CAD/bracket.step", output_format="stl", output_path="D:/Print/bracket.stl")` for the printable version
+- Then: `cad_converter(operation="convert", input_path="D:/CAD/bracket.step", output_format="obj", output_path="D:/Models/bracket.obj")` for the visual/virtual-twin version
+- Then: `robot_manufacturing(device_id="printer_01", device_type="3d_printer", category="control", action="print_file", file_path="D:/Print/bracket.stl")`
+- Then, once printed: `robot_model(operation="import", robot_type="custom", model_path="D:/Models/bracket.obj")`
+
+### Sim-to-Real Validation
+
+Ask: "I want to test a new patrol route in VR before running it on the real Yahboom"
+- Use: `robot_virtual(operation="create", robot_type="yahboom", platform="unity")` to spawn a
+  virtual twin
+- Then: `robot_behavior(robot_id="vbot_yahboom_01", category="navigation", action="plan_path", start_position={"x": 0, "y": 0, "z": 0}, goal_position={"x": 10, "y": 0, "z": 5})`
+- Then: `robot_behavior(robot_id="vbot_yahboom_01", category="navigation", action="follow_path", path_id="<returned path_id>")`
+- Once the virtual run looks correct: `robot_control(robot_id="yahboom_01", action="home_patrol", patrol_route="<same route>")` on the physical robot
+
+### Full Nori A3 Session with Error Recovery
+
+Ask: "Set up a Nori A3 recording session, and handle it gracefully if norirobotics-mcp isn't
+running yet"
+- Use: `robot_control(robot_id="nori_01", action="get_status")` first as a cheap
+  reachability check
+- If the response is an error with `error_type="not_available"`, the message will say
+  "norirobotics-mcp not reachable" - start that server separately and retry, rather than
+  retrying the same connect call in a loop
+- Once reachable: `robot_control(robot_id="nori_01", action="connect")`
+- Then proceed with `episode_start`/`episode_stop` as in Tutorial 1b
+
+### Fleet-Wide Status Check
+
+Ask: "Give me a full status report across every robot and simulation backend"
+- Use: `robotics_system(operation="status")` for the server's own health and mounted-server
+  connectivity
+- Then: `robotics_system(operation="list_robots")` for every registered robot
+- Then: `sim_fleet_status()` for every simulation backend's availability
+- Then, for each physical robot returned by list_robots: `robot_control(robot_id="<id>", action="get_status")` to get live per-robot telemetry, since list_robots itself only returns
+  registration metadata, not live status
+
+---
+
+## Tutorial 18: Understanding Response Formats and Error Types
+
+Every tool in this server returns a structured dict, either a success shape
+(`{"success": true, "message": "...", "data": {...}}` from most tools, or the
+`{"status": "success", ...}` shape used by `robotics_system` and `robot_control`'s Nori A3
+handler) or an error shape carrying an `error_type` field that tells you WHY it failed, not
+just THAT it failed - worth checking before assuming a generic retry will help.
+
+Ask: "What does error_type 'not_available' mean?"
+- It means a required mounted server or bridge (e.g. `norirobotics-mcp` for Nori A3,
+  `unity3d-mcp`'s Editor bridge for virtual robots) isn't reachable right now. Retrying the
+  exact same call won't help - the downstream service needs to actually be started first.
+  `robotics_system(operation="status")`'s `mounted_servers`/component flags tell you which
+  ones are currently connected.
+
+Ask: "What does error_type 'not_found' mean?"
+- The `robot_id` you passed isn't registered. Use
+  `robotics_system(operation="list_robots")` to see what's actually available - a typo in the
+  ID is the most common cause, followed by trying to control a robot that was never added to
+  the config.
+
+Ask: "What does error_type 'validation_error' mean?"
+- A parameter is malformed or out of range for the action - e.g. an unsupported
+  `device_type` for `robot_manufacturing`, or a `suction_level` outside 1-4 for Dreame. The
+  error message names the specific field.
+
+Ask: "What does error_type 'connection_error' mean, and how is it different from
+'not_available'?"
+- `connection_error` means the target robot/device itself refused or dropped the connection
+  (network issue, robot powered off, wrong IP) - the bridge/mounted-server infrastructure IS
+  reachable, but the specific robot behind it isn't. `not_available` means the
+  infrastructure itself (the bridge/mounted server) isn't reachable at all. Distinguishing
+  these tells you whether to check the robot's power/network, or check whether the
+  peer MCP server process is even running.
+
+Ask: "What does error_type 'timeout_error' mean, and should I retry immediately?"
+- The operation started but didn't complete within the expected window - common for
+  long-running physical operations (mapping, milling, printing) where a naive fixed timeout
+  doesn't match real-world duration. Check the operation's own status/progress action first
+  (`get_progress`, `get_print_status`, `get_map`) before retrying the original call, since
+  the operation may actually still be in progress rather than genuinely stuck.
+
+---
+
 ## Best Practices
 
 1. Always check robot status before controlling: use robot_control(robot_id="...", action="get_status")
@@ -564,6 +715,21 @@ Ask: "Compare robot sizes in VR"
 13. SPZ files can exceed 100MB - plan output locations accordingly
 14. Workflow templates provide reusable mission patterns
 15. Use the agentic workflow tool for complex multi-step missions
+16. Nori A3 sessions default to mock mode - always check the `"mock"` field in a `get_status`
+    response before assuming a command reached real hardware
+17. Use `episode_start`'s `query` parameter to give each recorded demonstration a clear,
+    specific task description - it becomes the permanent label on that dataset entry, not
+    just a transient log line
+18. Prefer `stop` (a real e-stop) over `disconnect` when you need to halt in-progress Nori A3
+    motion immediately - `disconnect` just closes the session, it doesn't guarantee the robot
+    stops moving first
+19. When chaining several robots in one multi-step task, check each one's status
+    independently rather than assuming a prior success implies the next robot in the sequence
+    is also ready
+20. For CAD/model conversion pipelines, treat `output_path` as a hint from the caller, not
+    a guarantee - if a downstream tool call fails to find the file, double-check the actual
+    returned path in the conversion tool's response rather than assuming the path you passed
+    in was used verbatim
 
 ## Error Recovery
 
@@ -575,3 +741,33 @@ Ask: "Compare robot sizes in VR"
 - "Sim backend unavailable": Check sim_fleet_status() for which backends are running
 - "File not found": Verify model/gcode/config path is correct and accessible
 - "Timeout": Operation taking too long - check robot connectivity and retry
+- "Unsupported device type" (manufacturing): device_type must be exactly `3d_printer`,
+  `cnc_machine`, or `laser_cutter` - this returns a proper validation_error immediately
+  rather than silently no-opping, so a typo here is easy to spot from the error message alone
+- "Nori A3 status check failed" / "Nori A3 connect failed": the bridge reached
+  norirobotics-mcp but it returned an error - check norirobotics-mcp's own logs, since the
+  problem is on that side, not in the HTTP bridge itself
+- "Nori A3 episode_start/episode_stop failed": usually means no session is open (call
+  `connect` first) or the recording daemon on the norirobotics-mcp side hit a storage/state
+  issue - check `free_gb` in the last successful status response before retrying
+- "Unsupported action for Nori A3": only get_status/connect/disconnect/stop/episode_start/
+  episode_stop are valid actions for `robot_type="nori_a3"` - other action names silently
+  don't apply, even ones that are valid for other robot types like Yahboom or Dreame
+- Virtual robot "created" but nothing visible in the platform: this server's own
+  bookkeeping succeeding does not guarantee the platform-side spawn rendered - check the
+  platform bridge's own connection status and, for Unity, the Editor's own scene hierarchy
+  directly
+
+---
+
+## A Note on Keeping This Guide Current
+
+These tutorials are drawn directly from the tool signatures and live-verified behavior in
+`src/robotics_mcp/tools/`, not from an idealized spec - when a Nori A3 example or an error
+message here stops matching what a tool actually returns, that's a real drift to fix, not a
+stylistic choice to leave alone. If you're extending this server with a new robot type or
+tool, add a matching Ask/Use pair here in the same change, following the pattern already
+established for the fifteen-plus robot and device types already documented above: a short
+Ask/Use pair for each realistic operation, real parameter names copied from the actual tool
+signature, and honest notes about mock-mode defaults or platform-specific caveats where they
+genuinely exist, rather than a generic template filled in with placeholder text.
