@@ -202,19 +202,29 @@ miiocli discover
 
 ---
 
-## Current State (2026-02-08, v0.2.0)
+## Current State (2026-09-03, v0.2.1)
 
-**Alpha with real hardware integration. FastMCP 2.14+ compliant.**
+**Alpha with real hardware integration. FastMCP 3.4.4+ compliant.**
 
 ### What actually works
 
 - **Dreame D20 Pro** — Vacuum control + LIDAR map retrieval + 3D export (OBJ, PLY, Unity, Blender)
 - **Yahboom ROSMASTER** — roslibpy rosbridge client (connect, move, arm, gripper)
 - **Elegoo** — Serial protocol communication
+- **Nori A3** — HTTP bridge to `norirobotics-mcp` (connect, status, episode recording, e-stop,
+  disconnect); live end-to-end verified 2026-09-03 against a real running instance. No webapp
+  UI for it yet (`web_sota/src/pages/` has `dreame.tsx`/`yahboom.tsx` but no Nori equivalent) -
+  backend-only for now.
 - **Gazebo Fuel** — Model browser: search, download, spawn via ROS services
-- **MCP transport** — Dual stdio + HTTP, FastMCP 2.14+ with `ctx: Context` on tools
-- **Webapp** — Live MCP data, sidebar navigation, 25+ pages, dark mode
-- **13 portmanteau tools** — Honest simulation labels where applicable
+- **MCP transport** — Dual stdio + HTTP, FastMCP 3.4.4+ with `ctx: Context` on tools
+- **Webapp** (`web_sota/`) — Live MCP data, sidebar navigation, dark mode. ~12 pages
+  (`web_sota/src/pages/`), corrected here from an earlier "25+" claim that didn't match an
+  actual count of the directory.
+- **17 portmanteau tool classes** (`server.py`'s `.register()` calls: system, control,
+  behavior, manufacturing, virtual, model tools, vbot CRUD, workflow, sampling, drone, Dreame,
+  Bumi, Gazebo, sim-art, fab-art, agentic support, environmental logistics) - not re-verifying
+  the older "13 portmanteau tools" figure's exact counting method, but the class count has
+  grown since the 2026-02-08 snapshot this section previously carried.
 
 ### Mock / stub (labeled)
 
@@ -227,9 +237,9 @@ See [DEEP_ANALYSIS.md](../DEEP_ANALYSIS.md) for the mock audit.
 
 ## Overview
 
-Unified control for **physical robots** (Dreame D20 Pro, Yahboom ROSMASTER, Elegoo), **simulated** (Gazebo), **virtual** (Unity/VRChat/Resonite), and **drones** (PX4/ArduPilot). Primary mapping path: Dreame D20 Pro with LIDAR export.
+Unified control for **physical robots** (Dreame D20 Pro, Yahboom ROSMASTER, Elegoo, Nori A3), **simulated** (Gazebo), **virtual** (Unity/VRChat/Resonite), and **drones** (PX4/ArduPilot). Primary mapping path: Dreame D20 Pro with LIDAR export.
 
-**Rough size:** ~12k lines Python, ~5k TypeScript/React, 13 portmanteau tools, 25+ webapp pages.
+**Rough size:** ~12k lines Python, ~5k TypeScript/React, 17 portmanteau tool classes, ~12 webapp pages (2026-09-03 - see "Current State" above for how these were counted).
 
 ### Key features
 
@@ -543,4 +553,4 @@ python -c "from robotics_mcp.server import RoboticsMCP; RoboticsMCP(); print('SU
 
 ---
 
-**Status:** Alpha v0.2.0 (2026-02-08) — Dreame, Yahboom, Gazebo Fuel, webapp; composed servers partially disabled. See [DEEP_ANALYSIS.md](../DEEP_ANALYSIS.md).
+**Status:** Alpha v0.2.1 (2026-09-03) — Dreame, Yahboom, Nori A3, Gazebo Fuel, webapp; composed servers partially disabled. See [DEEP_ANALYSIS.md](../DEEP_ANALYSIS.md).
