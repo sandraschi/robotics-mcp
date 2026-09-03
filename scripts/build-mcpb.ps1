@@ -83,13 +83,17 @@ if (Test-Path $srcPrompts) {
 }
 
 # --- 2. .mcpbignore at the pack root ---
+# Always copy from repo-root (overwrite), never copy-if-missing - a copy-if-missing check
+# only syncs once, then silently goes stale on every later run since mcpb/.mcpbignore
+# already exists (found 2026-09-03: a repo-root .mcpbignore edit had zero effect on a rebuild
+# because the pack-root copy from the first run was never refreshed).
 $mcpbIgnore = Join-Path $RepoRoot "mcpb\.mcpbignore"
 $repoIgnore = Join-Path $RepoRoot ".mcpbignore"
-if (-not (Test-Path $mcpbIgnore) -and (Test-Path $repoIgnore)) {
+if (Test-Path $repoIgnore) {
     Copy-Item $repoIgnore $mcpbIgnore -Force
-    Write-Host "  Copied repo-root .mcpbignore -> mcpb/.mcpbignore" -ForegroundColor Green
+    Write-Host "  Synced repo-root .mcpbignore -> mcpb/.mcpbignore" -ForegroundColor Green
 } elseif (Test-Path $mcpbIgnore) {
-    Write-Host "  mcpb/.mcpbignore present" -ForegroundColor Green
+    Write-Host "  [WARN] no repo-root .mcpbignore - using existing (possibly stale) mcpb/.mcpbignore" -ForegroundColor Yellow
 } else {
     Write-Host "  [WARN] no .mcpbignore found at repo root or mcpb/" -ForegroundColor Yellow
 }
