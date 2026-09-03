@@ -152,7 +152,7 @@ await robotics_system(operation="help")
 ## Dependencies
 
 ### Required ✅
-- FastMCP 2.13+ ✅
+- FastMCP 3.4.4+ ✅
 - Python 3.10+ ✅
 - Blender 4.4 ✅
 - Unity3D ✅ (should be running)

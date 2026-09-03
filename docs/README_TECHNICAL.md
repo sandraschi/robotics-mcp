@@ -17,7 +17,7 @@ See [Crash Protection Guide](../WATCHFILES_README.md) for setup.
 
 ### Hardware (recommended)
 
-- **Physical robot**: Dreame D20 Pro (LIDAR vacuum), Moorebot Scout, Yahboom ROSMASTER, PX4/ArduPilot drones
+- **Physical robot**: Dreame D20 Pro (LIDAR vacuum), Moorebot Scout, Yahboom ROSMASTER, PX4/ArduPilot drones, Nori A3 (bimanual mobile manipulator, bridged via `norirobotics-mcp`)
 - **Philips Hue Bridge Pro**: HomeAware RF movement detection (optional)
 - **Without hardware**: Virtual robotics only (Unity3D + VRChat)
 
@@ -87,7 +87,7 @@ Consumer vacuum robots with LDS mapping are a practical way to get floor plans a
 **Also referenced in this project:**
 
 - HTTP proxy bridging to simulators (e.g. Gazebo, VRChat) where configured
-- FastMCP 2.14.x
+- FastMCP 3.4.4+
 - Optional LLM sampling (`robotics_agentic_workflow`)
 - **Dreame D20 Pro** — Vacuum API (MiIO protocols)
 - **Yahboom ROSMASTER M1/X3/X3 Plus** — ROS2; example config on Raspberry Pi 5
@@ -95,6 +95,11 @@ Consumer vacuum robots with LDS mapping are a practical way to get floor plans a
 - **Philips Hue Bridge Pro** — Smart home hub with HomeAware RF movement detection
 - **Moorebot Scout** — Legacy ROS1 wheeled robot (compatibility mode)
 - **Unitree Go2/G1** — Quadrupeds (future hardware)
+- **Nori A3** — 19-DOF bimanual mobile manipulator (2x 7+1 DOF arms, telescoping lift,
+  differential-drive base); bridged via HTTP to a standalone `norirobotics-mcp` server
+  (mirrors the Yahboom bridge pattern), mock-first by default. Live end-to-end verified
+  2026-09-03 (connect, status, episode recording, e-stop, disconnect against a real running
+  `norirobotics-mcp` instance).
 
 #### Example budgets
 

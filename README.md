@@ -5,7 +5,7 @@
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
   <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"></a>
   <a href="https://biomejs.dev"><img src="https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white" alt="Biome"></a>
-  <a href="https://github.com/PrefectHQ/fastmcp"><img src="https://img.shields.io/badge/FastMCP-3.2-7c5cfc?style=flat-square" alt="FastMCP"></a>
+  <a href="https://github.com/PrefectHQ/fastmcp"><img src="https://img.shields.io/badge/FastMCP-3.4.4+-7c5cfc?style=flat-square" alt="FastMCP"></a>
 </p>
 
 
@@ -13,7 +13,7 @@
 
 **Author:** FlowEngineer sandraschi
 
-One MCP server for physical robots (Dreame vacuums, Yahboom ROS, Elegoo, ), Gazebo, and virtual stacks (Unity, VRChat). FastMCP, **stdio** + **HTTP**. Optional **watchfiles** restarts for dev or unattended runs (not an SLA).
+One MCP server for physical robots (Dreame vacuums, Yahboom ROS, Elegoo, Nori A3), Gazebo, and virtual stacks (Unity, VRChat). FastMCP, **stdio** + **HTTP**. Optional **watchfiles** restarts for dev or unattended runs (not an SLA).
 
 | Doc | Contents |
 |-----|----------|
@@ -27,7 +27,7 @@ One MCP server for physical robots (Dreame vacuums, Yahboom ROS, Elegoo, ), Gaze
 
 [![SOTA](https://img.shields.io/badge/SOTA-v1.4.1-magenta)](https://github.com/FlowEngineer/sota)
 [![Benny Protocol](https://img.shields.io/badge/Security-Wurst--Auth-red)]()
-[![FastMCP](https://img.shields.io/badge/FastMCP-3.2+-blue)](https://goFastMCP 3.1.0com)
+[![FastMCP](https://img.shields.io/badge/FastMCP-3.4.4+-blue)](https://github.com/jlowin/fastmcp)
 [![Biome](https://img.shields.io/badge/Lint-Biome-yellow)](https://biomejs.dev)
 [![Python](https://img.shields.io/badge/Python-3.12+-green)](https://www.python.org)
 [![License](https://img.shields.io/badge/License-MIT-gray)](LICENSE)

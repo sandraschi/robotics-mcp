@@ -38,7 +38,7 @@ See `glama.json` in repository root for full configuration.
 - **Status**: ⚠️ Alpha - Ongoing Development (requires multiple composited MCP servers)
 
 ### Quality Indicators
-- ✅ **FastMCP 2.13+**: Latest framework version
+- ✅ **FastMCP 3.4.4+**: Latest framework version
 - ✅ **Comprehensive Testing**: Unit + integration tests
 - ✅ **Code Quality**: Black, ruff, mypy configured
 - ✅ **Coverage**: pytest-cov with HTML reports
@@ -75,7 +75,7 @@ Repository metadata for Glama.ai indexing (located in repository root):
   "description": "Unified robotics control via MCP - Physical and virtual robots (bot + vbot). ALPHA status - requires multiple composited MCP servers to function.",
   "type": "mcp_server",
   "status": "alpha",
-  "framework": "FastMCP 2.13+",
+  "framework": "FastMCP 3.4.4+",
   "tools": 11,
   "transport": ["stdio", "http"],
   "dependencies": {
@@ -161,7 +161,7 @@ Glama.ai automatically scans our repository for updates through:
 - [x] Security scanning and dependency review
 - [x] Test coverage reporting (pytest-cov)
 - [x] MCPB package validation
-- [x] FastMCP 2.13+ compliance
+- [x] FastMCP 3.4.4+ compliance
 
 ### Platform Integration
 - [x] `glama.json` file created in repository root
@@ -311,7 +311,7 @@ Glama.ai automatically scans our repository for updates through:
 - ✅ High documentation coverage (4,100+ lines)
 - ✅ Professional code quality tools
 - ✅ MCPB packaging
-- ✅ FastMCP 2.13+ compliance
+- ✅ FastMCP 3.4.4+ compliance
 - ✅ Dual transport support
 
 ---
