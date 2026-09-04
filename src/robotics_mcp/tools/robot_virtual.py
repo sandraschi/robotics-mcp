@@ -663,7 +663,10 @@ class RobotVirtualTool:
             / "nori_a3_posed.glb"
         )
         if not glb_path.is_file():
-            return {"staged": False, "reason": "nori_a3_posed.glb not found - run norirobotics-mcp/scripts/export_posed_mesh.py"}
+            return {
+                "staged": False,
+                "reason": "nori_a3_posed.glb not found - run norirobotics-mcp/scripts/export_posed_mesh.py",
+            }
         try:
             result = extract_result_data(
                 await call_mounted_server_tool(

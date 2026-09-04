@@ -113,9 +113,7 @@ class NoriMcpClient:
 
     async def session_connect(self, *, force_mock: bool = False) -> dict[str, Any]:
         # aiohttp's params= rejects raw bool values ("should be str, int or float") - stringify.
-        return await self._request(
-            "POST", "/api/session/connect", params={"force_mock": str(force_mock).lower()}
-        )
+        return await self._request("POST", "/api/session/connect", params={"force_mock": str(force_mock).lower()})
 
     async def session_disconnect(self) -> dict[str, Any]:
         return await self._request("POST", "/api/session/disconnect")

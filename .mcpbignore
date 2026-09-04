@@ -27,3 +27,7 @@ native/binaries/*.exe
 _llm_test_scripts/
 data/
 manifest.json
+
+*.bak.*
+mcpb/src/
+

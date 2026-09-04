@@ -1,0 +1,6 @@
+{
+  "name": "robotics-mcp",
+  "description": "Robotics MCP session context",
+  "version": "0.2.1",
+  "hooks": "../hooks/hooks.json"
+}

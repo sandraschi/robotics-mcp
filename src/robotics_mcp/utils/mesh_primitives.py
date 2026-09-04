@@ -36,8 +36,14 @@ def box_mesh(size: float = 0.3) -> tuple[list[dict[str, Any]], list[dict[str, An
     """
     h = size / 2.0
     corners = [
-        (-h, -h, -h), (h, -h, -h), (h, h, -h), (-h, h, -h),
-        (-h, -h, h), (h, -h, h), (h, h, h), (-h, h, h),
+        (-h, -h, -h),
+        (h, -h, -h),
+        (h, h, -h),
+        (-h, h, -h),
+        (-h, -h, h),
+        (h, -h, h),
+        (h, h, h),
+        (-h, h, h),
     ]
     vertices = [{"position": {"x": x, "y": y, "z": z}} for x, y, z in corners]
 

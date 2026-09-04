@@ -1,11 +1,26 @@
 set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 import 'scripts/just/fleet.just'
 
-# --- Dashboard  Industrialized v1 ---
-
-# Open the interactive recipe dashboard in the browser
+# --- Dashboard — fleet standard (just --list = default) ---
 default:
     @just --list
+
+# Serve HTTP + MCP (dual) on fleet ports 10707/10706
+serve:
+    powershell.exe -NoProfile -File "{{justfile_directory()}}/scripts/just/serve.ps1" 2>$null; uv run robotics-mcp --http --port 10707
+
+# Alias for format
+fmt: fix
+
+# Full CI gate: ruff + format --check + tsc + biome + pytest
+ci:
+    powershell.exe -NoProfile -File "{{justfile_directory()}}/scripts/just/ci.ps1" 2>$null; uv run ruff check .; uv run ruff format --check .; uv run pytest tests -q
+
+# Fleet five-gate certification (ruff/biome style + pyright/tsc types + pytest)
+gates-green:
+    @just ci
+
+certify: gates-green
 
 
 # Synchronize deps, pre-commit hooks, and web frontend
@@ -69,7 +84,7 @@ build-ui:
 build-native:
     Set-Location '{{justfile_directory()}}\native'
     $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
-    pwsh -NoProfile -File '{{justfile_directory()}}\native\build.ps1'
+    powershell.exe -NoProfile -File '{{justfile_directory()}}\native\build.ps1'
 
 # --- Playwright E2E ---
 

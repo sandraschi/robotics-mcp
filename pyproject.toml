@@ -200,7 +200,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "S", "UP", "RUF"]
+select = ["E", "F", "W", "I", "B", "S", "UP", "RUF", "T20"]
 ignore = [
     "S101",
     "B008",
@@ -220,9 +220,16 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S108"]
-  "src/robotics_mcp/utils/simulated_data.py" = ["S311"]
+"tests/**" = ["S108", "T20"]
+  "src/robotics_mcp/utils/simulated_data.py" = ["S311", "T20"]
   "scripts/cua-webapp-test.py" = ["B007", "S310", "S603", "S607"]
+  "discover_devices.py" = ["T20"]
+  "priority_dreame_connect.py" = ["T20"]
+  "dreame_auth.py" = ["T20"]
+  "verify_unity_loader.py" = ["T20"]
+  "examples/**" = ["T20"]
+  "verify_resonite.py" = ["T20"]
+  "src/verify_resonite.py" = ["T20"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -233,3 +240,7 @@ dev = [
     "pyinstaller>=6.22.2",
     "pywin32>=311",
 ]
+
+
+
+

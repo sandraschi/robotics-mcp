@@ -31,7 +31,8 @@
     ],
     "resources": [
       "resources/robotics-mcp-backend.exe",
-      "../scripts/install-mcp-clients.ps1"
+      "../scripts/install-mcp-clients.ps1",
+      "../.env.example"
     ],
     "windows": {
       "webviewInstallMode": {

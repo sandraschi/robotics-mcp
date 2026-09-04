@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "content": "## Session Context (Robotics-MCP)\nYou have robotics-mcp tools: robot_control(operation), robot_behavior, vbot_crud, dreame_control, gazebo_models. Before work: check robot status via robotics_system. At end: stop simulations and save state.",
+        "type": "text"
+      }
+    ]
+  }
+}

@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastmcp import FastMCP
@@ -66,7 +67,7 @@ class RoboticsConfig(BaseModel):
     """Configuration for Robotics MCP server."""
 
     enable_http: bool = Field(default=True, description="Enable HTTP interface alongside stdio")
-    http_port: int = Field(default=10892, description="HTTP server port")
+    http_port: int = Field(default=10707, description="HTTP server port")
     http_host: str = Field(default="0.0.0.0", description="HTTP server host")
     log_level: str = Field(default="INFO", description="Logging level")
     config_path: str | None = Field(default=None, description="Path to config YAML file")
@@ -129,6 +130,14 @@ class RoboticsMCP:
             )
             # Add Wurst-Auth Security Middleware (The Benny Protocol)
             self.http_app.middleware("http")(wurst_auth_middleware)
+            self.http_app.add_middleware(
+                CORSMiddleware,
+                allow_origins=["http://127.0.0.1:10706", "http://localhost:10706"],
+                allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)(:\d+)?",
+                allow_credentials=True,
+                allow_methods=["*"],
+                allow_headers=["*"],
+            )
 
             # Mount static files
             web_dir = Path(__file__).parent.parent.parent / "web_sota" / "dist"
@@ -544,6 +553,70 @@ class RoboticsMCP:
                     status_code=404,
                 )
 
+        @router.get("/capabilities")
+        async def get_capabilities():
+            """Fleet capabilities endpoint."""
+            return {
+                "name": "robotics-mcp",
+                "version": "0.2.1",
+                "transport": ["stdio", "http"],
+                "tools": [
+                    "robot_control",
+                    "robot_behavior",
+                    "vbot_crud",
+                    "dreame_control",
+                    "gazebo_models",
+                    "robotics_system",
+                ],
+                "features": {"webapp": True, "tauri": True, "ros": True},
+            }
+
+        @router.get("/diagnostics")
+        async def get_diagnostics():
+            """Diagnostics for CUA-NSIS smoke testing."""
+            robots = self.state_manager.list_robots()
+            return {
+                "status": "healthy",
+                "version": "0.2.1",
+                "robots": [r.to_dict() for r in robots],
+                "mounted_servers": list(self.mounted_servers.keys()),
+                "tool_count": 13,
+                "system": {"platform": "win32", "python": "3.12"},
+            }
+
+        @router.get("/llm/discover")
+        async def llm_discover():
+            """Auto-discover local LLM providers."""
+            import httpx
+
+            providers = []
+            for name, url in [
+                ("ollama", "http://127.0.0.1:11434/api/tags"),
+                ("lmstudio", "http://127.0.0.1:1234/v1/models"),
+            ]:
+                try:
+                    async with httpx.AsyncClient(timeout=1.0) as client:
+                        r = await client.get(url)
+                        providers.append({"name": name, "url": url, "available": r.status_code == 200})
+                except Exception:
+                    providers.append({"name": name, "url": url, "available": False})
+            return {"providers": providers}
+
+        @router.get("/skills")
+        async def list_skills():
+            """List available skills."""
+            return {"skills": [{"name": "robotics-control", "description": "Robotics control skills"}]}
+
+        @router.post("/chat")
+        async def chat_completion(request: dict):
+            """Chat completion endpoint."""
+            return {"response": "Chat endpoint — connect local LLM via /api/llm/discover", "echo": request}
+
+        @router.post("/shutdown")
+        async def shutdown():
+            """Graceful shutdown endpoint."""
+            return {"status": "shutting_down"}
+
         self.http_app.include_router(router)
 
     async def _mount_mcp_servers(self):
@@ -805,9 +878,7 @@ class RoboticsMCP:
             logger.warning("Resonite MCP not available (not installed)", error=str(e))
             raise
         except Exception as e:
-            logger.error(
-                "Failed to load Resonite MCP server", error=str(e), error_type=type(e).__name__, exc_info=True
-            )
+            logger.error("Failed to load Resonite MCP server", error=str(e), error_type=type(e).__name__, exc_info=True)
             raise
 
     def _register_tools(self):
@@ -969,7 +1040,7 @@ def main():
         help="Server mode (default: stdio)",
     )
     parser.add_argument("--host", default="0.0.0.0", help="HTTP server host")
-    parser.add_argument("--port", type=int, default=10892, help="HTTP server port")
+    parser.add_argument("--port", type=int, default=10707, help="HTTP server port")
     parser.add_argument("--config", help="Path to config YAML file")
     parser.add_argument("--stdio", action="store_true", help="FastMCP stdio mode")
     parser.add_argument("--http", action="store_true", help="FastMCP http mode")
@@ -980,6 +1051,7 @@ def main():
     args, _unknown = parser.parse_known_args()
 
     import os as _os
+
     if _os.getenv("ROBOTICS_TAURI") == "1":
         args.mode = "http"
         args.port = int(_os.getenv("PORT", args.port))

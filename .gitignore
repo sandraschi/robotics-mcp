@@ -56,9 +56,13 @@ Thumbs.db
 # Project specific
 *.log
 *.bak
+*.bak.*
 start.ps1.bak.*
 config.yaml
 .robotics-mcp/
+reports/
+mcpb/src/
+*.mcpb
 
 # MCPB
 dist/

@@ -62,7 +62,7 @@
     },
     "webapp": {
       "enabled": true,
-      "url": "http://localhost:8081"
+      "url": "http://localhost:10706"
     },
     "ai_features": {
       "enabled": true,
