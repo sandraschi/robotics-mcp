@@ -139,6 +139,17 @@ class RoboticsMCP:
                 allow_headers=["*"],
             )
 
+            # --- Fleet health probe: MUST be available before initialize_async ---
+            @self.http_app.get("/api/v1/health")
+            @self.http_app.get("/health")
+            @self.http_app.get("/api/health")
+            async def _fleet_health():
+                return {"status": "healthy", "version": "0.2.1"}
+
+            @self.http_app.get("/api/v1/capabilities")
+            async def _fleet_capabilities():
+                return {"name": "robotics-mcp", "version": "0.2.1", "transport": ["stdio", "http"]}
+
             # Mount static files
             web_dir = Path(__file__).parent.parent.parent / "web_sota" / "dist"
             if web_dir.exists():
