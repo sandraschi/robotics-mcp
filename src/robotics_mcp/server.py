@@ -163,6 +163,49 @@ class RoboticsMCP:
             async def _fleet_capabilities():
                 return {"name": "robotics-mcp", "version": "0.2.1", "transport": ["stdio", "http"]}
 
+            @self.http_app.get("/api/v1/robots")
+            async def _fleet_robots():
+                robots = self.state_manager.list_robots()
+                out = []
+                for r in robots:
+                    d = r.to_dict()
+                    d["id"] = d.get("robot_id", d.get("id"))
+                    out.append(d)
+                return {"robots": out}
+
+            @self.http_app.get("/api/v1/robots/{robot_id}/status")
+            async def _fleet_robot_status(robot_id: str):
+                try:
+                    if hasattr(self, "robot_control") and getattr(self, "robot_control", None):
+                        result = await self.robot_control.handle_action(robot_id, "get_status", {})
+                        return result.get("data", result) if isinstance(result, dict) else result
+                    robot = self.state_manager.get_robot(robot_id)
+                    if not robot:
+                        raise HTTPException(status_code=404, detail=f"Robot {robot_id} not found")
+                    return robot.to_dict()
+                except HTTPException:
+                    raise
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=str(e)) from e
+
+            @self.http_app.get("/api/v1/status")
+            async def _fleet_status():
+                robots = self.state_manager.list_robots()
+                return {
+                    "version": "0.2.1",
+                    "status": "healthy",
+                    "robots": [r.to_dict() for r in robots],
+                    "mounted_servers": list(self.mounted_servers.keys()),
+                    "http_enabled": self.config.enable_http,
+                }
+
+            @self.http_app.on_event("startup")
+            async def _http_startup_load_robots():
+                try:
+                    await self._load_robots_from_config()
+                except Exception:
+                    pass
+
             # --- Fleet apps hub (git-github-mcp port, crossconnected hardware) ---
             def _load_registry():
                 reg = Path(r"D:\Dev\repos\mcp-central-docs\operations\fleet-registry.json")
