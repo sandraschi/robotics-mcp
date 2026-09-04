@@ -19,7 +19,7 @@ type FleetApp = {
 
 type Health = { port: number; alive: boolean; status_code?: number };
 
-export function AppsPage() {
+export default function AppsPage() {
   const [apps, setApps] = useState<FleetApp[]>([]);
   const [fleetTotal, setFleetTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
