@@ -9,8 +9,11 @@ FastMCP 3.4.4+ compliant server with dual transport (stdio/HTTP) and MCP server 
 # This must happen BEFORE any imports that might write to stdout
 # Import all necessary modules
 import asyncio
+import json
 import logging
 import os
+import socket
+import subprocess
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -100,6 +103,16 @@ class RoboticsMCP:
 
         _bridge_proxies = []
         bridge_urls = os.getenv("MCP_BRIDGE_URLS", "")
+        # --- Crossconnect real hardware peers (yahboom 10892, dreame 10894, nori 11970) ---
+        _defaults = [
+            "http://127.0.0.1:10892/mcp",
+            "http://127.0.0.1:10894/mcp",
+            "http://127.0.0.1:11970/mcp",
+        ]
+        for _u in _defaults:
+            if _u not in bridge_urls:
+                bridge_urls = _u if not bridge_urls else bridge_urls + "," + _u
+                logger.info("Crossconnect auto-bridge peer", url=_u)
         if bridge_urls:
             for url in bridge_urls.split(","):
                 url = url.strip()
@@ -149,6 +162,188 @@ class RoboticsMCP:
             @self.http_app.get("/api/v1/capabilities")
             async def _fleet_capabilities():
                 return {"name": "robotics-mcp", "version": "0.2.1", "transport": ["stdio", "http"]}
+
+            # --- Fleet apps hub (git-github-mcp port, crossconnected hardware) ---
+            def _load_registry():
+                reg = Path(r"D:\Dev\repos\mcp-central-docs\operations\fleet-registry.json")
+                if reg.is_file():
+                    try:
+                        data = json.loads(reg.read_text(encoding="utf-8"))
+                        rows = data.get("fleet") or data.get("servers") or []
+                        if isinstance(rows, list) and rows:
+                            return rows
+                    except Exception:
+                        pass
+                return [
+                    {
+                        "id": "yahboom-mcp",
+                        "name": "Yahboom MCP",
+                        "description": "Yahboom ROSMASTER car — real hardware on 10892",
+                        "port": 10892,
+                        "frontend_port": 10893,
+                        "category": "robotics",
+                        "github_owner": "sandraschi",
+                        "github_repo": "yahboom-mcp",
+                        "repo_path": r"D:\Dev\repos\yahboom-mcp",
+                    },
+                    {
+                        "id": "dreame-mcp",
+                        "name": "Dreame MCP",
+                        "description": "Dreame D20 Pro vacuum — real hardware on 10894",
+                        "port": 10894,
+                        "frontend_port": 10895,
+                        "category": "robotics",
+                        "github_owner": "sandraschi",
+                        "github_repo": "dreame-mcp",
+                        "repo_path": r"D:\Dev\repos\dreame-mcp",
+                    },
+                    {
+                        "id": "norirobotics-mcp",
+                        "name": "Nori Robotics",
+                        "description": "Nori A3 bimanual — real hardware on 11970",
+                        "port": 11970,
+                        "frontend_port": 11971,
+                        "category": "robotics",
+                        "github_owner": "sandraschi",
+                        "github_repo": "norirobotics-mcp",
+                        "repo_path": r"D:\Dev\repos\norirobotics-mcp",
+                    },
+                    {
+                        "id": "robotics-mcp",
+                        "name": "Robotics MCP",
+                        "description": "Unified robotics control — current app",
+                        "port": 10707,
+                        "frontend_port": 10706,
+                        "category": "robotics",
+                        "github_owner": "sandraschi",
+                        "github_repo": "robotics-mcp",
+                        "repo_path": r"D:\Dev\repos\robotics-mcp",
+                    },
+                ]
+
+            def _check_port_health_sync(port: int, timeout: float = 1.2):
+                try:
+                    with socket.create_connection(("127.0.0.1", port), timeout=timeout):
+                        pass
+                except Exception as e:
+                    return {
+                        "port": port,
+                        "alive": False,
+                        "reason": f"tcp refused: {e}",
+                        "health_url": f"http://127.0.0.1:{port}/health",
+                    }
+                for path in ("/health", "/api/health", "/api/v1/health", "/api/status"):
+                    try:
+                        import httpx
+
+                        with httpx.Client(timeout=timeout) as c:
+                            r = c.get(f"http://127.0.0.1:{port}{path}")
+                            if 200 <= r.status_code < 500:
+                                return {
+                                    "port": port,
+                                    "alive": True,
+                                    "status_code": r.status_code,
+                                    "health_url": f"http://127.0.0.1:{port}{path}",
+                                    "reason": "http ok",
+                                }
+                    except Exception:
+                        continue
+                return {
+                    "port": port,
+                    "alive": True,
+                    "reason": "tcp open but health 404",
+                    "health_url": f"http://127.0.0.1:{port}/health",
+                }
+
+            @self.http_app.get("/api/apps")
+            async def _api_apps():
+                rows = _load_registry()
+                apps = []
+                for row in rows:
+                    if not isinstance(row, dict):
+                        continue
+                    rid = str(row.get("id") or "")
+                    port = int(row.get("frontend_port") or row.get("port") or 0)
+                    if port <= 0:
+                        continue
+                    repo_path = Path(str(row.get("repo_path") or f"D:/Dev/repos/{rid}"))
+                    has_tauri = (repo_path / "native" / "tauri.conf.json").is_file() or (
+                        repo_path / "src-tauri" / "tauri.conf.json"
+                    ).is_file()
+                    apps.append(
+                        {
+                            "id": rid,
+                            "name": str(row.get("name") or rid),
+                            "description": str(row.get("description") or ""),
+                            "port": port,
+                            "backend_port": int(row.get("port") or 0),
+                            "category": str(row.get("category") or "robotics"),
+                            "url": f"http://127.0.0.1:{port}",
+                            "gh_url": f"https://github.com/{row.get('github_owner') or 'sandraschi'}/{row.get('github_repo') or rid}",
+                            "repo_path": str(repo_path),
+                            "has_tauri": has_tauri,
+                            "has_tauri_installed": False,
+                            "last_commit": None,
+                        }
+                    )
+                apps.sort(key=lambda a: a["port"])
+                return {"apps": apps, "fleet_total": len(rows)}
+
+            @self.http_app.get("/api/apps/health")
+            async def _api_apps_health(port: int):
+                return await asyncio.to_thread(_check_port_health_sync, port)
+
+            @self.http_app.post("/api/apps/ensure")
+            async def _api_apps_ensure(payload: dict):
+                app_id = str(payload.get("id") or payload.get("app_id") or "").strip()
+                port = int(payload.get("port") or 0)
+                if not port and app_id:
+                    for row in _load_registry():
+                        if str(row.get("id")) == app_id:
+                            port = int(row.get("frontend_port") or row.get("port") or 0)
+                            break
+                if not port:
+                    return {"success": False, "error": "port or id required", "alive": False}
+                health = await asyncio.to_thread(_check_port_health_sync, port)
+                if health.get("alive"):
+                    return {
+                        "success": True,
+                        "status": "already_running",
+                        "alive": True,
+                        "url": f"http://127.0.0.1:{port}",
+                        "port": port,
+                        "id": app_id,
+                    }
+                candidates = []
+                for cand in [app_id, app_id.replace("-mcp", "")] if app_id else []:
+                    mcd = Path(r"D:\Dev\repos\mcp-central-docs\starts") / f"{cand}-start.bat"
+                    if mcd.exists():
+                        candidates.append(str(mcd))
+                    repo_ps1 = Path(r"D:\Dev\repos") / cand / "start.ps1"
+                    if repo_ps1.exists():
+                        candidates.append(str(repo_ps1))
+                if candidates:
+                    try:
+                        subprocess.Popen(
+                            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", candidates[0]],
+                            creationflags=subprocess.DETACHED_PROCESS if os.name == "nt" else 0,
+                        )
+                        for _ in range(15):
+                            await asyncio.sleep(1)
+                            h = await asyncio.to_thread(_check_port_health_sync, port)
+                            if h.get("alive"):
+                                return {
+                                    "success": True,
+                                    "status": "started",
+                                    "alive": True,
+                                    "url": f"http://127.0.0.1:{port}",
+                                    "port": port,
+                                    "id": app_id,
+                                }
+                        return {"success": False, "error": "start initiated but port not yet alive", "alive": False}
+                    except Exception as e:
+                        return {"success": False, "error": str(e), "alive": False}
+                return {"success": False, "error": "no start candidate found", "alive": False}
 
             # Mount static files
             web_dir = Path(__file__).parent.parent.parent / "web_sota" / "dist"
