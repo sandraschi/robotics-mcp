@@ -52,7 +52,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         <div className="flex items-center gap-2 font-semibold text-slate-100">
           <Activity className="h-6 w-6 text-blue-500" />
           {!collapsed && (
-            <span className="animate-in fade-in duration-300">Resolve-MCP</span>
+            <span className="animate-in fade-in duration-300">
+              Robotics-MCP
+            </span>
           )}
         </div>
       </div>

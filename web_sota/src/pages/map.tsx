@@ -132,7 +132,7 @@ export default function MapPage() {
                 className="fill-slate-800 stroke-slate-600"
                 strokeWidth="2"
               />
-              {/* Nav2 Costmap Gradient Effect (fake) */}
+              {/* Nav2 Costmap — placeholder (requires live nav2 costmap topic) */}
               <path
                 d="M 180 80 L 180 420 L 620 420 L 620 270 L 820 270 L 820 80 Z"
                 fill="none"
@@ -147,7 +147,7 @@ export default function MapPage() {
               className="absolute top-[280px] left-[450px] w-[500px] h-[500px] rounded-full border border-emerald-500/10 lidar-sweep -translate-x-1/2 -translate-y-1/2 animate-[spin_3s_linear_infinite]"
             />
 
-            {/* Pointcloud dots (fake) */}
+            {/* Pointcloud — placeholder dots (requires live /scan) */}
             <div aria-hidden="true">
               <div className="absolute top-[160px] left-[380px] w-1 h-1 bg-red-500 rounded-full pointcloud-dot" />
               <div className="absolute top-[180px] left-[360px] w-1 h-1 bg-red-500 rounded-full pointcloud-dot" />
