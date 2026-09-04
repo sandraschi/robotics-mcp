@@ -288,9 +288,7 @@ $cleanScore = 10
 $rubbishFiles = @()
 
 # Common rubbish patterns
-$rubbishPatterns = @(
-    "*.dxt",
-    "*.old",
+$rubbishPatterns = @(    "*.old",
     "*.bak",
     "*.tmp",
     "*.temp",
@@ -604,4 +602,6 @@ if ($GenerateFixScript -and $results.Fixes.Count -gt 0) {
 
 Write-Host ""
 Write-Host "âœ... Done!" -ForegroundColor Green
+
+
 

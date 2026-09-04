@@ -63,10 +63,7 @@ config.yaml
 reports/
 mcpb/src/
 *.mcpb
-
-# MCPB
 dist/
-*.dxt
 
 # Unity assets (user-specific)
 Assets/Scripts/*.meta
@@ -89,3 +86,4 @@ _dashboard/
 Xiaomi-cloud-tokens-extractor
 
 Xiaomi-cloud-tokens-extractor
+
