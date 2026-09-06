@@ -1,6 +1,8 @@
 set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 import 'scripts/just/fleet.just'
 
+REPO := justfile_directory()
+
 # --- Dashboard — fleet standard (just --list = default) ---
 default:
     @just --list
