@@ -1547,6 +1547,7 @@ except Exception as save_error:
 
     async def _handle_spz_check(self) -> dict[str, Any]:
         """Check available .spz conversion tools (from spz_converter.py)."""
+        import asyncio
         import subprocess
 
         tools_available = {
@@ -1555,7 +1556,9 @@ except Exception as save_error:
             "manual_conversion": True,
         }
         try:
-            result = subprocess.run(["spz-decompress", "--version"], capture_output=True, timeout=5)
+            result = await asyncio.to_thread(
+                subprocess.run, ["spz-decompress", "--version"], capture_output=True, timeout=5
+            )
             tools_available["adobe_spz_tools"] = result.returncode == 0
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
@@ -1581,6 +1584,7 @@ except Exception as save_error:
 
     async def _handle_spz_convert(self, spz_path: str, output_path: str | None, output_format: str) -> dict[str, Any]:
         """Convert .spz file to .ply or other format (from spz_converter.py)."""
+        import asyncio
         import subprocess
         from pathlib import Path
 
@@ -1591,7 +1595,8 @@ except Exception as save_error:
             output_path = str(spz_file.with_suffix(f".{output_format}"))
         output_file = Path(output_path)
         try:
-            result = subprocess.run(
+            result = await asyncio.to_thread(
+                subprocess.run,
                 ["spz-decompress", str(spz_file), str(output_file)],
                 capture_output=True,
                 timeout=60,

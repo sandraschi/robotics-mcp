@@ -3,6 +3,7 @@
 Handles Adobe's compressed Gaussian splat format (.spz) conversion.
 """
 
+import asyncio
 import importlib.util
 import json
 import subprocess
@@ -130,7 +131,9 @@ class SPZConverterTool:
 
         # Check for Adobe spz-tools (would need to be installed separately)
         try:
-            result = subprocess.run(["spz-decompress", "--version"], capture_output=True, timeout=5)
+            result = await asyncio.to_thread(
+                subprocess.run, ["spz-decompress", "--version"], capture_output=True, timeout=5
+            )
             tools_available["adobe_spz_tools"] = result.returncode == 0
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
@@ -173,7 +176,8 @@ class SPZConverterTool:
 
         # Method 1: Try Adobe spz-tools (if available)
         try:
-            result = subprocess.run(
+            result = await asyncio.to_thread(
+                subprocess.run,
                 ["spz-decompress", str(spz_file), str(output_file)],
                 capture_output=True,
                 timeout=60,

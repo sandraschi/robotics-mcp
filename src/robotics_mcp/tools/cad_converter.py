@@ -4,6 +4,7 @@ Handles CAD file conversion for robotics applications, integrating with blender-
 Converts STEP files to mesh formats (OBJ, STL, PLY) for 3D modeling workflows.
 """
 
+import asyncio
 import os
 import subprocess
 import tempfile
@@ -226,9 +227,11 @@ class CADConverterTool:
             return False
 
     async def _run_command(self, command: list[str]) -> subprocess.CompletedProcess:
-        """Run a command and return the result."""
+        """Run a command and return the result (off the loop; bare await on run() would TypeError)."""
         try:
-            return await subprocess.run(command, capture_output=True, text=True, timeout=30)
+            return await asyncio.to_thread(
+                subprocess.run, command, capture_output=True, text=True, timeout=30
+            )
         except subprocess.TimeoutExpired as e:
             raise Exception(f"Command timed out: {' '.join(command)}") from e
         except FileNotFoundError as e:
