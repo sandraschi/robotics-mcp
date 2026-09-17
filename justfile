@@ -7,9 +7,9 @@ REPO := justfile_directory()
 default:
     @just --list
 
-# Serve HTTP + MCP (dual) on fleet ports 10707/10706
+# Serve HTTP + MCP (dual) on fleet ports 11199/10706
 serve:
-    powershell.exe -NoProfile -File "{{justfile_directory()}}/scripts/just/serve.ps1" 2>$null; uv run robotics-mcp --http --port 10707
+    powershell.exe -NoProfile -File "{{justfile_directory()}}/scripts/just/serve.ps1" 2>$null; uv run robotics-mcp --http --port 11199
 
 # Alias for format
 fmt: fix

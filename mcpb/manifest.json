@@ -43,9 +43,9 @@
     "http_port": {
       "type": "string",
       "title": "HTTP Server Port",
-      "description": "Port for HTTP API server (default: 10707)",
+      "description": "Port for HTTP API server (default: 11199)",
       "required": false,
-      "default": "10707"
+      "default": "11199"
     }
   },
   "tools": [

@@ -7,4 +7,4 @@ if (-not (Test-Path -LiteralPath $FleetStartPath)) {
 }
 . $FleetStartPath
 
-if (-not (Stop-FleetPortListeners -Ports @(10706, 10707) -Label "robotics-mcp")) { exit 1 }
+if (-not (Stop-FleetPortListeners -Ports @(10706, 11199) -Label "robotics-mcp")) { exit 1 }

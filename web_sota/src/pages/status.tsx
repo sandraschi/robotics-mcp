@@ -123,7 +123,7 @@ export default function StatusPage() {
             {status?.tool_count ?? "—"}
           </h3>
           <p className="text-gray-400 text-sm">MCP Tools</p>
-          <p className="text-xs text-slate-500 mt-1">port 10707</p>
+          <p className="text-xs text-slate-500 mt-1">port 11199</p>
         </div>
       </div>
 

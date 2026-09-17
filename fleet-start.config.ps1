@@ -2,15 +2,15 @@
 # Edit ports/backend target here - start.ps1 is fleet-standard.
 @{
     Name         = 'robotics-mcp'
-    BackendPort  = 10707
+    BackendPort  = 11199
     FrontendPort = 10706
     HealthPath   = '/api/v1/health'
-    WebRoot      = 'D:\Dev\repos\robotics-mcp\web_sota'
+    WebRoot      = 'web_sota'
     Backend = @{
         Kind          = 'uvicorn'
-        UvicornTarget = 'robotics_mcp.server:app'
+        UvicornTarget = 'web_sota.backend.server:app'
         SyncExtras    = @('dev')
-        Env           = @{ WEB_PORT = '10707' }
+        Env           = @{ WEB_PORT = '11199' }
     }
     Frontend = @{
         Kind           = 'vite-npm'

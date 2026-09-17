@@ -2,7 +2,7 @@
 
 ## Architecture
 
-FastMCP 3.2 server with modular robot client architecture. Each robot type has a dedicated client (dreame_client, yahboom_client, gazebo_client, elegoo_client) wrapping its native API. Tools are registered as portmanteau functions grouped by domain (control, navigation, camera, manufacturing, etc.). Dual transport for MCP clients (stdio) and web dashboard (HTTP SSE on ports 10706/10707).
+FastMCP 3.2 server with modular robot client architecture. Each robot type has a dedicated client (dreame_client, yahboom_client, gazebo_client, elegoo_client) wrapping its native API. Tools are registered as portmanteau functions grouped by domain (control, navigation, camera, manufacturing, etc.). Dual transport for MCP clients (stdio) and web dashboard (HTTP SSE on ports 10706/11199).
 
 ### Supported Hardware
 

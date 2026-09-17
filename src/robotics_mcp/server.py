@@ -70,7 +70,7 @@ class RoboticsConfig(BaseModel):
     """Configuration for Robotics MCP server."""
 
     enable_http: bool = Field(default=True, description="Enable HTTP interface alongside stdio")
-    http_port: int = Field(default=10707, description="HTTP server port")
+    http_port: int = Field(default=11199, description="HTTP server port")
     http_host: str = Field(default="0.0.0.0", description="HTTP server host")
     log_level: str = Field(default="INFO", description="Logging level")
     config_path: str | None = Field(default=None, description="Path to config YAML file")
@@ -255,7 +255,7 @@ class RoboticsMCP:
                         "id": "robotics-mcp",
                         "name": "Robotics MCP",
                         "description": "Unified robotics control — current app",
-                        "port": 10707,
+                        "port": 11199,
                         "frontend_port": 10706,
                         "category": "robotics",
                         "github_owner": "sandraschi",
@@ -1289,7 +1289,7 @@ def main():
         help="Server mode (default: stdio)",
     )
     parser.add_argument("--host", default="0.0.0.0", help="HTTP server host")
-    parser.add_argument("--port", type=int, default=10707, help="HTTP server port")
+    parser.add_argument("--port", type=int, default=11199, help="HTTP server port")
     parser.add_argument("--config", help="Path to config YAML file")
     parser.add_argument("--stdio", action="store_true", help="FastMCP stdio mode")
     parser.add_argument("--http", action="store_true", help="FastMCP http mode")
