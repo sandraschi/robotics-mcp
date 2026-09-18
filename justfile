@@ -84,9 +84,7 @@ build-ui:
 
 # Build Tauri native desktop app (full pipeline: frontend + backend)
 build-native:
-    Set-Location '{{justfile_directory()}}\native'
-    $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
-    powershell.exe -NoProfile -File '{{justfile_directory()}}\native\build.ps1'
+    Set-Location '{{justfile_directory()}}\native'; $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"; powershell.exe -NoProfile -File '{{justfile_directory()}}\native\build.ps1'
 
 # --- Playwright E2E ---
 
