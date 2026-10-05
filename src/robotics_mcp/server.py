@@ -640,7 +640,7 @@ class RoboticsMCP:
             tools = []
             try:
                 # Use FastMCP public API to list tools
-                tool_list = await self.mcp.get_tools()
+                tool_list = await self.mcp.list_tools()
                 for tool_info in tool_list:
                     # FastMCP Tool objects have parameters (JSON Schema)
                     schema = getattr(tool_info, "parameters", {})
