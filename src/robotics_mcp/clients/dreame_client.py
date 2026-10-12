@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import platform
 import subprocess
@@ -27,7 +28,7 @@ class DreameClient:
         1. Checks network reachability (verified).
         2. Checks if token is valid (stub).
         """
-        if not self._check_ping():
+        if not await asyncio.to_thread(self._check_ping):
             logger.error(f"❌ Robot at {self.ip} is unreachable via Ping.")
             return False
 
@@ -66,7 +67,7 @@ class DreameClient:
         if not self.connected:
             return {
                 "status": "disconnected",
-                "connectivity": "online" if self._check_ping() else "offline",
+                "connectivity": "online" if await asyncio.to_thread(self._check_ping) else "offline",
                 "auth": "missing_token" if not self.token else "invalid_token",
             }
 

@@ -1,5 +1,7 @@
 """Sim MCP router - dispatches tasks to available simulation backends."""
 
+import asyncio
+
 import httpx
 from fastmcp import Context
 
@@ -90,7 +92,8 @@ Advise which backend to start and what port it runs on.
         try:
             import httpx as hx
 
-            resp = hx.post(
+            resp = await asyncio.to_thread(
+                hx.post,
                 "http://127.0.0.1:11434/api/generate",
                 json={"model": "llama3.2:3b", "prompt": prompt, "stream": False},
                 timeout=30,

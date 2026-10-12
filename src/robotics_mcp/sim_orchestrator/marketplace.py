@@ -1,5 +1,7 @@
 """Model marketplace - curated index + LLM search for robot models."""
 
+import asyncio
+
 from fastmcp import Context
 
 MODEL_CATALOG = {
@@ -143,7 +145,8 @@ async def sim_marketplace_search(
         try:
             import httpx
 
-            resp = httpx.post(
+            resp = await asyncio.to_thread(
+                httpx.post,
                 "http://127.0.0.1:11434/api/generate",
                 json={"model": "llama3.2:3b", "prompt": prompt, "stream": False},
                 timeout=15,
