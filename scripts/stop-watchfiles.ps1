@@ -32,7 +32,19 @@ if ($watchfilesProcess) {
         Write-Host "Attempting graceful shutdown..." -ForegroundColor Green
         try {
             Stop-Process -Id $watchfilesProcess.Id -ErrorAction Stop
-            Start-Sleep -Seconds 2
+            # HARDENED 2026-09-17: was a blind Start-Sleep -Seconds 2 then declared
+            # "stopped" unconditionally, whether or not it actually died
+            # (TRAPS_AND_PITFALLS.md #36). Poll and fall through to force-kill.
+            $waitSec = 5
+            $elapsed = 0
+            while ($elapsed -lt $waitSec -and (Get-Process -Id $watchfilesProcess.Id -ErrorAction SilentlyContinue)) {
+                Start-Sleep -Milliseconds 500
+                $elapsed += 0.5
+            }
+            if (Get-Process -Id $watchfilesProcess.Id -ErrorAction SilentlyContinue) {
+                Write-Host "Graceful shutdown didn't finish in time, using force..." -ForegroundColor Yellow
+                $Force = $true
+            }
         } catch {
             Write-Host "Graceful shutdown failed, using force..." -ForegroundColor Yellow
             $Force = $true
@@ -42,10 +54,14 @@ if ($watchfilesProcess) {
     # Force kill if graceful failed or force requested
     if ($Force) {
         Write-Host "Force stopping watchfiles process..." -ForegroundColor Red
-        Stop-Process -Id $watchfilesProcess.Id -Force
+        Stop-Process -Id $watchfilesProcess.Id -Force -ErrorAction SilentlyContinue
     }
 
-    Write-Host "OK Watchfiles protection stopped" -ForegroundColor Green
+    if (Get-Process -Id $watchfilesProcess.Id -ErrorAction SilentlyContinue) {
+        Write-Host "WARNING: watchfiles process (PID: $($watchfilesProcess.Id)) still alive after stop attempts" -ForegroundColor Red
+    } else {
+        Write-Host "OK Watchfiles protection stopped" -ForegroundColor Green
+    }
 } else {
     Write-Host "No watchfiles process found for port $Port" -ForegroundColor Yellow
 }

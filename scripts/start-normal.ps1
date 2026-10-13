@@ -24,11 +24,20 @@ $existingProcesses = Get-Process | Where-Object {
 
 if ($existingProcesses) {
     Write-Host "Found $($existingProcesses.Count) existing process(es)" -ForegroundColor Yellow
+    $existingIds = $existingProcesses | ForEach-Object { $_.Id }
     foreach ($proc in $existingProcesses) {
         Write-Host "Stopping process $($proc.Id): $($proc.ProcessName)" -ForegroundColor Yellow
         Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
     }
-    Start-Sleep -Seconds 2  # Wait for processes to fully terminate
+    # HARDENED 2026-09-17: was a blind Start-Sleep -Seconds 2 comment-labeled "wait
+    # for processes to fully terminate" that never actually checked they had
+    # (TRAPS_AND_PITFALLS.md #36). Poll instead.
+    $waitSec = 10
+    $elapsed = 0
+    while ($elapsed -lt $waitSec -and ($existingIds | Where-Object { Get-Process -Id $_ -ErrorAction SilentlyContinue })) {
+        Start-Sleep -Milliseconds 500
+        $elapsed += 0.5
+    }
 } else {
     Write-Host "No existing processes found" -ForegroundColor Green
 }
