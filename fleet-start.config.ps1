@@ -1,4 +1,4 @@
-﻿# Per-repo fleet start config for robotics-mcp
+# Per-repo fleet start config for robotics-mcp
 # Edit ports/backend target here - start.ps1 is fleet-standard.
 @{
     Name         = 'robotics-mcp'
@@ -10,6 +10,7 @@
         Kind          = 'uvicorn'
         UvicornTarget = 'web_sota.backend.server:app'
         SyncExtras    = @('dev')
+        SyncOnStart  = $true
         Env           = @{ WEB_PORT = '11199' }
     }
     Frontend = @{
