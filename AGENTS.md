@@ -17,5 +17,8 @@ Unified robotics control via MCP - Physical and virtual robots (bot + vbot)
 - `README.md` — full documentation
 - `pyproject.toml` — build config and entry points
 - `CLAUDE.md` — Claude Code context (if present)
+- `pipeline/README.md` — 10-stage CAD -> OpenUSD -> Isaac Lab -> ROS 2 -> Active Inference pipeline (`01_cad_to_usd_blender.py` .. `10_mujoco_active_inference_closed_loop.py`)
+- `docs/gemini_distillations/INDEX.md` — 17-part robotics & Active Inference knowledge distillation
+- `docs/hardware/` — Subsystem hardware blueprints for `saschibot` (`rust-saschirob-mcp`) and `Nori A3` (`norirobotics-mcp`)
 
 Install docs: follow mcp-central-docs/standards/AGENT_INSTALL_REFERENCE.md
