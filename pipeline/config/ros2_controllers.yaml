@@ -1,36 +1,49 @@
 controller_manager:
   ros__parameters:
-    update_rate: 200  # Hz
+    update_rate: 50  # 50 Hz matching 1 Mbps Feetech STS serial bus cycle
 
-    # Joint State Broadcaster publishes /joint_states
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-    # IMU Sensor Broadcaster publishes /imu/data
     imu_sensor_broadcaster:
       type: imu_sensor_broadcaster/IMUSensorBroadcaster
 
-    # Forward Joint Position Controller receives commands from 05_ros2_policy_bridge
-    joint_group_position_controller:
+    diff_drive_base_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    bimanual_lift_position_controller:
       type: position_controllers/JointGroupPositionController
 
 imu_sensor_broadcaster:
   ros__parameters:
     sensor_name: imu_sensor
-    frame_id: imu_link
+    frame_id: base_link
 
-joint_group_position_controller:
+diff_drive_base_controller:
+  ros__parameters:
+    left_wheel_names: ["wheel_L_spin"]
+    right_wheel_names: ["wheel_R_spin"]
+    wheel_separation: 0.42
+    wheel_radius: 0.075
+    publish_rate: 50.0
+    use_stamped_vel: false
+
+bimanual_lift_position_controller:
   ros__parameters:
     joints:
-      - FL_hip_joint
-      - FL_thigh_joint
-      - FL_calf_joint
-      - FR_hip_joint
-      - FR_thigh_joint
-      - FR_calf_joint
-      - RL_hip_joint
-      - RL_thigh_joint
-      - RL_calf_joint
-      - RR_hip_joint
-      - RR_thigh_joint
-      - RR_calf_joint
+      - lift_stage2
+      - lift_stage3
+      - left_shoulder_pan
+      - left_shoulder_lift
+      - left_elbow
+      - left_wrist_pitch
+      - left_wrist_roll
+      - left_flange
+      - left_finger_l
+      - right_shoulder_pan
+      - right_shoulder_lift
+      - right_elbow
+      - right_wrist_pitch
+      - right_wrist_roll
+      - right_flange
+      - right_finger_l

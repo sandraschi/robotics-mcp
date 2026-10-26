@@ -1,55 +1,117 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="fleet_robot">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="saschirob">
 
-  <!-- ros2_control Hardware Interface Definition -->
-  <ros2_control name="FleetRobotHardware" type="system">
+  <!-- ros2_control Hardware Interface for Saschirob (Wheeled Telescoping Bimanual) -->
+  <!-- Grounding: rust-saschirob-mcp/models/saschirob.urdf + norirobotics-mcp/docs/DIY_A3_EQUIVALENT.md -->
+  <ros2_control name="SaschirobFeetechSystem" type="system">
     <hardware>
-      <!-- Simulation plugin: ign_ros2_control / gz_ros2_control / mock -->
-      <!-- For physical robot, swap with: <plugin>ethercat_driver/EthercatHardwareInterface</plugin> -->
+      <!-- Simulation / Bench mock default; swap to feetech_ros2_control/FeetechHardwareInterface on Pi 5 -->
       <plugin>mock_components/GenericSystem</plugin>
       <param name="mock_sensor_commands">false</param>
-      <param name="state_update_frequency">200</param>
+      <param name="state_update_frequency">50</param>
+      <param name="serial_port">/dev/ttyACM0</param>
+      <param name="baud_rate">1000000</param>
     </hardware>
 
-    <!-- 12 Actuated Degrees of Freedom (e.g. Quadruped 3-DoF per leg) -->
-    <xacro:macro name="actuated_joint" params="joint_name min_pos max_pos max_vel max_effort">
+    <!-- Macro for Feetech STS3095 / STS3215 Revolute Arm Joints -->
+    <xacro:macro name="feetech_revolute_joint" params="joint_name servo_id min_pos max_pos max_vel max_effort">
       <joint name="${joint_name}">
+        <param name="id">${servo_id}</param>
         <command_interface name="position">
           <param name="min">${min_pos}</param>
           <param name="max">${max_pos}</param>
         </command_interface>
-        <command_interface name="effort">
-          <param name="min">-${max_effort}</param>
-          <param name="max">${max_effort}</param>
-        </command_interface>
-
         <state_interface name="position"/>
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
     </xacro:macro>
 
-    <!-- Leg FL -->
-    <xacro:actuated_joint joint_name="FL_hip_joint" min_pos="-0.8" max_pos="0.8" max_vel="21.0" max_effort="35.0"/>
-    <xacro:actuated_joint joint_name="FL_thigh_joint" min_pos="-1.0" max_pos="3.5" max_vel="21.0" max_effort="35.0"/>
-    <xacro:actuated_joint joint_name="FL_calf_joint" min_pos="-2.7" max_pos="-0.8" max_vel="21.0" max_effort="35.0"/>
+    <!-- Differential Drive Base Wheels (12V Geared DC) -->
+    <joint name="wheel_L_spin">
+      <command_interface name="velocity">
+        <param name="min">-10.0</param>
+        <param name="max">10.0</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="wheel_R_spin">
+      <command_interface name="velocity">
+        <param name="min">-10.0</param>
+        <param name="max">10.0</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
 
-    <!-- Leg FR -->
-    <xacro:actuated_joint joint_name="FR_hip_joint" min_pos="-0.8" max_pos="0.8" max_vel="21.0" max_effort="35.0"/>
-    <xacro:actuated_joint joint_name="FR_thigh_joint" min_pos="-1.0" max_pos="3.5" max_vel="21.0" max_effort="35.0"/>
-    <xacro:actuated_joint joint_name="FR_calf_joint" min_pos="-2.7" max_pos="-0.8" max_vel="21.0" max_effort="35.0"/>
+    <!-- 3-Stage Telescoping Lift Column (700 mm commanded stroke, 0.5x middle-stage ratio) -->
+    <joint name="lift_stage2">
+      <command_interface name="position">
+        <param name="min">0.0</param>
+        <param name="max">0.35</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="lift_stage3">
+      <param name="mimic">lift_stage2</param>
+      <param name="multiplier">2.0</param>
+      <command_interface name="position">
+        <param name="min">0.0</param>
+        <param name="max">0.70</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
 
-    <!-- Leg RL -->
-    <xacro:actuated_joint joint_name="RL_hip_joint" min_pos="-0.8" max_pos="0.8" max_vel="21.0" max_effort="35.0"/>
-    <xacro:actuated_joint joint_name="RL_thigh_joint" min_pos="-1.0" max_pos="3.5" max_vel="21.0" max_effort="35.0"/>
-    <xacro:actuated_joint joint_name="RL_calf_joint" min_pos="-2.7" max_pos="-0.8" max_vel="21.0" max_effort="35.0"/>
+    <!-- Left Arm (6-DoF SO-101 + Parallel Jaw Gripper): IDs 1..7 -->
+    <xacro:feetech_revolute_joint joint_name="left_shoulder_pan"  servo_id="1" min_pos="-2.6" max_pos="2.6" max_vel="2.0" max_effort="9.3"/>
+    <xacro:feetech_revolute_joint joint_name="left_shoulder_lift" servo_id="2" min_pos="-1.5" max_pos="1.5" max_vel="2.0" max_effort="9.3"/>
+    <xacro:feetech_revolute_joint joint_name="left_elbow"         servo_id="3" min_pos="-2.2" max_pos="2.2" max_vel="2.0" max_effort="9.3"/>
+    <xacro:feetech_revolute_joint joint_name="left_wrist_pitch"   servo_id="4" min_pos="-1.5" max_pos="1.5" max_vel="2.5" max_effort="2.9"/>
+    <xacro:feetech_revolute_joint joint_name="left_wrist_roll"    servo_id="5" min_pos="-1.5" max_pos="1.5" max_vel="2.5" max_effort="2.9"/>
+    <xacro:feetech_revolute_joint joint_name="left_flange"        servo_id="6" min_pos="-1.5" max_pos="1.5" max_vel="2.5" max_effort="2.9"/>
+    <joint name="left_finger_l">
+      <param name="id">7</param>
+      <command_interface name="position">
+        <param name="min">0.0</param>
+        <param name="max">0.042</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="left_finger_r">
+      <param name="mimic">left_finger_l</param>
+      <param name="multiplier">1.0</param>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
 
-    <!-- Leg RR -->
-    <xacro:actuated_joint joint_name="RR_hip_joint" min_pos="-0.8" max_pos="0.8" max_vel="21.0" max_effort="35.0"/>
-    <xacro:actuated_joint joint_name="RR_thigh_joint" min_pos="-1.0" max_pos="3.5" max_vel="21.0" max_effort="35.0"/>
-    <xacro:actuated_joint joint_name="RR_calf_joint" min_pos="-2.7" max_pos="-0.8" max_vel="21.0" max_effort="35.0"/>
+    <!-- Right Arm (6-DoF SO-101 + Parallel Jaw Gripper): IDs 11..17 -->
+    <xacro:feetech_revolute_joint joint_name="right_shoulder_pan"  servo_id="11" min_pos="-2.6" max_pos="2.6" max_vel="2.0" max_effort="9.3"/>
+    <xacro:feetech_revolute_joint joint_name="right_shoulder_lift" servo_id="12" min_pos="-1.5" max_pos="1.5" max_vel="2.0" max_effort="9.3"/>
+    <xacro:feetech_revolute_joint joint_name="right_elbow"         servo_id="13" min_pos="-2.2" max_pos="2.2" max_vel="2.0" max_effort="9.3"/>
+    <xacro:feetech_revolute_joint joint_name="right_wrist_pitch"   servo_id="14" min_pos="-1.5" max_pos="1.5" max_vel="2.5" max_effort="2.9"/>
+    <xacro:feetech_revolute_joint joint_name="right_wrist_roll"    servo_id="15" min_pos="-1.5" max_pos="1.5" max_vel="2.5" max_effort="2.9"/>
+    <xacro:feetech_revolute_joint joint_name="right_flange"        servo_id="16" min_pos="-1.5" max_pos="1.5" max_vel="2.5" max_effort="2.9"/>
+    <joint name="right_finger_l">
+      <param name="id">17</param>
+      <command_interface name="position">
+        <param name="min">0.0</param>
+        <param name="max">0.042</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="right_finger_r">
+      <param name="mimic">right_finger_l</param>
+      <param name="multiplier">1.0</param>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
 
-    <!-- Sensors -->
+    <!-- BNO085 / ICM-42688 Base IMU Sensor -->
     <sensor name="imu_sensor">
       <state_interface name="orientation.x"/>
       <state_interface name="orientation.y"/>
