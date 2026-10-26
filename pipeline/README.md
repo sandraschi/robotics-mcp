@@ -45,8 +45,9 @@ flowchart TD
 | [`07_active_inference_supervisor.py`](file:///D:/Dev/repos/isaac-mcp/pipeline/07_active_inference_supervisor.py) | Karl Friston Active Inference agent: minimizes Variational Free Energy (perception) and Expected Free Energy (action planning). |
 | [`08_nori_a3_active_inference_arm.py`](file:///D:/Dev/repos/isaac-mcp/pipeline/08_nori_a3_active_inference_arm.py) | 7-DoF Active Inference Arm Controller for `norirobotics a3`: singularity-free compliant reaching via VFE gradient descent. |
 | [`09_saschibot_active_inference_arm_lift.py`](file:///D:/Dev/repos/isaac-mcp/pipeline/09_saschibot_active_inference_arm_lift.py) | Whole-body Active Inference controller for `saschibot`: harmonizes prismatic lift (m) and revolute arm (rad) degrees of freedom. |
-| [`config/ros2_control.urdf.xacro`](file:///D:/Dev/repos/isaac-mcp/pipeline/config/ros2_control.urdf.xacro) | Modular `ros2_control` hardware interface configuration for 12-DoF quadruped/biped actuators + IMU. |
-| [`config/ros2_controllers.yaml`](file:///D:/Dev/repos/isaac-mcp/pipeline/config/ros2_controllers.yaml) | Controller manager configuration matching real-time joint group position controllers. |
+| [`10_mujoco_active_inference_closed_loop.py`](file:///D:/Dev/repos/isaac-mcp/pipeline/10_mujoco_active_inference_closed_loop.py) | Closed-loop MuJoCo 3.x physics verification of Laplace Active Inference whole-body bimanual + telescopic column control on `saschirob.xml`. |
+| [`config/ros2_control.urdf.xacro`](file:///D:/Dev/repos/isaac-mcp/pipeline/config/ros2_control.urdf.xacro) | Modular `ros2_control` hardware interface configuration for Wheeled Telescoping Bimanual (`saschirob` / `Nori A3`) Feetech STS bus + diff-drive + IMU. |
+| [`config/ros2_controllers.yaml`](file:///D:/Dev/repos/isaac-mcp/pipeline/config/ros2_controllers.yaml) | 200 Hz Controller Manager configuration (`diff_drive_controller`, `lift_controller`, `left_arm_controller`, `right_arm_controller`, grippers). |
 
 ---
 
