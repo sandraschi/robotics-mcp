@@ -22,8 +22,8 @@ One MCP server for physical robots (Dreame vacuums, Yahboom ROS, Elegoo, Nori A3
 | **[Android Doctrine](docs/doctrine/README.md)** | Safety, legal, and operational standards for the android fleet |
 | **[Setup Prerequisites](docs/guides/SETUP_PREREQUISITES.md)** | Unity, VRChat, peer MCP servers when you need the full stack |
 | **[Crash protection (watchfiles)](WATCHFILES_README.md)** | Auto-restart and health checks |
-| **[Autonomous Robotics Pipeline](pipeline/README.md)** | 10-stage CAD -> OpenUSD -> Isaac Lab (RSL-RL / GR00T N1.5 / Newton) -> ROS 2 -> Active Inference (`saschibot` & `Nori A3`) |
-| **[Gemini Robotics Distillations](docs/gemini_distillations/INDEX.md)** | 17-part synthesis of CAD/USD pipelines, Isaac Lab RL, `ros2_control`, and Active Inference (FEP) |
+| **[Autonomous Robotics Pipeline](pipeline/README.md)** | 11-stage CAD -> OpenUSD -> Isaac Lab (RSL-RL / GR00T N1.5 / Newton) -> Genie 4 World Model Dojo -> ROS 2 -> Active Inference (`saschibot` & `Nori A3`) |
+| **[Gemini Robotics Distillations](docs/gemini_distillations/INDEX.md)** | 18-part synthesis of CAD/USD pipelines, Isaac Lab RL, Genie 4 World Model Dojo, `ros2_control`, and Active Inference (FEP) |
 | **[Hardware Reference](docs/hardware/)** | Subsystem histology (`TELESCOPIC_LIFT`, `ROLLING_BASE`, `ARMS`, `GRIPPERS_HANDS`, `DOCK_STATION`, `HEAD_SENSORS_SCREEN`) |
 
 **Status:** Industrial **v1.4.1** (2026-04-14) | SOTA v1.4.1 Compliance | Benny Protocol Secured.
