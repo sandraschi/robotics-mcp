@@ -285,7 +285,7 @@ class CrashproofRunner:
                 },
                 "app_info": {
                     "name": "Robotics MCP WebApp",
-                    "default_host": "0.0.0.0",
+                    "default_host": "127.0.0.1",
                     "default_port": 12230,
                     "health_endpoint": self.health_check_url or "Not configured",
                 },
@@ -337,7 +337,7 @@ class CrashproofRunner:
                     logger.error(f"Error terminating process: {e}")
 
             # Save final crash report
-            asyncio.create_task(self.save_crash_report())
+            _report_task = asyncio.create_task(self.save_crash_report())  # noqa: RUF006
             sys.exit(0)
 
         # Register signal handlers
@@ -366,7 +366,7 @@ class CrashproofRunner:
 def load_config() -> dict[str, Any]:
     """Load configuration from environment variables."""
     return {
-        "host": os.getenv("ROBOTICS_MCP_HOST", "0.0.0.0"),
+        "host": os.getenv("ROBOTICS_MCP_HOST", "127.0.0.1"),
         "port": int(os.getenv("ROBOTICS_MCP_PORT", "12230")),
         "debug": os.getenv("ROBOTICS_MCP_DEBUG", "false").lower() == "true",
         "max_restarts": int(os.getenv("WATCHFILES_MAX_RESTARTS", "10")),

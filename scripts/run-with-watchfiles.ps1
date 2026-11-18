@@ -1,8 +1,8 @@
-# Robotics MCP WebApp Watchfiles Runner
+﻿# Robotics MCP WebApp Watchfiles Runner
 # Run the MCP server with crashproofing protection
 
 param(
-    [string]$ServerHost = "0.0.0.0",
+    [string]$ServerHost = "127.0.0.1",
     [int]$Port = 12230,
     [switch]$Debug,
     [int]$MaxRestarts = 10,

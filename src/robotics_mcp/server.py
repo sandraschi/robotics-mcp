@@ -71,7 +71,7 @@ class RoboticsConfig(BaseModel):
 
     enable_http: bool = Field(default=True, description="Enable HTTP interface alongside stdio")
     http_port: int = Field(default=11199, description="HTTP server port")
-    http_host: str = Field(default="0.0.0.0", description="HTTP server host")
+    http_host: str = Field(default="127.0.0.1", description="HTTP server host")
     log_level: str = Field(default="INFO", description="Logging level")
     config_path: str | None = Field(default=None, description="Path to config YAML file")
 
@@ -1288,7 +1288,7 @@ def main():
         default="stdio",  # Default to stdio for MCP protocol
         help="Server mode (default: stdio)",
     )
-    parser.add_argument("--host", default="0.0.0.0", help="HTTP server host")
+    parser.add_argument("--host", default="127.0.0.1", help="HTTP server host")
     parser.add_argument("--port", type=int, default=11199, help="HTTP server port")
     parser.add_argument("--config", help="Path to config YAML file")
     parser.add_argument("--stdio", action="store_true", help="FastMCP stdio mode")

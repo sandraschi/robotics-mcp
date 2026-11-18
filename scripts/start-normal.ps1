@@ -1,14 +1,14 @@
-# Robotics MCP Server Normal Start Script (without watchfiles)
+﻿# Robotics MCP Server Normal Start Script (without watchfiles)
 # Cleans up zombie processes before starting fresh
 
 param(
-    [string]$Host = "0.0.0.0",
+    [string]$ServerHost = "127.0.0.1",
     [int]$Port = 12230
 )
 
 Write-Host "🤖 Starting Robotics MCP Server (Normal Mode)" -ForegroundColor Green
 Write-Host "===============================================" -ForegroundColor Cyan
-Write-Host "Host: $Host" -ForegroundColor Yellow
+Write-Host "Host: $ServerHost" -ForegroundColor Yellow
 Write-Host "Port: $Port" -ForegroundColor Yellow
 Write-Host "Watchfiles: Disabled" -ForegroundColor Yellow
 Write-Host "===============================================" -ForegroundColor Cyan
@@ -49,14 +49,14 @@ Write-Host "✅ Cleanup complete" -ForegroundColor Green
 Write-Host ""
 
 # Set environment variables
-$env:ROBOTICS_MCP_HOST = $Host
+$env:ROBOTICS_MCP_HOST = $ServerHost
 $env:ROBOTICS_MCP_PORT = $Port
 
 # Start the MCP server directly
 Write-Host "🚀 Starting MCP server..." -ForegroundColor Green
 try {
     Push-Location "$PSScriptRoot\.."
-    & python -m robotics_mcp.server --mode http --host $Host --port $Port
+    & python -m robotics_mcp.server --mode http --host $ServerHost --port $Port
 } catch {
     Write-Host "❌ Failed to start MCP server: $_" -ForegroundColor Red
     exit 1
